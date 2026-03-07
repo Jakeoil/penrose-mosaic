@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="shortcut icon" href="deca2.png" />
+        <title>Measurement</title>
+        <link rel="stylesheet" href="math.css" />
+        <script type="module" src="measurements.js"></script>
+        <style>
+            .wheel table {
+                border: 1px solid black;
+            }
+            .wheel th {
+                border: 1px solid black;
+            }
+            .wheel td {
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Measurements</h1>
+        <img id="image" src="deca.png" align="left" />
+        <p>
+            The quadrille and mosaic are examples of discrete tilings. These
+            tilings use integers, or at worst, rational numbers (quotients of
+            integers) to determine the placement of corners and lines. I found
+            the current algorithm by doodling pentagons on a quadrille pad
+            (graph paper) with each 1/4 inch square represented 4 by 4 units.
+            The pentagons were not regular pentagons, but the looked kind of
+            close. The consisted of three types of lines and their mirror images
+            with slope of 0, 2/3 (33) and 4 (76). Using the three vectors, one
+            can draw a reasonable facsimile of a regular pentagon. the first
+            three tenths of a circle, they are meant to appoximate the angles, 0
+            degree, 36 degrees and 72 degrees. From these angles, the other
+            seven values can be derived through changes of sign.
+        </p>
+        <span align="left">
+            <canvas id="quadrille" class="flowtile" align="left"></canvas>
+        </span>
+        <p>
+            Also, there are sequentially larger versions of these vectors based
+            somewhat on the fibinacci sequence. The first value always points up
+            along the negative y axis. So they are: [0,4], [3, 2] and [4, 1].
+            Note that the y value is set to positive to simplify the tables. The
+            fibinacci sequence, starting is [0, 1, 1, 2, 3, 5..] where F[n+1] =
+            F[n] + F[n + 1] The simple example is [0, 4]. This is the length of
+            the base of pentagon[0].
+        </p>
+        <p>
+            Everything in the quadrille version so far is based on this base
+            pentagon:
+            <code>
+                const pentaUp = [ [0, -3], [3, -1], [2, 3], [-2, 3], [-3, -1]]
+            </code>
+        </p>
+
+        <div id="pWheel" class="wheel"></div>
+        <br />
+        <div id="sWheel" class="wheel"></div>
+        <br />
+        <div id="tWheel" class="wheel"></div>
+        <br />
+        <div id="dWheel" class="wheel"></div>
+    </body>
+</html>

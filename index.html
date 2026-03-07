@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="shortcut icon" href="deca.png" />
+        <title>Penrose Mosaic</title>
+        <link rel="stylesheet" href="math.css" />
+        <script type="module" src="math.js"></script>
+    </head>
+
+    <body>
+        <header>
+            <h1>Penrose Mosaic</h1>
+            <h2>
+                A square tiling based on
+                <a href="https://web.ma.utexas.edu/users/radin/Pentaplexity.pdf"
+                    >Penrose's first non-periodic tiling</a
+                >
+            </h2>
+        </header>
+
+        <p>
+            I found the mosaic pattern while working with graph paper. I found
+            you could produce a very convincing version of this tiling with the
+            segments: [4,0],[3,2] and [1,4]. The gave a sufficient approximation
+            of 4 * [cos n, sin n] where n = 0, 36 and 72.
+        </p>
+        <span>The tiles of the type one set are pentagons (p5:</span>
+        <canvas id="p5" class="flowtile"> </canvas>
+        <span>, p3: </span>
+        <canvas id="p3" class="flowtile"></canvas>
+        <span>, p1:</span>
+        <canvas id="p1" class="flowtile"></canvas>
+        <span>), stars:</span>
+        <canvas id="s5" class="flowtile"></canvas>
+        <span>, boats: </span>
+        <canvas id="s3" class="flowtile"></canvas>
+        <span>and diamonds: </span>
+        <canvas id="s1" class="flowtile"></canvas>
+
+        <nav id="across">
+            <p>
+                <button class="pageButton" data-id="rwork">Measurements</button>
+                <button class="pageButton" data-id="inf1">
+                    Inflation 1 shapes
+                </button>
+                <button class="pageButton" data-id="inf2">
+                    Inflation 2 shapes
+                </button>
+                <button class="pageButton" data-id="gwork">
+                    Grid work area
+                </button>
+                <button class="pageButton" data-id="g012">
+                    Shape expansions
+                </button>
+                <button class="pageButton" data-id="g3">
+                    Decagon expansion
+                </button>
+            </p>
+        </nav>
+        <div id="meat">
+            <!--
+                ********* controls ***********
+            -->
+            <div id="controls">
+                <h3>Controls</h3>
+                <fieldset class="control-group">
+                    <legend>Controls</legend>
+                    <h4>Shape type</h4>
+                    <button id="type">Type</button>
+                    <h4>Orientation</h4>
+                    <button id="fifths">Fifths</button>
+                    <button id="isDown">isDown</button>
+                </fieldset>
+                <fieldset class="control-group">
+                    <legend>Shape mode</legend>
+                    <button id="shape-mode"></button>
+                </fieldset>
+                <fieldset class="control-group">
+                    <legend>Overlays and flags</legend>
+                    <fieldset>
+                        <legend>Pentagons</legend>
+                        <input type="checkbox" id="penta-ovl" checked />
+                        <label for="penta-ovl">Pentas and Stars</label>
+                        <br />
+                        <input type="checkbox" id="mosaic-penta" />
+                        <label for="tree-penta">Mosaic</label>
+                        <br />
+                        <input type="checkbox" id="tree-penta" />
+                        <label for="tree-penta">Tree</label>
+                        <legend>Rhombs</legend>
+                        <input type="checkbox" id="rhomb-ovl" name="rhomb" />
+                        <label for="rhomb">Rhombi</label>
+                        <br />
+                        <input type="checkbox" id="ammann" />
+                        <label for="ammann">Ammann bars</label>
+                        <br />
+                        <div id="rhomb-size">
+                            <input type="radio" name="rhomb" id="large-rhomb" />
+                            <label for="large-rhomb">Large</label>
+                            <input type="radio" name="rhomb" id="small-rhomb" />
+                            <label for="small-rhomb">Small</label>
+                        </div>
+                        <legend>Duals</legend>
+                        <input type="checkbox" id="dual-ovl" name="dual" />
+                        <label for="dual">Dual rhombs</label>
+                        <br />
+                    </fieldset>
+                </fieldset>
+                <fieldset class="control-group">
+                    <legend>Penta styles</legend>
+                    <label for="penta-fill">Fill</label>
+                    <select id="penta-fill" name="pfill-styles">
+                        <option value="none">none</option>
+                        <option value="solid">solid</option>
+                        <option value="transparent">transparent</option>
+                    </select>
+                    <br />
+                    <label for="penta-stroke">Stroke</label>
+                    <select id="penta-stroke" name="stroke-styles">
+                        <option value="none">none</option>
+                        <option value="solid">solid</option>
+                    </select>
+                </fieldset>
+                <fieldset class="control-group">
+                    <legend>Rhomb styles</legend>
+                    <label for="rhomb-fill">Fill</label>
+                    <select id="rhomb-fill" name="fill-styles">
+                        <option value="none">none</option>
+                        <option value="solid">solid</option>
+                        <option value="transparent">transparent</option>
+                        <option value="gradient">gradient</option>
+                    </select>
+                    <br />
+                    <label for="rhomb-stroke">Stroke</label>
+                    <select id="rhomb-stroke" name="stroke-styles">
+                        <option value="none">none</option>
+                        <option value="solid">solid</option>
+                        <option value="gradient">gradient</option>
+                    </select>
+                    <br /><label for="opacity">Opacity</label>
+                    <input
+                        style="width: 50%"
+                        type="range"
+                        id="opacity"
+                        name="opacity"
+                        min="0"
+                        max="100"
+                    />
+                </fieldset>
+                <fieldset class="control-group">
+                    <!-- ShapeColors -->
+                    <legend id="color-reset">Colors</legend>
+                    <input
+                        type="color"
+                        id="pe5-color"
+                        value="#0000ff"
+                        class="shape-color"
+                        style="border: '50%;height:100px'"
+                    />
+                    <label for="p5-color">Pe5:</label>
+                    <br />
+                    <input
+                        type="color"
+                        id="pe3-color"
+                        value="#e46c0a"
+                        class="shape-color"
+                    />
+                    <label for="p3-color">Pe3:</label>
+                    <br />
+                    <input
+                        type="color"
+                        id="pe1-color"
+                        value="#ffff00"
+                        class="shape-color"
+                    />
+                    <label for="p1-color">Pe1:</label>
+                    <br />
+                    <input
+                        type="color"
+                        id="star-color"
+                        value="#0000ff"
+                        class="shape-color"
+                    />
+                    <label for="star-color">Star:</label>
+                    <br />
+                    <input
+                        type="color"
+                        id="boat-color"
+                        value="#0000ff"
+                        class="shape-color"
+                    />
+                    <label for="boat-color">Boat:</label>
+                    <br />
+                    <input
+                        type="color"
+                        id="diamond-color"
+                        value="#0000ff"
+                        class="shape-color"
+                    />
+                    <label for="diamond-color">Diamond:</label>
+                    <br />
+                </fieldset>
+            </div>
+            <div id="content">
+                <div id="inf1" class="page">
+                    <h2>Inflation 1 work area</h2>
+                    <canvas width="100" height="100">Pentagons</canvas>
+                </div>
+                <div id="inf2" class="page">
+                    <h2>Inflation 2 work area</h2>
+                    <canvas width="1600" height="3100">Second test</canvas>
+                </div>
+                <div id="gwork" class="page">
+                    <h2>Grid-work test area</h2>
+                    <canvas width="1600" height="1700">grid</canvas>
+                </div>
+                <div id="g012" class="page">
+                    <h2>Generic test area</h2>
+                    <canvas width="1200" height="999">Second test</canvas>
+                </div>
+                <div id="g3" class="page">
+                    <h2>Generic expansion 3</h2>
+                    <canvas width="3600" height="5000"> expansion </canvas>
+                </div>
+                <div id="rwork" class="page">
+                    <iframe src="measurements.html" width="100%"
+                        >Measurements frame invalid</iframe
+                    >
+                    <script>
+                        // Selecting the iframe element
+                        const iframe = document.querySelector("#rwork iframe");
+                        const div = document.querySelector("#rWork");
+
+                        // Adjusting the iframe height onload event
+                        iframe.onload = function (event) {
+                            iframe.style.height =
+                                iframe.contentWindow.document.body
+                                    .scrollHeight +
+                                50 +
+                                "px";
+                        };
+                    </script>
+                </div>
+                <div id="dual" class="page">
+                    <h2>Dual test</h2>
+                    <canvas width="1200" height="999">Second test</canvas>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
