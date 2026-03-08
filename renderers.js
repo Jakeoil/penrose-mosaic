@@ -165,6 +165,67 @@ export class CanvasRenderer {
         return canvasGradient;
     }
 
+    /**
+     * Draw isogloss (contour) lines across a rhombus perpendicular to the
+     * shape[0]→shape[2] diagonal. Lines are evenly spaced along that axis.
+     * Thick rhombs (72°) get slightly heavier lines; thin rhombs (36°) get
+     * lighter lines to balance visual weight against their tighter spacing.
+     */
+    drawIsogloss(offset, shape) {
+        const { g, scale } = this;
+        const LINE_COUNT = 7;
+
+        const v0 = shape[0].tr(offset).mult(scale);
+        const v1 = shape[1].tr(offset).mult(scale);
+        const v2 = shape[2].tr(offset).mult(scale);
+        const v3 = shape[3].tr(offset).mult(scale);
+
+        // Detect thick vs thin from the cross product of edges at v0.
+        // |sin(angle)| is larger for thick (72°) than thin (36°).
+        const e1x = v1.x - v0.x, e1y = v1.y - v0.y;
+        const e3x = v3.x - v0.x, e3y = v3.y - v0.y;
+        const cross = Math.abs(e1x * e3y - e1y * e3x);
+        const len1 = Math.sqrt(e1x * e1x + e1y * e1y);
+        const len3 = Math.sqrt(e3x * e3x + e3y * e3y);
+        const sinAngle = cross / (len1 * len3 || 1);
+        // sin(72°) ≈ 0.95, sin(36°) ≈ 0.59
+        const isThick = sinAngle > 0.75;
+
+        g.save();
+
+        // Clip to the rhombus
+        g.beginPath();
+        g.moveTo(v0.x, v0.y);
+        g.lineTo(v1.x, v1.y);
+        g.lineTo(v2.x, v2.y);
+        g.lineTo(v3.x, v3.y);
+        g.closePath();
+        g.clip();
+
+        g.strokeStyle = isThick ? "black" : "#666";
+        g.lineWidth = isThick ? 1.5 : 1;
+
+        for (let i = 1; i <= LINE_COUNT; i++) {
+            const t = i / (LINE_COUNT + 1);
+            let left, right;
+            if (t <= 0.5) {
+                const s = t * 2;
+                left = { x: v0.x + (v3.x - v0.x) * s, y: v0.y + (v3.y - v0.y) * s };
+                right = { x: v0.x + (v1.x - v0.x) * s, y: v0.y + (v1.y - v0.y) * s };
+            } else {
+                const s = (t - 0.5) * 2;
+                left = { x: v3.x + (v2.x - v3.x) * s, y: v3.y + (v2.y - v3.y) * s };
+                right = { x: v1.x + (v2.x - v1.x) * s, y: v1.y + (v2.y - v1.y) * s };
+            }
+            g.beginPath();
+            g.moveTo(left.x, left.y);
+            g.lineTo(right.x, right.y);
+            g.stroke();
+        }
+
+        g.restore();
+    }
+
     rhombus(fill, offset, shape, strokeStyle, isHeads) {
         const { g, scale } = this;
         const { rhombStyle } = { ...globals, ...measureTaskGlobals };
@@ -203,10 +264,61 @@ export class CanvasRenderer {
         if (rhombStyle.fill != rhombStyle.NONE) {
             g.fill();
         }
-        if (rhombStyle.stroke != rhombStyle.NONE) {
+        if (rhombStyle.stroke == "dihedral") {
+            this.drawDihedralStroke(offset, shape, isHeads);
+        } else if (rhombStyle.stroke != rhombStyle.NONE) {
             g.stroke();
         }
         g.restore();
+
+        if (rhombStyle.isogloss) {
+            this.drawIsogloss(offset, shape);
+        }
+    }
+
+    /**
+     * Draw rhombus edges with thickness indicating the dihedral fold type.
+     * The RT dihedral angle is 144° at all edges. On the corrugated surface
+     * each edge folds ±36° from flat:
+     *   Ridge (convex, outside RT): 144° dihedral → thin line
+     *   Valley (concave, inside RT): 216° dihedral → thick line
+     *
+     * When isHeads=true, v0 is high and v2 is low:
+     *   Edges v0→v1, v3→v0 (near peak) = ridges → thin
+     *   Edges v1→v2, v2→v3 (near valley) = valleys → thick
+     * When isHeads=false, the roles swap.
+     */
+    drawDihedralStroke(offset, shape, isHeads) {
+        const { g, scale } = this;
+        const RIDGE_WIDTH = 1;
+        const VALLEY_WIDTH = scale < 5 ? 2 : 3;
+        const v = shape.map((pt) => ({
+            x: (pt.x + offset.x) * scale,
+            y: (pt.y + offset.y) * scale,
+        }));
+
+        // Edges: 0→1, 1→2, 2→3, 3→0
+        // When isHeads: edges 0→1 and 3→0 are ridges; 1→2 and 2→3 are valleys
+        const ridgeEdges = isHeads ? [[0,1],[3,0]] : [[1,2],[2,3]];
+        const valleyEdges = isHeads ? [[1,2],[2,3]] : [[0,1],[3,0]];
+
+        g.strokeStyle = "black";
+
+        g.lineWidth = RIDGE_WIDTH;
+        for (const [a, b] of ridgeEdges) {
+            g.beginPath();
+            g.moveTo(v[a].x, v[a].y);
+            g.lineTo(v[b].x, v[b].y);
+            g.stroke();
+        }
+
+        g.lineWidth = VALLEY_WIDTH;
+        for (const [a, b] of valleyEdges) {
+            g.beginPath();
+            g.moveTo(v[a].x, v[a].y);
+            g.lineTo(v[b].x, v[b].y);
+            g.stroke();
+        }
     }
 
     render(renderList) {

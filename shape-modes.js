@@ -463,6 +463,12 @@ class Real {
 }
 export const real = new Real();
 
+/**
+ * Typographic mode — a square-ruled approximation of five-fold symmetry
+ * using ASCII block characters, similar to how Mosaic uses pixel tiles
+ * and Quadrille uses vector outlines on graph paper coordinates.
+ * Not yet wired into the shape mode cycle; kept for future development.
+ */
 class Typographic {
     constructor() {
         const pentaUp = [

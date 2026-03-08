@@ -16,8 +16,8 @@ export class RhombStyle {
     constructor(app) {
         this.app = app;
         this.eleFill = document.querySelector("#rhomb-fill");
-        // none, color, gradiant.
         this.eleStroke = document.querySelector("#rhomb-stroke");
+        this.eleIsogloss = document.querySelector("#rhomb-isogloss");
         if (this.eleFill)
             this.eleFill.addEventListener(
                 "change",
@@ -30,22 +30,34 @@ export class RhombStyle {
                 this.onStrokeChanged.bind(this),
                 false
             );
+        if (this.eleIsogloss)
+            this.eleIsogloss.addEventListener(
+                "click",
+                this.onIsoglossChanged.bind(this),
+                false
+            );
         this.reset();
         this.refresh();
     }
     reset() {
         this.fill = this.SOLID;
         this.stroke = this.SOLID;
-        this.fromString(cookie.get(RhombStyle.name, this.toString()));
+        this.isogloss = false;
+        const cookieJson = cookie.get(RhombStyle.name, this.toString());
+        this.fromString(cookieJson);
     }
     toString() {
         return JSON.stringify({
             fill: this.fill,
             stroke: this.stroke,
+            isogloss: this.isogloss,
         });
     }
     fromString(jsonString) {
-        ({ fill: this.fill, stroke: this.stroke } = JSON.parse(jsonString));
+        const parsed = JSON.parse(jsonString);
+        this.fill = parsed.fill;
+        this.stroke = parsed.stroke;
+        if (parsed.isogloss !== undefined) this.isogloss = parsed.isogloss;
     }
     refresh() {
         let eleSelectedOption = document.querySelector(
@@ -56,6 +68,7 @@ export class RhombStyle {
             `#rhomb-stroke > option[value="${this.stroke}"]`
         );
         if (eleSelectedOption) eleSelectedOption.selected = true;
+        if (this.eleIsogloss) this.eleIsogloss.checked = this.isogloss;
 
         cookie.set(RhombStyle.name, this.toString(this));
     }
@@ -67,6 +80,11 @@ export class RhombStyle {
     }
     onStrokeChanged(event) {
         this.stroke = event.target.value;
+        this.refresh();
+        this.app(RhombStyle.name);
+    }
+    onIsoglossChanged() {
+        this.isogloss = !this.isogloss;
         this.refresh();
         this.app(RhombStyle.name);
     }

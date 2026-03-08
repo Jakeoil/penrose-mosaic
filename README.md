@@ -17,7 +17,8 @@ Then open `http://localhost:8000` in a browser.
 ## Pages
 
 - **Measurements** — Wheel tables and quadrille visualization (iframe)
-- **Inflation 1/2 shapes** — All 6 tile types in 10 rotations at generation 1 and 2
+- **Inflation 1 shapes** — All 6 tile types in 10 rotations at generation 1
+- **Inflation 2 shapes** — All 6 tile types in 10 rotations at generation 2
 - **Grid work area** — Mosaic vs quadrille comparison with decagons
 - **Shape expansions** — Generations 0-3 side by side, controlled by type/angle buttons
 - **Decagon expansion** — Large generation 5 decagon rendering
