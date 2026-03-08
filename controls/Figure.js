@@ -13,6 +13,7 @@ export class Figure {
         this.eleFifths = document.querySelector("#fifths");
         this.eleType = document.querySelector("#type");
         this.eleIsDown = document.querySelector("#isDown");
+        this.eleIsHeads = document.querySelector("#isHeads");
 
         if (this.eleFifths)
             this.eleFifths.addEventListener(
@@ -34,7 +35,14 @@ export class Figure {
                 this.clickIsDown.bind(this),
                 false
             );
-        //else console.log(`no eleDown!`);
+
+        if (this.eleIsHeads)
+            this.eleIsHeads.addEventListener(
+                "click",
+                this.clickIsHeads.bind(this),
+                false
+            );
+
         this.reset(fifths, typeIndex, isDown);
         this.refresh();
     }
@@ -42,21 +50,24 @@ export class Figure {
         this.fifths = fifths;
         this.typeIndex = typeIndex;
         this.isDown = isDown;
-        this.fromString(cookie.get(Figure.name, this.toString()));
+        this.isHeads = true;
+        const cookieJson = cookie.get(Figure.name, this.toString());
+        this.fromString(cookieJson);
     }
     toString() {
         return JSON.stringify({
             fifths: this.fifths,
             typeIndex: this.typeIndex,
             isDown: this.isDown,
+            isHeads: this.isHeads,
         });
     }
     fromString(jsonString) {
-        ({
-            fifths: this.fifths,
-            typeIndex: this.typeIndex,
-            isDown: this.isDown,
-        } = JSON.parse(jsonString));
+        const parsed = JSON.parse(jsonString);
+        this.fifths = parsed.fifths;
+        this.typeIndex = parsed.typeIndex;
+        this.isDown = parsed.isDown;
+        if (parsed.isHeads !== undefined) this.isHeads = parsed.isHeads;
     }
     bumpFifths() {
         this.fifths = norm(this.fifths + 1);
@@ -74,6 +85,12 @@ export class Figure {
     toggleDirection() {
         this.isDown = !this.isDown;
     }
+    get headsTails() {
+        return this.isHeads ? "Heads" : "Tails";
+    }
+    toggleHeads() {
+        this.isHeads = !this.isHeads;
+    }
 
     // eww, should add the decagon?
     typeList = [
@@ -90,6 +107,7 @@ export class Figure {
         if (this.eleFifths) this.eleFifths.innerHTML = `fifths: ${this.fifths}`;
         if (this.eleType) this.eleType.innerHTML = this.typeName;
         if (this.eleIsDown) this.eleIsDown.innerHTML = this.direction;
+        if (this.eleIsHeads) this.eleIsHeads.innerHTML = this.headsTails;
         cookie.set(Figure.name, this.toString());
     }
 
@@ -113,6 +131,12 @@ export class Figure {
 
     clickIsDown() {
         this.toggleDirection();
+        this.refresh();
+        this.app(Figure.name);
+    }
+
+    clickIsHeads() {
+        this.toggleHeads();
         this.refresh();
         this.app(Figure.name);
     }

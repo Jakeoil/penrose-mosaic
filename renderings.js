@@ -578,65 +578,66 @@ export function drawGeneric123(id) {
         const bounds = new Bounds();
         const type = controls.typeList[controls.typeIndex];
         const angle = ang(controls.fifths, controls.isDown);
+        const isHeads = controls.isHeads;
         const layer = "dual";
         switch (type) {
             case penrose.Pe1:
             case penrose.Pe3:
             case penrose.Pe5:
-                penta({ type, angle, loc: p(x, y), gen: 0 });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 0 });
 
-                penta({ type, angle, loc: p(x, y), gen: 0, layer });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 0, layer });
                 x += 21;
-                penta({ type, angle, loc: p(x, y), gen: 1 });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 1 });
 
-                penta({ type, angle, loc: p(x, y), gen: 1, layer });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 1, layer });
                 x += 34;
-                penta({ type, angle, loc: p(x, y), gen: 2 });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 2 });
 
-                penta({ type, angle, loc: p(x, y), gen: 2, layer });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 2, layer });
                 x = 73;
                 y += 100;
-                penta({ type, angle, loc: p(x, y), gen: 3 });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 3 });
 
-                penta({ type, angle, loc: p(x, y), gen: 3, layer });
+                penta({ type, angle, isHeads, loc: p(x, y), gen: 3, layer });
 
                 break;
             case penrose.St1:
             case penrose.St3:
             case penrose.St5:
                 y += 10;
-                star({ type, angle, loc: p(x, y), gen: 0 });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 0 });
 
-                star({ type, angle, loc: p(x, y), gen: 0, layer });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 0, layer });
                 x += 21;
-                star({ type, angle, loc: p(x, y), gen: 1 });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 1 });
 
-                star({ type, angle, loc: p(x, y), gen: 1, layer });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 1, layer });
                 x += 54;
-                star({ type, angle, loc: p(x, y), gen: 2 });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 2 });
 
-                star({ type, angle, loc: p(x, y), gen: 2, layer });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 2, layer });
                 x = 93;
                 y += 130;
-                star({ type, angle, loc: p(x, y), gen: 3 });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 3 });
 
-                star({ type, angle, loc: p(x, y), gen: 3, layer });
+                star({ type, angle, isHeads, loc: p(x, y), gen: 3, layer });
 
                 break;
             case penrose.Deca:
-                deca({ angle, loc: p(x, y), gen: 1 });
-                deca({ angle, loc: p(x, y), gen: 1, layer });
+                deca({ angle, isHeads, loc: p(x, y), gen: 1 });
+                deca({ angle, isHeads, loc: p(x, y), gen: 1, layer });
                 x += 31;
-                deca({ angle, loc: p(x, y), gen: 2 });
-                deca({ angle, loc: p(x, y), gen: 2, layer });
+                deca({ angle, isHeads, loc: p(x, y), gen: 2 });
+                deca({ angle, isHeads, loc: p(x, y), gen: 2, layer });
                 x += 64;
                 y += 30;
-                deca({ angle, loc: p(x, y), gen: 3 });
-                deca({ angle, loc: p(x, y), gen: 3, layer });
+                deca({ angle, isHeads, loc: p(x, y), gen: 3 });
+                deca({ angle, isHeads, loc: p(x, y), gen: 3, layer });
                 y += 170;
                 x += 30;
-                deca({ angle, loc: p(x, y), gen: 4 });
-                deca({ angle, loc: p(x, y), gen: 4, layer });
+                deca({ angle, isHeads, loc: p(x, y), gen: 4 });
+                deca({ angle, isHeads, loc: p(x, y), gen: 4, layer });
                 break;
         }
         const built = performance.now();
@@ -674,12 +675,13 @@ export function drawGeneric3(id) {
         let x = 100;
         let y = 250;
         let angle = ang(controls.fifths, controls.isDown);
+        const isHeads = controls.isHeads;
         let decagon = true;
         const begin = performance.now();
         const bounds = new Bounds();
-        deca({ angle, loc: p(x, y).tr(base), gen: 5 });
+        deca({ angle, isHeads, loc: p(x, y).tr(base), gen: 5 });
 
-        deca({ angle, loc: p(x, y).tr(base), gen: 5, layer: "rhomb" });
+        deca({ angle, isHeads, loc: p(x, y).tr(base), gen: 5, layer: "rhomb" });
 
         const built = performance.now();
         console.log(`shapes built: ${built - begin} ms`);
