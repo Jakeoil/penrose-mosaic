@@ -656,8 +656,8 @@ export function drawGeneric123(id) {
 }
 
 /***
- * This draws big decas.
- * Let's make it friendlier
+ * Gen 5 expansion of the selected shape type.
+ * Uses measure/render two-pass for auto-sizing.
  */
 export function drawGeneric3(id) {
     const page = document.querySelector(`#${id}`);
@@ -666,22 +666,38 @@ export function drawGeneric3(id) {
 
     const { shapeMode, controls } = globals;
     const scene = new PenroseScreen(shapeMode.shapeMode);
+    const penta = scene.penta.bind(scene);
+    const star = scene.star.bind(scene);
     const deca = scene.deca.bind(scene);
     let base = p(0, 0);
 
     const drawScreen = function () {
-        console.log(performance.now());
-
-        let x = 100;
-        let y = 250;
-        let angle = ang(controls.fifths, controls.isDown);
+        const type = controls.typeList[controls.typeIndex];
+        const angle = ang(controls.fifths, controls.isDown);
         const isHeads = controls.isHeads;
-        let decagon = true;
+        const loc = p(0, 0).tr(base);
+        const gen = 5;
+        const layer = "dual";
         const begin = performance.now();
-        const bounds = new Bounds();
-        deca({ angle, isHeads, loc: p(x, y).tr(base), gen: 5 });
 
-        deca({ angle, isHeads, loc: p(x, y).tr(base), gen: 5, layer: "rhomb" });
+        switch (type) {
+            case penrose.Pe1:
+            case penrose.Pe3:
+            case penrose.Pe5:
+                penta({ type, angle, isHeads, loc, gen });
+                penta({ type, angle, isHeads, loc, gen, layer });
+                break;
+            case penrose.St1:
+            case penrose.St3:
+            case penrose.St5:
+                star({ type, angle, isHeads, loc, gen });
+                star({ type, angle, isHeads, loc, gen, layer });
+                break;
+            case penrose.Deca:
+                deca({ angle, isHeads, loc, gen });
+                deca({ angle, isHeads, loc, gen, layer });
+                break;
+        }
 
         const built = performance.now();
         console.log(`shapes built: ${built - begin} ms`);
@@ -692,12 +708,10 @@ export function drawGeneric3(id) {
                 rendered - built
             } ms, function list: ${USE_FUNCTION_LIST}`
         );
-        return bounds;
     };
 
     scene.setToMeasure();
     drawScreen();
-    console.log(`bounds.maxPoint: ${scene.bounds.maxPoint}`);
     base = base.tr(scene.bounds.minPoint.neg);
     scene.setToRender();
     drawScreen();
