@@ -56,7 +56,7 @@ export function lerp(start, end, alpha, opacity) {
     const rgbStart = hexToRGB(start);
     const rgbEnd = hexToRGB(end);
     const [r, g, b] = rgbStart.map(
-        (item, index) => item * (1 - alpha) + rgbEnd[index] * alpha
+        (item, index) => item * (1 - alpha) + rgbEnd[index] * alpha,
     );
     const command = `rgb(${r},${g},${b})`;
     return command;
@@ -601,7 +601,7 @@ export class PenroseScreen {
                 this.star({
                     type: penrose.St3,
                     angle: shift,
-                    isHeads,
+                    isHeads: !isHeads,
                     loc: locBoat,
                     layer,
                     gen: gen - 1,
@@ -792,7 +792,7 @@ export class PenroseScreen {
             this.line(
                 offset.tr(segmentPoints[i]),
                 offset.tr(segmentPoints[i + 1]),
-                "red"
+                "red",
             );
         }
     }
@@ -844,7 +844,7 @@ export class PenroseScreen {
                                     loc,
                                     thin3,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -860,7 +860,7 @@ export class PenroseScreen {
                                     loc,
                                     thick3,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -881,7 +881,7 @@ export class PenroseScreen {
                                     loc,
                                     thick2,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -897,7 +897,7 @@ export class PenroseScreen {
                                     loc,
                                     thinR2,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -940,7 +940,7 @@ export class PenroseScreen {
                                     loc,
                                     thin3,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -956,7 +956,7 @@ export class PenroseScreen {
                                     loc,
                                     thick3,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -978,7 +978,7 @@ export class PenroseScreen {
                                     loc,
                                     thick2,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
@@ -994,7 +994,7 @@ export class PenroseScreen {
                                     loc,
                                     thinR2,
                                     outline,
-                                    isHeads
+                                    isHeads,
                                 );
                             }
                             if (ammannSelected) {
