@@ -566,93 +566,101 @@ export function drawGeneric123(id) {
     if (page.style.display == "none") return;
     const canvas = document.querySelector(`#${id} > canvas`);
     const { shapeMode, controls } = globals;
-    const scene = new PenroseScreen(shapeMode.shapeMode);
-    const penta = scene.penta.bind(scene);
-    const star = scene.star.bind(scene);
-    const deca = scene.deca.bind(scene);
+    const type = controls.typeList[controls.typeIndex];
+    const angle = ang(controls.fifths, controls.isDown);
+    const isHeads = controls.isHeads;
+    const layer = "dual";
 
-    const drawScreen = function () {
-        let x = 13;
-        let y = 26;
-        const begin = performance.now();
-        const bounds = new Bounds();
-        const type = controls.typeList[controls.typeIndex];
-        const angle = ang(controls.fifths, controls.isDown);
-        const isHeads = controls.isHeads;
-        const layer = "dual";
-        switch (type) {
-            case penrose.Pe1:
-            case penrose.Pe3:
-            case penrose.Pe5:
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 0 });
+    const isPenta = type === penrose.Pe1 || type === penrose.Pe3 || type === penrose.Pe5;
+    const isStar = type === penrose.St1 || type === penrose.St3 || type === penrose.St5;
+    const isDeca = type === penrose.Deca;
 
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 0, layer });
-                x += 21;
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 1 });
+    // Generation lists: top row gens, bottom figure gen
+    const topGens = isDeca ? [1, 2, 3] : [0, 1, 2];
+    const bottomGen = isDeca ? 4 : 3;
 
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 1, layer });
-                x += 34;
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 2 });
-
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 2, layer });
-                x = 73;
-                y += 100;
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 3 });
-
-                penta({ type, angle, isHeads, loc: p(x, y), gen: 3, layer });
-
-                break;
-            case penrose.St1:
-            case penrose.St3:
-            case penrose.St5:
-                y += 10;
-                star({ type, angle, isHeads, loc: p(x, y), gen: 0 });
-
-                star({ type, angle, isHeads, loc: p(x, y), gen: 0, layer });
-                x += 21;
-                star({ type, angle, isHeads, loc: p(x, y), gen: 1 });
-
-                star({ type, angle, isHeads, loc: p(x, y), gen: 1, layer });
-                x += 54;
-                star({ type, angle, isHeads, loc: p(x, y), gen: 2 });
-
-                star({ type, angle, isHeads, loc: p(x, y), gen: 2, layer });
-                x = 93;
-                y += 130;
-                star({ type, angle, isHeads, loc: p(x, y), gen: 3 });
-
-                star({ type, angle, isHeads, loc: p(x, y), gen: 3, layer });
-
-                break;
-            case penrose.Deca:
-                deca({ angle, isHeads, loc: p(x, y), gen: 1 });
-                deca({ angle, isHeads, loc: p(x, y), gen: 1, layer });
-                x += 31;
-                deca({ angle, isHeads, loc: p(x, y), gen: 2 });
-                deca({ angle, isHeads, loc: p(x, y), gen: 2, layer });
-                x += 64;
-                y += 30;
-                deca({ angle, isHeads, loc: p(x, y), gen: 3 });
-                deca({ angle, isHeads, loc: p(x, y), gen: 3, layer });
-                y += 170;
-                x += 30;
-                deca({ angle, isHeads, loc: p(x, y), gen: 4 });
-                deca({ angle, isHeads, loc: p(x, y), gen: 4, layer });
-                break;
+    // Helper: draw one generation at a given loc into a scene
+    function drawOne(scene, gen, loc) {
+        if (isPenta) {
+            scene.penta({ type, angle, isHeads, loc, gen });
+            scene.penta({ type, angle, isHeads, loc, gen, layer });
+        } else if (isStar) {
+            scene.star({ type, angle, isHeads, loc, gen });
+            scene.star({ type, angle, isHeads, loc, gen, layer });
+        } else if (isDeca) {
+            scene.deca({ angle, isHeads, loc, gen });
+            scene.deca({ angle, isHeads, loc, gen, layer });
         }
-        const built = performance.now();
-        resizeAndRender(scene, canvas, 10);
+    }
 
-        console.log(`shapes built: ${built - begin} ms`);
-        const rendered = performance.now();
-        console.log(
-            `shapes rendered: ${
-                rendered - built
-            } ms, function list: ${USE_FUNCTION_LIST}`
-        );
+    // Measure each generation to get its bounding box
+    function measureGen(gen) {
+        const ms = new PenroseScreen(shapeMode.shapeMode);
+        ms.setToMeasure();
+        drawOne(ms, gen, p(0, 0));
+        return ms.bounds;
+    }
+
+    const begin = performance.now();
+    const topBoxes = topGens.map(g => measureGen(g));
+    const bottomBox = measureGen(bottomGen);
+
+    // Compute top row layout: each figure centered on a common y, spaced apart
+    const GAP = 4; // gap between figures in tile units
+    const MARGIN_X = 2;
+
+    // For each top figure, compute width and height from its bounding box
+    const topSizes = topBoxes.map(b => ({
+        w: b.isEmpty ? 0 : b.maxPoint.x - b.minPoint.x,
+        h: b.isEmpty ? 0 : b.maxPoint.y - b.minPoint.y,
+        minX: b.isEmpty ? 0 : b.minPoint.x,
+        minY: b.isEmpty ? 0 : b.minPoint.y,
+    }));
+    const bottomSize = {
+        w: bottomBox.isEmpty ? 0 : bottomBox.maxPoint.x - bottomBox.minPoint.x,
+        h: bottomBox.isEmpty ? 0 : bottomBox.maxPoint.y - bottomBox.minPoint.y,
+        minX: bottomBox.isEmpty ? 0 : bottomBox.minPoint.x,
+        minY: bottomBox.isEmpty ? 0 : bottomBox.minPoint.y,
     };
 
-    drawScreen();
+    // Top row: common vertical center
+    const maxTopH = Math.max(...topSizes.map(s => s.h));
+    const topCenterY = MARGIN_X + maxTopH / 2;
+
+    // Compute x positions: each figure placed so its center is at the right spot
+    const topLocs = [];
+    let curX = MARGIN_X;
+    for (let i = 0; i < topSizes.length; i++) {
+        const s = topSizes[i];
+        // Center of figure goes at (curX + s.w/2, topCenterY)
+        // loc needs to offset from the measured min so center aligns
+        const cx = curX + s.w / 2;
+        const locX = cx - (s.minX + s.w / 2); // = cx - measured center x
+        const locY = topCenterY - (s.minY + s.h / 2); // align vertical centers
+        topLocs.push(p(locX, locY));
+        curX += s.w + GAP;
+    }
+
+    // Bottom figure: start near left margin, below top row
+    const topBottom = topCenterY + maxTopH / 2;
+    const bottomLocX = MARGIN_X - bottomSize.minX;
+    const bottomLocY = topBottom + GAP - bottomSize.minY;
+    const bottomLoc = p(bottomLocX, bottomLocY);
+
+    // Final render pass
+    const scene = new PenroseScreen(shapeMode.shapeMode);
+    for (let i = 0; i < topGens.length; i++) {
+        drawOne(scene, topGens[i], topLocs[i]);
+    }
+    drawOne(scene, bottomGen, bottomLoc);
+
+    const built = performance.now();
+    resizeAndRender(scene, canvas, 10);
+    console.log(`shapes built: ${built - begin} ms`);
+    const rendered = performance.now();
+    console.log(
+        `shapes rendered: ${rendered - built} ms, function list: ${USE_FUNCTION_LIST}`
+    );
 }
 
 /***
