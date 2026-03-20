@@ -38,6 +38,7 @@ export function penroseApp(source) {
     logRefresh(penroseApp, source);
     initControls(penroseApp);
 
+    refreshMeasurements();
     makeCanvas("p5");
     makeCanvas("p3");
     makeCanvas("p1");
@@ -50,5 +51,12 @@ export function penroseApp(source) {
     drawGeneric123("g012");
     drawGeneric3("g3");
     drawDualDemo("dual");
+}
+
+function refreshMeasurements() {
+    const iframe = document.querySelector("#rwork iframe");
+    if (iframe && iframe.contentWindow && iframe.contentWindow.measureTasks) {
+        iframe.contentWindow.measureTasks("ShapeMode");
+    }
 }
 window.addEventListener("load", penroseApp, false);

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Penrose Mosaic — Cookie Inspector</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #1a1a2e; color: #e0e0e0; }
+        h1 { font-size: 16px; color: #e8c170; }
+        table { border-collapse: collapse; width: 100%; }
+        th { text-align: left; padding: 4px 12px; background: #16213e; color: #7eb8da; border: 1px solid #333; }
+        td { padding: 4px 12px; border: 1px solid #333; }
+        td.name { color: #e8c170; white-space: nowrap; }
+        td.value { color: #ccc; word-break: break-all; }
+        button { margin: 10px 0; padding: 4px 12px; cursor: pointer; }
+        .empty { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Cookie Inspector</h1>
+    <button onclick="refresh()">Refresh</button>
+    <table>
+        <thead><tr><th>Name</th><th>Raw Value</th><th>Parsed</th></tr></thead>
+        <tbody id="rows"></tbody>
+    </table>
+    <script>
+        const KNOWN = [
+            "ShapeMode", "PageNavigation", "Overlays", "RhombStyle",
+            "Figure", "PentaStyle", "ShapeColors"
+        ];
+
+        function refresh() {
+            const rows = document.getElementById("rows");
+            rows.innerHTML = "";
+
+            // Parse all cookies
+            const all = {};
+            document.cookie.split(";").forEach(c => {
+                const [k, ...v] = c.split("=");
+                const name = decodeURIComponent(k.trim());
+                const val = decodeURIComponent(v.join("="));
+                if (name) all[name] = val;
+            });
+
+            // Show known cookies first, then any extras
+            const shown = new Set();
+            for (const name of KNOWN) {
+                const val = all[name];
+                addRow(rows, name, val);
+                shown.add(name);
+            }
+            for (const [name, val] of Object.entries(all)) {
+                if (!shown.has(name)) addRow(rows, name, val);
+            }
+        }
+
+        function addRow(tbody, name, val) {
+            const tr = document.createElement("tr");
+            const tdName = document.createElement("td");
+            tdName.className = "name";
+            tdName.textContent = name;
+
+            const tdRaw = document.createElement("td");
+            tdRaw.className = "value";
+
+            const tdParsed = document.createElement("td");
+            tdParsed.className = "value";
+
+            if (val === undefined) {
+                tdRaw.innerHTML = '<span class="empty">not set</span>';
+                tdParsed.innerHTML = '<span class="empty">—</span>';
+            } else {
+                tdRaw.textContent = val;
+                try {
+                    const obj = JSON.parse(val);
+                    tdParsed.textContent = JSON.stringify(obj, null, 2);
+                    tdParsed.style.whiteSpace = "pre";
+                } catch {
+                    tdParsed.textContent = val;
+                }
+            }
+
+            tr.appendChild(tdName);
+            tr.appendChild(tdRaw);
+            tr.appendChild(tdParsed);
+            tbody.appendChild(tr);
+        }
+
+        refresh();
+    </script>
+</body>
+</html>

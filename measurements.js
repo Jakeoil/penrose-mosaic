@@ -2,18 +2,52 @@ import { p, ang } from "./point.js";
 import { interpolateWheel, successorPoint } from "./wheels.js";
 //import { penrose } from "./penrose.js";
 //import { MODE_REAL } from "./controls/shape-mode.js"; // Now _really_
-import { quadrille } from "./shape-modes.js";
+import { quadrille, real, mosaic } from "./shape-modes.js";
 import { PenroseScreen } from "./penrose-screen.js";
 import { measureTaskGlobals, globals } from "./controls.js";
 import { initControls, logRefresh } from "./controls.js";
 //import { CanvasRenderer } from "./renderers.js";
 import { resizeAndRender } from "./renderings.js";
 
+function activeShapeData() {
+    const mode = measureTaskGlobals.shapeMode.shapeMode;
+    switch (mode) {
+        case "real": return real;
+        case "mosaic": return mosaic;
+        default: return quadrille;
+    }
+}
+
+function isRealMode() {
+    return measureTaskGlobals.shapeMode.shapeMode === "real";
+}
+
+function formatVal(v) {
+    if (isRealMode()) {
+        if (Math.abs(v) < 1e-10) return "0";
+        // Round to 5 significant digits, strip trailing zeros
+        return parseFloat(v.toPrecision(5)).toString();
+    }
+    return `${v}`;
+}
+
 window.addEventListener("load", measureTasks, false);
+window.measureTasks = measureTasks;
 
 export function measureTasks(source) {
     logRefresh(measureTasks, source);
     initControls(measureTasks);
+
+    // Re-read mode from cookie (parent may have changed it)
+    if (measureTaskGlobals.shapeMode) {
+        const before = measureTaskGlobals.shapeMode.shapeMode;
+        measureTaskGlobals.shapeMode.reset();
+        const after = measureTaskGlobals.shapeMode.shapeMode;
+        if (before !== after) {
+            console.log(`measureTasks: mode changed ${before} → ${after} (source: ${source})`);
+        }
+        console.log(`measureTasks: mode=${after}, source=${source}, cookie=${document.cookie}`);
+    }
 
     drawQuadrille();
     drawImage();
@@ -72,17 +106,22 @@ function drawImage() {
 }
 
 function wheelTables() {
-    const wheels = quadrille.wheels;
-    const pWheels = wheels.p;
-    wheelTable("pWheel", pWheels);
-    wheelTable("sWheel", quadrille.wheels.s);
-    wheelTable("tWheel", quadrille.wheels.t);
-    wheelTable("dWheel", quadrille.wheels.d);
+    const mode = measureTaskGlobals.shapeMode.shapeMode;
+    const shapeData = activeShapeData();
+    const wheels = shapeData.wheels;
+    console.log(`wheelTables: rendering mode=${mode}, data=${shapeData.constructor.name}`);
 
-    testInt(quadrille.wheels.p);
-    testInt(quadrille.wheels.s);
-    testInt(quadrille.wheels.t);
-    testInt(quadrille.wheels.d);
+    wheelTable("pWheel", wheels.p);
+    wheelTable("sWheel", wheels.s);
+    wheelTable("tWheel", wheels.t);
+    wheelTable("dWheel", wheels.d);
+
+    if (!isRealMode()) {
+        testInt(wheels.p);
+        testInt(wheels.s);
+        testInt(wheels.t);
+        testInt(wheels.d);
+    }
 
     function testInt(wheels) {
         for (let i = 6; i > 1; i--) {
@@ -104,13 +143,12 @@ const caption = {
 };
 
 function wheelTable(id, wheel) {
-    const n = 10;
     const tableDiv = document.querySelector(`#${id}`);
+    tableDiv.innerHTML = "";
 
     const tableEle = document.createElement("table");
     const captionEle = document.createElement("caption");
     captionEle.innerHTML = caption[id];
-    //captionEle.innerHTML(caption[id]);
     tableDiv.appendChild(tableEle);
     tableEle.appendChild(captionEle);
 
@@ -157,7 +195,7 @@ function wheelTable(id, wheel) {
         const tenths = wheel[i].w;
         const insertTd = function (value) {
             const tdEle = document.createElement("td");
-            tdEle.innerHTML = `${value.x}, ${value.y}`;
+            tdEle.innerHTML = `${formatVal(value.x)}, ${formatVal(value.y)}`;
             eleRow.appendChild(tdEle);
         };
 
@@ -190,10 +228,10 @@ function makeShapesSeedSuccessor(shapesSeed) {
 }
 
 function shapeWheelTests() {
-    // First find the quadrille rhombuses.
-    const thickRhomb = quadrille.thickRhomb[0];
+    const shapeData = activeShapeData();
+    const thickRhomb = shapeData.thickRhomb[0];
 
-    const thickBigRhomb = quadrille.thickRhomb[1];
+    const thickBigRhomb = shapeData.thickRhomb[1];
     // The angle arrays
     let shapesSeed = thickRhomb.slice(0, 3);
     const shapesSeedSuccessor = makeShapesSeedSuccessor(shapesSeed);

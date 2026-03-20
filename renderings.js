@@ -75,16 +75,16 @@ export function makeCanvas(canvasId) {
         canvasId == "p5"
             ? [penrose.Pe5, ang(0, true)]
             : canvasId == "p3"
-            ? [penrose.Pe3, ang(0, false)]
-            : canvasId == "p1"
-            ? [penrose.Pe1, ang(0, false)]
-            : canvasId == "s5"
-            ? [penrose.St5, ang(0, false)]
-            : canvasId == "s3"
-            ? [penrose.St3, ang(1, true)]
-            : canvasId == "s1"
-            ? [penrose.St1, ang(1, false)]
-            : [];
+              ? [penrose.Pe3, ang(0, false)]
+              : canvasId == "p1"
+                ? [penrose.Pe1, ang(0, false)]
+                : canvasId == "s5"
+                  ? [penrose.St5, ang(0, false)]
+                  : canvasId == "s3"
+                    ? [penrose.St3, ang(1, true)]
+                    : canvasId == "s1"
+                      ? [penrose.St1, ang(1, false)]
+                      : [];
 
     function drawScene() {
         scene.pentaRhomb(type, angle, loc, gen);
@@ -421,7 +421,7 @@ export function drawGridWork(id) {
                 outline(
                     shapeColors.shapeColors["pe1-color"] + "44",
                     offset,
-                    shape[i]
+                    shape[i],
                 );
             }
             y += spacing;
@@ -442,7 +442,7 @@ export function drawGridWork(id) {
         console.log(`decas`);
         deca({ angle: ang(fifths, isDown), loc: base, gen: exp });
         console.log(
-            `scene bounds: ${scene.bounds} ${scene.bounds.renderList.length}`
+            `scene bounds: ${scene.bounds} ${scene.bounds.renderList.length}`,
         );
         grid(base, 10);
 
@@ -545,7 +545,7 @@ export function drawGridWork(id) {
             rhomb: true,
         });
         console.log(
-            `resize and render: ${scene.bounds.renderList.length} , ${scene.bounds}`
+            `resize and render: ${scene.bounds.renderList.length} , ${scene.bounds}`,
         );
         resizeAndRender(scene, canvas, 10);
     }
@@ -571,8 +571,10 @@ export function drawGeneric123(id) {
     const isHeads = controls.isHeads;
     const layer = "dual";
 
-    const isPenta = type === penrose.Pe1 || type === penrose.Pe3 || type === penrose.Pe5;
-    const isStar = type === penrose.St1 || type === penrose.St3 || type === penrose.St5;
+    const isPenta =
+        type === penrose.Pe1 || type === penrose.Pe3 || type === penrose.Pe5;
+    const isStar =
+        type === penrose.St1 || type === penrose.St3 || type === penrose.St5;
     const isDeca = type === penrose.Deca;
 
     // Generation lists: top row gens, bottom figure gen
@@ -602,7 +604,7 @@ export function drawGeneric123(id) {
     }
 
     const begin = performance.now();
-    const topBoxes = topGens.map(g => measureGen(g));
+    const topBoxes = topGens.map((g) => measureGen(g));
     const bottomBox = measureGen(bottomGen);
 
     // Compute top row layout: each figure centered on a common y, spaced apart
@@ -610,7 +612,7 @@ export function drawGeneric123(id) {
     const MARGIN_X = 2;
 
     // For each top figure, compute width and height from its bounding box
-    const topSizes = topBoxes.map(b => ({
+    const topSizes = topBoxes.map((b) => ({
         w: b.isEmpty ? 0 : b.maxPoint.x - b.minPoint.x,
         h: b.isEmpty ? 0 : b.maxPoint.y - b.minPoint.y,
         minX: b.isEmpty ? 0 : b.minPoint.x,
@@ -624,7 +626,7 @@ export function drawGeneric123(id) {
     };
 
     // Top row: common vertical center
-    const maxTopH = Math.max(...topSizes.map(s => s.h));
+    const maxTopH = Math.max(...topSizes.map((s) => s.h));
     const topCenterY = MARGIN_X + maxTopH / 2;
 
     // Compute x positions: each figure placed so its center is at the right spot
@@ -659,7 +661,7 @@ export function drawGeneric123(id) {
     console.log(`shapes built: ${built - begin} ms`);
     const rendered = performance.now();
     console.log(
-        `shapes rendered: ${rendered - built} ms, function list: ${USE_FUNCTION_LIST}`
+        `shapes rendered: ${rendered - built} ms, function list: ${USE_FUNCTION_LIST}`,
     );
 }
 
@@ -714,7 +716,7 @@ export function drawGeneric3(id) {
         console.log(
             `shapes rendered: ${
                 rendered - built
-            } ms, function list: ${USE_FUNCTION_LIST}`
+            } ms, function list: ${USE_FUNCTION_LIST}`,
         );
     };
 
