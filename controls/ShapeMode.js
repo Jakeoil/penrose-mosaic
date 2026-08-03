@@ -41,8 +41,16 @@ export class ShapeMode {
         cookie.set(ShapeMode.name, this.toString());
     }
 
+    /**
+     * Re-reads the mode from the cookie. Called by the constructor, and by
+     * measureTasks so the iframe picks up a mode the parent changed.
+     *
+     * The default only applies on first construction. Setting it every time
+     * would make it the fallback handed to cookie.get, so a missing cookie
+     * would silently drop the current mode back to real instead of keeping it.
+     */
     reset() {
-        this.shapeMode = this.MODE_REAL;
+        if (!this.shapeMode) this.shapeMode = this.MODE_REAL;
         const cookieJson = cookie.get(ShapeMode.name, this.toString());
         this.fromString(cookieJson);
     }
