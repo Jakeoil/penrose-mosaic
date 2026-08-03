@@ -57,7 +57,7 @@ export function measureTasks(source) {
 
 function drawQuadrille() {
     const canvas = document.querySelector("#quadrille");
-    const scene = new PenroseScreen(measureTaskGlobals.shapeMode.MODE_REAL);
+    const scene = new PenroseScreen(measureTaskGlobals.shapeMode.shapeMode);
 
     let loc = p(0, 0);
     function drawScreen() {
@@ -82,7 +82,7 @@ function drawImage() {
 
     // Stupid way to get the globals.
     const { shapeMode } = measureTaskGlobals;
-    const scene = new PenroseScreen(shapeMode.MODE_REAL);
+    const scene = new PenroseScreen(shapeMode.shapeMode);
 
     // Now some decagons
 
