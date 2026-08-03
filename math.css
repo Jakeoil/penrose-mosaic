@@ -41,6 +41,16 @@ canvas.apple-ii {
     background: lightblue;
 }
 
+.controls-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.controls-heading h3 {
+    margin: 0;
+}
+
 .control-group {
     border: 3px outset rgb(208, 236, 246);
     margin: 0px 0px 5px 0px;

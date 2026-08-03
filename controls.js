@@ -83,6 +83,8 @@ export function initControls(app) {
 
         if (!globals.pageNavigation)
             globals.pageNavigation = new PageNavigation(app);
+
+        if (!globals.defaultsWired) globals.defaultsWired = wireDefaults();
     } else if (app.name == "measureTasks") {
         if (!measureTaskGlobals.shapeMode)
             measureTaskGlobals.shapeMode = new ShapeMode(app);
@@ -94,6 +96,36 @@ export function initControls(app) {
         console.log("missing app");
     }
 }
+/**
+ * Drops every cookie and reloads, so the controls come back on their defaults.
+ *
+ * Sweeps whatever is actually in document.cookie rather than a list of control
+ * names -- a list would silently miss any control added later.
+ *
+ * A reload rather than a refresh: initControls only constructs a control when
+ * its global is missing, and each constructor reads its cookie once. Without a
+ * reload the live controls would keep their values and write them straight back.
+ */
+function wireDefaults() {
+    const eleDefaults = document.querySelector("#defaults");
+    if (!eleDefaults) {
+        console.log("wireDefaults: no #defaults element, button not wired");
+        return false;
+    }
+    eleDefaults.addEventListener(
+        "click",
+        () => {
+            const cleared = cookie.clearAll();
+            console.log(
+                `defaults: cleared [${cleared}], remaining "${document.cookie}"`
+            );
+            location.reload();
+        },
+        false
+    );
+    return true;
+}
+
 /**
  * The cookie has strong ties to the controls.
  * It stores some of the control settings statically.
@@ -122,6 +154,19 @@ class Cookie {
 
     delete(type) {
         deleteCookie(type);
+    }
+
+    /**
+     * Deletes every cookie currently set. Returns the names it removed.
+     */
+    clearAll() {
+        const names = document.cookie
+            .split(";")
+            .map((pair) => pair.split("=")[0].trim())
+            .filter((name) => name.length)
+            .map(decodeURIComponent);
+        names.forEach(deleteCookie);
+        return names;
     }
 }
 // The cookie interface !!! We already found this to be dangerous.
