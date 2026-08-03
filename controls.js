@@ -127,6 +127,16 @@ function wireDefaults() {
 }
 
 /**
+ * How long control settings survive, in seconds.
+ *
+ * This was one hour, which expired under a page left open while working: the
+ * controls would silently fall back to their defaults mid-session. Long enough
+ * now that it cannot expire under you, but still self-cleaning. The defaults
+ * button is the way back to a known state, not expiry.
+ */
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+
+/**
  * The cookie has strong ties to the controls.
  * It stores some of the control settings statically.
  * Move it to a new module, but not before coming up with a
@@ -149,7 +159,7 @@ class Cookie {
         return dflt;
     }
     set(type, value) {
-        setCookie(type, value, { "max-age": 3600 });
+        setCookie(type, value, { "max-age": COOKIE_MAX_AGE });
     }
 
     delete(type) {
@@ -190,7 +200,7 @@ function getCookie(name) {
     return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
-// Good option is {"max-age": 3600}  // one hour
+// Callers pass {"max-age": seconds}. See COOKIE_MAX_AGE.
 function setCookie(name, value, options = {}) {
     options = {
         path: "/",
