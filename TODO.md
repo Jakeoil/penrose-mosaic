@@ -46,7 +46,46 @@
 - [ ] D: pentagon center to corner (pgon.r)
 
 ### 4. Small rhombs consistency
-- [ ] Small rhombs render inconsistently — fix
-- [ ] Detail to be filled in. Likely involves the large/small rhomb radio pair
-      (`#small-rhomb` / `#large-rhomb`) in `Overlays`, and the rhomb sizing used
-      by the shape modes
+- [ ] Small rhombs do not work when rhombs are selected on the two shape
+      expansion pages (`g012` / `drawGeneric123`, `g3` / `drawGeneric3`)
+- [ ] Involves the large/small rhomb radio pair (`#small-rhomb` /
+      `#large-rhomb`) in `Overlays`
+- [ ] Back-port the rhomb indexing fixes worked out while porting to
+      `wieringa-roof`. Things on the shape expansion pages are genuinely wrong
+- [ ] CAUTION: an older "fix" changing thin rhomb offsets from `[0,±1,±2,±1]`
+      to `[0,±1,0,±1]` was wrong and must not be re-applied. Opposite edges of
+      a parallelogram are the same vector, so a CCW traversal is always
+      `+a,+b,−a,−b` → offsets `(0,1,2,1)`, thick and thin alike. Verified in
+      wieringa-roof against 349 rhombs, zero exceptions. The correct form is
+      `isHeads ? [0,-1,-2,-1] : [0,+1,+2,+1]`; `isHeads` only decides whether
+      the low corner is v0 or v2
+
+### 5. Bring the mathematics up to date
+There are two geometries, not four shape modes: **real** (sines, cosines, φ) and
+**discrete** (integer, hand-computed). Quadrille and mosaic are both discrete —
+they differ only in rendering and in how reflections are done (`shapeWheel` uses
+`vr/neg/hr`, `shapeWheelMosaic` uses `vrm/negm/hrm`). A third typographic
+geometry exists but is unreachable and has no current purpose.
+
+Only three rotations are ever stored — nicknamed `up, won, too`, and in wheel
+index terms `up0, down3, up1`. Everything else is vertical and horizontal
+reflection. The discrete wheels were reverse-engineered by counting squares on a
+mosaic printout; two generations were enough to extrapolate the rest with
+k(n+2) = k(n) + k(n+1). At scale the discrete tiling is uncannily close to the
+real one.
+
+- [ ] Write `docs/wheels.md` capturing the above, including the origin story
+- [ ] Fix `wheels.js:140` — mislabels the seeds as `up0, down3, up2`. It is
+      `up1`. Contradicts the correct comment at `wheels.js:44`, and the table
+      headers in `measurements.js`
+- [ ] Retire dead math, reviewed one at a time, not as a sweep:
+      - `predecessorPoint` — exact duplicate of `interpolateWheel`, no callers
+      - `interpolateShape` — calls `.foreach`, would throw, no callers
+      - `makeShapeWheels` — empty stub
+      - discarded computations in `shapeWheelTests()`
+- [ ] Only then consider restructuring `shape-modes.js` around two geometries.
+      Adjacent to the penta/star refactor in `docs/PLANS.md` — a real revamp
+
+### 6. Wheel line diagrams — deferred
+Moved to last. Cannot be done justice without revamping the measurements page.
+See item 3 for the content; do it after items 4 and 5.
