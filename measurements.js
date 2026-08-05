@@ -1,5 +1,5 @@
 import { p, ang } from "./point.js";
-import { interpolateWheel, successorPoint } from "./wheels.js";
+import { interpolateWheel } from "./wheels.js";
 //import { penrose } from "./penrose.js";
 //import { MODE_REAL } from "./controls/shape-mode.js"; // Now _really_
 import { quadrille, real, mosaic } from "./shape-modes.js";
@@ -52,7 +52,6 @@ export function measureTasks(source) {
     drawQuadrille();
     drawImage();
     wheelTables();
-    shapeWheelTests();
 }
 
 function drawQuadrille() {
@@ -204,35 +203,3 @@ function wheelTable(id, wheel) {
     }
 }
 
-function makeShapesSeedSuccessor(shapesSeed) {
-    const shapesSeedSuccessor = [[], [], []];
-    for (let i = 0; i < shapesSeed[0].length; i++) {
-        const point0 = shapesSeed[0][i];
-        const point1 = shapesSeed[1][i];
-        const point2 = shapesSeed[2][i];
-        const [sPoint0, sPoint1, sPoint2] = successorPoint(
-            point0,
-            point1,
-            point2
-        );
-        [
-            shapesSeedSuccessor[0][i],
-            shapesSeedSuccessor[1][i],
-            shapesSeedSuccessor[2][i],
-        ] = [sPoint0, sPoint1, sPoint2];
-        // console.log(
-        //     `${point0}${point1}${point2} ==> ${sPoint0}${sPoint0}${sPoint0}`
-        // );
-    }
-    return shapesSeedSuccessor;
-}
-
-function shapeWheelTests() {
-    const shapeData = activeShapeData();
-    const thickRhomb = shapeData.thickRhomb[0];
-
-    const thickBigRhomb = shapeData.thickRhomb[1];
-    // The angle arrays
-    let shapesSeed = thickRhomb.slice(0, 3);
-    const shapesSeedSuccessor = makeShapesSeedSuccessor(shapesSeed);
-}

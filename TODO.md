@@ -234,13 +234,11 @@ real one.
       - `predecessorPoint` — **kept**, deliberately. It is byte-identical to
         `interpolateWheel`, but the pair carries the derivation and the
         plain-language account between them, and that is worth the duplication
-      - `successorPoint` — **kept**. Only caller is the dead `shapeWheelTests`,
-        but it is the clean statement of the forward step, and `makeWheels`
-        arguably ought to call it instead of inlining the same sums
-- [ ] Still open: the discarded computations in `shapeWheelTests()`
-      (`measurements.js`). It runs on every measurements refresh and nothing
-      escapes it — `thickBigRhomb` and `shapesSeedSuccessor` are computed and
-      never read
+      - `shapeWheelTests` and its helper `makeShapesSeedSuccessor` — removed.
+        They ran on every measurements refresh and nothing escaped them
+      - `successorPoint` — **kept**, though it now has no callers at all. It is
+        the clean statement of the forward step, and `makeWheels` arguably
+        ought to call it instead of inlining the same sums
 
 ### 5b. Angles and asymptotics — mostly answered, see docs/wheels.md
 Answered while documenting the wheels:
