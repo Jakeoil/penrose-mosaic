@@ -54,6 +54,26 @@ Then open `http://localhost:8000` in a browser.
 - `build-id.js` — generated build stamp, shown on the defaults button
 - `tools/stamp.mjs` — regenerates `build-id.js`
 
+## Documentation
+
+Start with `docs/wheels.md`. Most of the hard questions about this construction
+are already answered in writing — check before re-deriving.
+
+- **`docs/wheels.md`** — the main account. Two geometries (real and discrete;
+  quadrille and mosaic are both discrete), the three stored rotations, the four
+  wheels, and where the discrete wheels came from. Then the substitution matrices
+  and the closed-form limiting slopes: the mosaic does **not** converge to
+  Euclidean Penrose, it generates its own geometry.
+- **`docs/basis-search.md`** — whether `(4,0), (3,2), (1,4)` is optimal. Closure
+  is the exact condition `p = 2(q − s)`. It is a record holder; no integer basis
+  converges, and the reason is arithmetic.
+- **`docs/rhomb-groups.md`** — large and small rhomb groups, one inflation apart.
+- **`docs/PLANS.md`** — the penta/star refactor, and the isHeads propagation table.
+- **`TODO.md`** — open work. Note the ground rule at the top.
+
+Tools: `tools/stamp.mjs` (build stamp, see below) and `tools/basis-search.mjs`
+(`node tools/basis-search.mjs 64`).
+
 ## Build stamp
 
 There is no build step; the modules are served straight to the browser. After
