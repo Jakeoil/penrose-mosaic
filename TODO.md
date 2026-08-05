@@ -50,15 +50,59 @@
       expansion pages (`g012` / `drawGeneric123`, `g3` / `drawGeneric3`)
 - [ ] Involves the large/small rhomb radio pair (`#small-rhomb` /
       `#large-rhomb`) in `Overlays`
-- [ ] Back-port the rhomb indexing fixes worked out while porting to
-      `wieringa-roof`. Things on the shape expansion pages are genuinely wrong
-- [ ] CAUTION: an older "fix" changing thin rhomb offsets from `[0,±1,±2,±1]`
-      to `[0,±1,0,±1]` was wrong and must not be re-applied. Opposite edges of
-      a parallelogram are the same vector, so a CCW traversal is always
-      `+a,+b,−a,−b` → offsets `(0,1,2,1)`, thick and thin alike. Verified in
-      wieringa-roof against 349 rhombs, zero exceptions. The correct form is
-      `isHeads ? [0,-1,-2,-1] : [0,+1,+2,+1]`; `isHeads` only decides whether
-      the low corner is v0 or v2
+- [x] Cause: an error of omission. Both pages hardcode `layer = "dual"` and
+      draw only the penta and dual layers, never `layer: "rhomb"`. Every
+      `smallRhomb` branch sits inside `if (layer == "rhomb")`, so the radio pair
+      is inert there. `drawGridWork` works because it passes both layers
+- [x] Confirmed: large and small rhombs are sized exactly one generation apart,
+      and large is the earlier generation. `drawRhombusPattern` indexes shapes
+      by the gen it is called at (`thickRhomb[gen]`). Large short-circuits at
+      `gen == 1` → index 1; small recurses to `gen == 0` → index 0
+
+Nothing to back-port from `wieringa-roof` here. The thick/thin rhomb shapes are
+term-for-term identical in both projects, and the `isHeads` rules agree with the
+table in `docs/PLANS.md`. The `[0,±1,±2,±1]` vertex-index caution from the
+wieringa work is about 3D height indices and has no counterpart in this project.
+
+### 4a. Dual rhombs — finish the research feature
+Started and abandoned as too complex. The leftover is the hardcoded
+`layer = "dual"` on the two expansion pages. Restate of the idea:
+
+When a colored P1 tiling is overlain with small rhombs, the thick and the thin
+rhomb each pick up a **unique pattern of the P1 colors**. So tiling with just
+those two colored rhombs reproduces the P1 pattern.
+
+Generation 0 of a pentagon is a single pentagon (`Pe5`, `Pe3`, `Pe1`). Generation
+0 of the small rhombs is the cluster:
+
+| P1 tile | cluster |
+|---|---|
+| rhomb star (`Pe5`) | 5 thick |
+| rhomb boat (`Pe3`) | 3 thick + 1 thin |
+| rhomb diamond (`Pe1`) | 1 thick + 2 thin |
+
+The `St*` tiles generate no small rhombs at all. **The dual is the other way
+around**: the `St*` generate the small rhombs and the `Pe*` generate nothing.
+
+Equivalently: a `Pe*` seed overlain with the corresponding `St*` seed is the P1
+dual.
+
+- [ ] Implement soon
+- [ ] `dualRhombSelected` is currently dead — set, persisted, checkbox wired,
+      never read. `drawDualRhombusPattern` gates on `rhombSelected` instead
+      (`penrose-screen.js:913`). Wire the checkbox to its own layer
+- [ ] Note `drawDualRhombusPattern` indexes `thinDualRhomb[gen + 1]`, one higher
+      than `drawRhombusPattern`'s `[gen]`
+
+### 4b. Deca generations — decided against
+`wieringa-roof`'s `expandDeca` expands children at `gen` using `wheels[gen + 1]`,
+where this project expands at `gen - 1` using `wheels[gen]`, leaving deca a
+generation behind everything else. `renderings.js` compensates with
+`topGens = isDeca ? [1,2,3] : [0,1,2]`.
+
+**Do not import this.** What is good for wieringa-roof is not good here — that
+change was made to define deca, penta and star as queen, sun and star empire
+patches. Leave this project's deca as it is.
 
 ### 5. Bring the mathematics up to date
 There are two geometries, not four shape modes: **real** (sines, cosines, φ) and
