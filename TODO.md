@@ -108,8 +108,31 @@ vertex or a five-star.
 `wieringa-roof` already uses that vocabulary (`expandSun`, `expandStarComposite`,
 and the queen/sun/star empire framing), so the two projects would agree.
 
-- [ ] Suggested rename: **Sun/Star overlay**, not dual. Decide before building
-      the page, since the name will land in the control, the cookie and the layer
+- [x] **DECIDED: the feature is called the Sun/Star overlay.** Use that name for
+      the page, the control label and any new identifier
+- [ ] Scope of the rename is still open. "Dual" appears in ~50 places, but not
+      all of them mean the same thing. The *shape* identifiers — `goThickDual`,
+      `goThinDual`, `thickDualRhomb`, `thinDualRhomb` — are a distinct rhomb
+      geometry built from the p and s wheels instead of t, and may be a genuine
+      dual. Renaming those to Sun/Star could be simply wrong. Rename the
+      user-facing feature first; leave the shape math alone until we know
+
+#### BUG: the Dual rhombs checkbox is wired to the wrong element
+`controls/Overlays.js:29` reads
+
+    this.eleDualRhomb = document.querySelector("#dual");
+
+Every other overlay queries its `-ovl` id (`#penta-ovl`, `#rhomb-ovl`). The
+checkbox is `#dual-ovl` (`index.html:110`). `#dual` does exist — it is the
+**page div** at `index.html:254`. So:
+
+- the real checkbox has no listener, and `dualRhombSelected` never changes
+- `refresh()` sets `.checked` on a `<div>`, which does nothing
+- the click listener is attached to the Dual test page, so clicking anywhere on
+  that page silently toggles `dualRhombSelected`
+
+- [ ] Fix the selector to `#dual-ovl`, or rename the ids as part of the Sun/Star
+      rename so the collision cannot recur
 
 #### The relation being sought has a name: MLD
 P1 and P3 are **mutually locally derivable** — each can be reconstructed from the

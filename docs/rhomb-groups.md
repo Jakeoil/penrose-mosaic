@@ -64,7 +64,7 @@ are MLD. The Wikipedia figure `Penrose_Tiling_(P1_over_P3).svg.webp` is a worked
 example — P1 in black outline, gray pentagons and blue non-pentagon tiles, with
 the P3 rhombs overlaid in yellow.
 
-### "Dual" is likely the wrong word
+### The name: Sun/Star overlay
 
 The construction of interest is a map centered on a `Pe5` pentagon overlaid with
 one centered on a `St5` star. That is not a dual — a dual exchanges vertices and
@@ -73,7 +73,14 @@ global five-fold symmetry, conventionally **Sun** and **Star**, distinguished by
 exactly this choice of center. `wieringa-roof` already uses that vocabulary
 (`expandSun`, `expandStarComposite`, and its queen/sun/star empire framing).
 
-The open question is whether that Sun/Star overlay carries over to P1. The place
+The feature is therefore called the **Sun/Star overlay**, not the dual.
+
+Note that this settles the name of the *feature*. It does not settle what to call
+the dual rhomb *shapes* — `goThickDual`, `thinDualRhomb` and friends are a
+separate rhomb geometry derived from the p and s wheels rather than t, and may
+well be a genuine dual. Those names stand until the geometry says otherwise.
+
+The open question is whether the Sun/Star overlay carries over to P1. The place
 to look first is the asymmetry above: large rhomb group centers are restricted to
 blue `Pe5_0` pentagons, while small ones land on every pentagon type.
 
