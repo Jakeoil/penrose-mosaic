@@ -110,22 +110,41 @@ by φ².
 | T | 4 | 8 | 24 | 60 | 160 | 416 | 1092 | 2856 | 7480 |
 | D | 1 | 3 | 9 | 23 | 61 | 159 | 417 | 1091 | 2857 |
 
-### It is not the plain Fibonacci recurrence
+### The x-components are alternate Fibonacci numbers, exactly
 
-`k(n+2) = k(n) + k(n+1)` does **not** hold. Residuals for P run
-6, 18, 46, 122, 318, 834 — growing, not noise.
+Look at components rather than radii and the structure is immediate. For the P
+wheel:
 
-What holds instead, for all four wheels, is
+| slot | x-components | |
+| ---- | ------------ | - |
+| index 1 (`down3`) | 1, 3, 8, 21, 55, 144, 377, 987, 2584, 6765 | F₂, F₄, F₆, F₈ … **even**-indexed |
+| index 2 (`up1`)   | 2, 5, 13, 34, 89, 233, 610, 1597, 4181, 10946 | F₃, F₅, F₇, F₉ … **odd**-indexed |
+
+Each inflation steps two places along the Fibonacci sequence. That is why the
+growth ratio is φ² and not φ — one generation is two Fibonacci steps.
+
+The recurrence follows from the standard bisection identity, and in **x** it is
+exact, with no correction term whatsoever:
 
 ```
-k(n+2) = 3·k(n+1) − k(n) ± k(0)
+a(n+1) = 3·a(n) − a(n−1)
 ```
 
-with the sign alternating and the constant being exactly that wheel's generation
-0 radius: P ± 2, S ± 3, T ± 4, D ± 1. The characteristic equation
-`x² = 3x − 1` has roots φ² and φ⁻², which is where the growth ratio comes from.
-So the wheels obey a Fibonacci-*like* second-order law — the golden one, at the
-square — rather than Fibonacci itself.
+Verified with zero residual at every generation. Its characteristic equation
+`x² = 3x − 1` has roots φ² and φ⁻².
+
+The **y**-components obey the same recurrence but carry an alternating `± 2`.
+Working with radii instead of components smears that correction across the whole
+figure — it appears as `k(n+2) = 3k(n+1) − k(n) ± k(0)`, with the constant equal
+to each wheel's generation 0 radius (P±2, S±3, T±4, D±1). The component form is
+the true statement; the radius form is its shadow.
+
+Note also that index 2's y-column is index 1's y-column shifted by one
+generation.
+
+Plain `k(n+2) = k(n) + k(n+1)` does **not** hold on radii — residuals for P run
+6, 18, 46, 122, 318, growing. The Fibonacci content is in the bisection, not in
+the naive sum.
 
 ### Where Fibonacci really does appear
 
@@ -165,11 +184,22 @@ The full limiting wheel is
 ```
 
 still mirror-symmetric about the vertical, as the reflection construction forces,
-but with gaps 34.64, 36.50, 37.71, 36.50, 34.64 rather than five equal 36s. The
-discrete tiling is therefore not a five-fold symmetric tiling that has been
-rounded off — it is a genuinely different, φ²-scaling lattice figure whose
-combinatorics match P1 while its angles converge somewhere else. That it still
-looks uncannily right at scale is the interesting part.
+but with gaps 34.64, 36.50, 37.71, 36.50, 34.64 rather than five equal 36s.
+
+Equivalently, as slopes: `|y|/x → 1 + 1/√5 = (5+√5)/5 = 1.4472136` at index 1,
+the reciprocal of the tangent above.
+
+**This is the substantive point.** The discrete tiling is not a five-fold
+symmetric tiling that has been rounded off, and it is not a rational approximant
+converging back to Euclidean Penrose geometry. Its inflation generates **its own
+irrational geometry** — one with Fibonacci growth, exact lattice coordinates at
+every finite stage, and limiting slopes that are algebraic but *not* the
+Euclidean ones. The vectors `(4,0)`, `(3,2)`, `(1,4)` are not fixed rational
+stand-ins for the golden directions; they are the first term of a sequence whose
+limit is something else.
+
+The limiting directions are the dominant eigenvector of the substitution, which
+is why they come out in ℚ(√5): the eigenvalue is φ².
 
 ## Shape wheels
 

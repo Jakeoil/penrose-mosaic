@@ -249,16 +249,59 @@ Answered while documenting the wheels:
 - the recurrence is `k(n+2) = 3k(n+1) − k(n) ± k(0)`, not plain Fibonacci, but
   Fibonacci appears exactly *between* wheels
 
+Sharpened after re-reading `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`:
+the x-components are **alternate Fibonacci numbers** and the recurrence
+`a(n+1) = 3a(n) − a(n−1)` is exact in x. One inflation is two Fibonacci steps,
+which is why the ratio is φ². The limits are the dominant eigenvector of the
+substitution, eigenvalue φ² — hence ℚ(√5).
+
+**The mosaic is therefore not a rational approximant.** It generates its own
+irrational geometry rather than converging back to Euclidean Penrose.
+
 Left to look at:
-- [ ] Why those particular algebraic limits? They are simpler than the true
-      tangents, which is unexpected. Is there a closed form for the limiting
-      wheel as a whole
-- [ ] The discrete tiling is not a rounded five-fold tiling — its angles
-      converge elsewhere, yet the figure still reads correctly at scale. What
-      exactly is preserved? Combinatorics clearly; what else
 - [ ] `S` follows the same second-order law but its cross-wheel difference is
       `S(n+1) = S(n) + 2P(n) − P(n−1)`, less tidy than P, D and T. Is there a
       better statement of it
+- [ ] Write the substitution matrix down explicitly. The limits fall out of its
+      dominant eigenvector; having the matrix would turn the numerics into a
+      proof
+
+### 5c. Research questions from the Mosaic Chat notes
+From `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`. Not code work —
+these are the mathematical claims worth establishing or checking against the
+literature.
+
+- [ ] **Is the basis optimal?** Is `(4,0), (3,2), (1,4)` the smallest integer
+      basis admitting all six P1 prototiles as exact lattice polygons, with
+      comparable angular fidelity and no combinatorial failures? Would need a
+      score over angle error, length error, closure, size, and a search over
+      primitive triples under a coordinate bound. Jeff's framing: look for
+      isolated **sweet spots**, like the Metonic cycle or 2¹⁰ ≈ 1000, not a
+      smooth progression
+- [ ] **Is it a polyomino tiling?** In mosaic mode every tile is a fixed set of
+      unit squares. Is the mosaic literally a tiling of ℤ² by six fixed
+      polyominoes? If so that is a stronger object than a rendering
+- [ ] **Literature check.** The strong claim is not "Penrose tiles on graph
+      paper" but: a finite set of canonical integer-coordinate P1 prototiles
+      preserving matching rules *and* substitution. Related but distinct known
+      areas: rational approximants, cut-and-project lattices, de Bruijn
+      pentagrids, pixel renderings, decagonal digital tilings
+- [ ] **Pentagrid experiment.** A de Bruijn pentagrid built from the discrete
+      directions. At any finite generation the slopes are rational, so the grid
+      is periodic — a rational approximant whose period grows with generation.
+      In the limit it should become genuinely aperiodic but geometrically
+      distinct from the standard pentagrid, since the limiting slopes are the
+      ones above rather than 36°/72°. Note the three edge lengths differ
+      (4, √13, √17), so an integral dual gives ten parallelogram types rather
+      than two golden rhombs. Cannot have exact lattice coordinates, equal edge
+      lengths, and five rational directions simultaneously — pick two
+
+### 5d. A "why this isn't just pixel art" page — deferred
+Suggested for the published site: one page explaining why the vectors are
+`(4,0), (3,2), (1,4)`, why every tile is canonical, how this differs from
+rasterization, quadrille versus mosaic, and how substitution still works.
+
+Deferred — a new page changes the look. Raise it before building.
 - [ ] Only then consider restructuring `shape-modes.js` around two geometries.
       Adjacent to the penta/star refactor in `docs/PLANS.md` — a real revamp
 
