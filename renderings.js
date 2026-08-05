@@ -327,11 +327,11 @@ export function drawSecondInflation(id) {
         type = penrose.St5;
         angle = ang(0, UP);
         loc = p(35, y);
-        scene.pentaDual(type, angle, loc, gen);
+        scene.pentaRhomb(type, angle, loc, gen);
 
         angle = ang(0, DOWN);
         loc = p(100, y);
-        scene.pentaDual(type, angle, loc, gen);
+        scene.pentaRhomb(type, angle, loc, gen);
         y += 74; // one thru four
         x = 35;
         type = penrose.St3;
@@ -339,7 +339,7 @@ export function drawSecondInflation(id) {
         for (let i = 0; i < 5; i++) {
             angle = ang(i, UP);
             loc = p(x + i * 67, y);
-            scene.pentaDual(type, angle, loc, gen);
+            scene.pentaRhomb(type, angle, loc, gen);
         }
         y += 70; // one thru four
         for (let i = 0; i < 5; i++) {
