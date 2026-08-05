@@ -51,6 +51,19 @@ canvas.apple-ii {
     margin: 0;
 }
 
+/* Build stamp on the defaults button. Hidden until hover, so the button reads
+   plain "defaults" at rest and the look is unchanged. It is a diagnostic, not
+   a label. */
+.build-id {
+    display: none;
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+#defaults:hover .build-id {
+    display: inline;
+}
+
 .control-group {
     border: 3px outset rgb(208, 236, 246);
     margin: 0px 0px 5px 0px;

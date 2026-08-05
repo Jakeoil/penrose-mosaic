@@ -51,6 +51,24 @@ Then open `http://localhost:8000` in a browser.
 - `bounds.js` — Bounding rectangle with render list
 - `controls.js` — Control initialization, globals, cookie persistence
 - `controls/` — UI control classes (Figure, ShapeColors, Overlays, etc.)
+- `build-id.js` — generated build stamp, shown on the defaults button
+- `tools/stamp.mjs` — regenerates `build-id.js`
+
+## Build stamp
+
+There is no build step; the modules are served straight to the browser. After
+changing any script, run:
+
+```
+node tools/stamp.mjs
+```
+
+The stamp is on the `defaults` button, hidden until you hover it so the button
+reads plain `defaults` at rest. If a change seems to have no effect, hover and
+compare the number with the one the script printed — when they differ the browser
+is serving a stale module, and a hard reload is the fix.
+
+It is also logged to the console on every load.
 
 ## Author
 

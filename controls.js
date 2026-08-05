@@ -5,6 +5,7 @@ import { RhombStyle } from "./controls/RhombStyle.js";
 import { ShapeMode } from "./controls/ShapeMode.js";
 import { Figure } from "./controls/Figure.js";
 import { PentaStyle } from "./controls/PentaStyle.js";
+import { BUILD_ID } from "./build-id.js";
 
 /**
  * Controls are
@@ -112,6 +113,12 @@ function wireDefaults() {
         console.log("wireDefaults: no #defaults element, button not wired");
         return false;
     }
+
+    // The build stamp rides on this button so a stale script is visible at a
+    // glance. If the number on screen is not the one node tools/stamp.mjs last
+    // printed, the browser is serving an old module -- hard reload, don't debug.
+    eleDefaults.innerHTML = `defaults <span class="build-id">${BUILD_ID}</span>`;
+    console.log(`penrose-mosaic build ${BUILD_ID}`);
     eleDefaults.addEventListener(
         "click",
         () => {
