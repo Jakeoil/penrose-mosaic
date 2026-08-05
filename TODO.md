@@ -281,13 +281,30 @@ From `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`. Not code work —
 these are the mathematical claims worth establishing or checking against the
 literature.
 
-- [ ] **Is the basis optimal?** Is `(4,0), (3,2), (1,4)` the smallest integer
-      basis admitting all six P1 prototiles as exact lattice polygons, with
-      comparable angular fidelity and no combinatorial failures? Would need a
-      score over angle error, length error, closure, size, and a search over
-      primitive triples under a coordinate bound. Jeff's framing: look for
-      isolated **sweet spots**, like the Metonic cycle or 2¹⁰ ≈ 1000, not a
-      smooth progression
+- [x] **Is the basis optimal? — answered. See `docs/basis-search.md`**, tool at
+      `tools/basis-search.mjs`. Closure is the exact Diophantine condition
+      `p = 2(q − s)`. Scored by Fourier irregularity, exhaustive to bound 64
+      (5.9M closing convex bases):
+      - `(4,0),(3,2),(1,4)` **is a record holder** — the best at size 4 and the
+        first with usable fidelity, halving the error of the only smaller option
+      - Sweet spots are real and lumpy, exactly as predicted: gains of 2.11 at
+        size 4, 2.08 at 22, 1.68 at 36, against ~1.2 elsewhere
+      - Every record from size 8 up belongs to one family, Lucas in x and
+        Fibonacci in y: `p=2L(n−1), q=L(n), r=F(n+1), s=L(n−2), t=F(n+2)`.
+        **The mosaic basis is not in it** — the family member at size 4 is 3.5×
+        worse, and the systematic sequence only takes over at size 8
+      - **The family plateaus at 2.0245e-3 and never converges.** It gets `q/p`
+        and `s/p` exactly right (φ/2 and 1/(2φ), both in ℚ(√5)) but `r/p` and
+        `t/p` wrong, because `sin 36°` and `sin 72°` are degree 4 over ℚ and
+        Fibonacci/Lucas ratios generate only ℚ(√5)
+      - Same obstruction as the shear in `docs/wheels.md`: x is reachable, y is
+        not. No integer basis is optimal in the limit, because the target is not
+        in the field the lattice can reach
+- [ ] Still open: the search is exhaustive only to bound 64. A large non-family
+      basis might break the plateau — it would need to approximate a degree-4
+      number, so look at continued fractions of `sin 36°`
+- [ ] Still open: only the pentagon is scored. Star, boat and diamond close on
+      the same three vectors so should follow, but that is assumed
 - [ ] **Is it a polyomino tiling?** In mosaic mode every tile is a fixed set of
       unit squares. Is the mosaic literally a tiling of ℤ² by six fixed
       polyominoes? If so that is a stronger object than a rendering
