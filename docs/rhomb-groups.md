@@ -51,6 +51,32 @@ The `St*` family emits no small rhombs at all — which is why
 the other way around: the `St*` generate the rhombs and the `Pe*` generate
 nothing. See TODO item 4a.
 
+## The overlay relation, and what to call it
+
+A P1 tiling overlaid with a P3 rhomb tiling has a characteristic property: **each
+rhomb carries a fixed piece of the P1 pattern — one for thick, another for
+thin.** Tiling with just those two decorated rhombs reproduces P1. The small
+rhombs already show this.
+
+The formal name for that relationship is **mutually locally derivable (MLD)**:
+each tiling can be reconstructed from the other by local rules alone. P1 and P3
+are MLD. The Wikipedia figure `Penrose_Tiling_(P1_over_P3).svg.webp` is a worked
+example — P1 in black outline, gray pentagons and blue non-pentagon tiles, with
+the P3 rhombs overlaid in yellow.
+
+### "Dual" is likely the wrong word
+
+The construction of interest is a map centered on a `Pe5` pentagon overlaid with
+one centered on a `St5` star. That is not a dual — a dual exchanges vertices and
+faces. It is instead a known pair: there are exactly **two** Penrose tilings with
+global five-fold symmetry, conventionally **Sun** and **Star**, distinguished by
+exactly this choice of center. `wieringa-roof` already uses that vocabulary
+(`expandSun`, `expandStarComposite`, and its queen/sun/star empire framing).
+
+The open question is whether that Sun/Star overlay carries over to P1. The place
+to look first is the asymmetry above: large rhomb group centers are restricted to
+blue `Pe5_0` pentagons, while small ones land on every pentagon type.
+
 ## How this shows up in the code
 
 `drawRhombusPattern` indexes its shapes by the generation it is called at,

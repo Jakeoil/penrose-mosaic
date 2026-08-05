@@ -92,7 +92,52 @@ dual.
       never read. `drawDualRhombusPattern` gates on `rhombSelected` instead
       (`penrose-screen.js:913`). Wire the checkbox to its own layer
 - [ ] Note `drawDualRhombusPattern` indexes `thinDualRhomb[gen + 1]`, one higher
-      than `drawRhombusPattern`'s `[gen]`
+      than `drawRhombusPattern`'s `[gen]`. Only two shape sets are ever built
+      (`shape-modes.js:448, 666, 796` — all three modes use `i < 2`), so a dual
+      draw at `gen == 1` reads `undefined` and throws. Fix this before wiring
+      the checkbox, or the first click crashes the page
+
+#### "Dual" is probably the wrong name
+The idea is a map centered on a `Pe5` pentagon overlain with one centered on a
+`St5` star. That is **not** a dual in the usual sense — a dual exchanges vertices
+and faces. What it actually describes is a known pair: there are exactly **two**
+Penrose tilings with global five-fold symmetry, conventionally called **Sun** and
+**Star**, distinguished by precisely this — whether the center is a pentagon
+vertex or a five-star.
+
+`wieringa-roof` already uses that vocabulary (`expandSun`, `expandStarComposite`,
+and the queen/sun/star empire framing), so the two projects would agree.
+
+- [ ] Suggested rename: **Sun/Star overlay**, not dual. Decide before building
+      the page, since the name will land in the control, the cookie and the layer
+
+#### The relation being sought has a name: MLD
+P1 and P3 are **mutually locally derivable** — each can be reconstructed from the
+other by local rules alone. That is the formal version of "the overlaid pattern
+will produce a P1 tiling, one pattern on thick and the other on thin": each P3
+rhomb carries a fixed piece of P1 decoration, one for thick and one for thin.
+This is the same property already observed for the small rhombs.
+
+Reference image: `Penrose_Tiling_(P1_over_P3).svg.webp` in the math-legacy root
+(Wikipedia). P1 in black outline — gray pentagons, blue non-pentagon tiles —
+with the P3 rhombs overlaid in yellow.
+
+#### How the two rhomb groups differ (see docs/rhomb-groups.md)
+- **large RG** centers land on blue `Pe5_0` pentagons **only**
+- **small RG** centers land on **every** pentagon type `Pe*_0`
+- one inflation step apart
+
+That asymmetry is the thing to look at first. If the Sun/Star overlay carries
+over to P1, the large RG restriction to blue is very likely where it shows up.
+
+#### New page to explore the overlays
+- [ ] Add a `.pageButton` with a `data-id` to `<nav id="across">` in
+      `index.html`, a matching `<div class="page">` holding a canvas, and a draw
+      function in `renderings.js` called from `penroseApp`
+- [ ] CAUTION: `PageNavigation` persists `activeButtonIndex` by **position**
+      (`controls/PageNavigation.js`). Inserting a button mid-list shifts every
+      index after it, so a stale cookie opens the wrong page. Append at the end,
+      or press `defaults` after adding it
 
 ### 4b. Deca generations — decided against
 `wieringa-roof`'s `expandDeca` expands children at `gen` using `wheels[gen + 1]`,
