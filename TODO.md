@@ -1,5 +1,15 @@
 # Penrose Mosaic — TODO
 
+## Ground rule
+
+**Do not change the look of this program.** Fixes are behavior-only. Correcting a
+dangling `for=` so a label finally reaches its checkbox is fine; changing fonts,
+colors, spacing, adding or removing visible controls, or rearranging a page is
+not — not even as a small improvement alongside an approved change. Adding a nav
+button or a page counts as changing the look. Console logging, internal renames
+and selector corrections do not. If a fix genuinely needs a visible change, ask
+first.
+
 ## Measurements Page
 
 ### 1. Tie tables to control mode (DONE)
@@ -224,6 +234,19 @@ real one.
       - discarded computations in `shapeWheelTests()`
 - [ ] Only then consider restructuring `shape-modes.js` around two geometries.
       Adjacent to the penta/star refactor in `docs/PLANS.md` — a real revamp
+
+### 5a. Generation index on penta/star/deca — back burner
+Add a `+`/`-` **index** parameter to the `penta()` and `star()` calls, possibly
+`deca()` too, shifting which generation of shapes is drawn relative to the
+recursion depth.
+
+This would do deliberately what the small rhombs already do **by accident**: the
+small/large rhomb pair are one inflation apart only because small recurses one
+level further before drawing, via a hardcoded short-circuit per size. Turning
+that offset into a parameter would give generational comparison generally,
+without a special case for each.
+
+Generational comparison is on the back burner, so this is parked with it.
 
 ### 6. Wheel line diagrams — deferred
 Moved to last. Cannot be done justice without revamping the measurements page.
