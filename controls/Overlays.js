@@ -26,7 +26,7 @@ export class Overlays {
         this.eleTree = document.querySelector("#tree-penta");
         this.eleRhomb = document.querySelector("#rhomb-ovl");
         this.eleAmmann = document.querySelector("#ammann");
-        this.eleDualRhomb = document.querySelector("#dual");
+        this.eleDualRhomb = document.querySelector("#dual-ovl");
         // This controls the size of both Rhomb and Ammann
         this.eleRhombSizeField = document.querySelector("#rhomb-size");
         this.radioButtons = document.querySelectorAll("input[name='rhomb']");

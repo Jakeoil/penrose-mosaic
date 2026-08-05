@@ -50,7 +50,7 @@ export function penroseApp(source) {
     drawGridWork("gwork");
     drawGeneric123("g012");
     drawGeneric3("g3");
-    drawDualDemo("dual");
+    drawDualDemo("dualwork");
 }
 
 function refreshMeasurements() {
