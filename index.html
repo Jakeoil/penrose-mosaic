@@ -57,6 +57,12 @@
                 <button class="pageButton" data-id="g3">
                     Gen 5 expansion
                 </button>
+                <!-- Appended, deliberately. PageNavigation remembers the active
+                     page by button POSITION, so inserting one earlier in this
+                     list would shift every index after it. -->
+                <button class="pageButton" data-id="sunstar">
+                    Sun/Star overlay
+                </button>
             </p>
         </nav>
         <div id="meat">
@@ -254,6 +260,10 @@
                 <div id="dualwork" class="page">
                     <h2>Dual test</h2>
                     <canvas width="1200" height="999">Second test</canvas>
+                </div>
+                <div id="sunstar" class="page">
+                    <h2>Sun/Star overlay</h2>
+                    <canvas width="1200" height="999">Sun/Star overlay</canvas>
                 </div>
             </div>
         </div>

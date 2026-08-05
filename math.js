@@ -7,6 +7,7 @@ import {
     drawGeneric123,
     drawGeneric3,
     drawDualDemo,
+    drawSunStar,
 } from "./renderings.js";
 
 import { initControls, logRefresh } from "./controls.js";
@@ -51,6 +52,7 @@ export function penroseApp(source) {
     drawGeneric123("g012");
     drawGeneric3("g3");
     drawDualDemo("dualwork");
+    drawSunStar("sunstar");
 }
 
 function refreshMeasurements() {

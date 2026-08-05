@@ -731,3 +731,47 @@ export function drawGeneric3(id) {
     scene.setToRender();
     drawScreen();
 }
+
+/***
+ * Sun/Star overlay.
+ *
+ * The plan is two independent overlay slots composited on one canvas, each with
+ * its own type, angle, generation and layer, scaled to a common size. The
+ * Sun/Star comparison is then one configuration of it -- slot A centred on a
+ * Pe5, slot B on a St5 -- rather than a feature of its own.
+ *
+ * See TODO 4a. Right now this is slot A alone, driven by the existing controls,
+ * which is enough to prove the page is wired.
+ */
+export function drawSunStar(id) {
+    const page = document.querySelector(`#${id}`);
+    if (!page || page.style.display == "none") return;
+    const canvas = document.querySelector(`#${id} > canvas`);
+    if (!canvas) {
+        console.log(`drawSunStar: no canvas in #${id}`);
+        return;
+    }
+
+    const { shapeMode, controls } = globals;
+    const scene = new PenroseScreen(shapeMode.shapeMode);
+    let base = p(0, 0);
+
+    const drawScreen = function () {
+        const type = controls.typeList[controls.typeIndex];
+        const angle = ang(controls.fifths, controls.isDown);
+        const isHeads = controls.isHeads;
+        const loc = p(0, 0).tr(base);
+        const gen = 3;
+
+        scene.penta({ type, angle, isHeads, loc, gen });
+        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+
+        resizeAndRender(scene, canvas, 6);
+    };
+
+    scene.setToMeasure();
+    drawScreen();
+    base = base.tr(scene.bounds.minPoint.neg);
+    scene.setToRender();
+    drawScreen();
+}
