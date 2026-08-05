@@ -262,9 +262,19 @@ Left to look at:
 - [ ] `S` follows the same second-order law but its cross-wheel difference is
       `S(n+1) = S(n) + 2P(n) − P(n−1)`, less tidy than P, D and T. Is there a
       better statement of it
-- [ ] Write the substitution matrix down explicitly. The limits fall out of its
-      dominant eigenvector; having the matrix would turn the numerics into a
-      proof
+- [x] **Substitution matrix — done, see docs/wheels.md.** x and y evolve under
+      two *different* integer matrices, because `hr` negates x and `vr` negates
+      y. `Mx = [[1,0,0],[1,1,1],[0,1,2]]`, `My = [[1,2,0],[1,1,1],[0,1,0]]`,
+      verified against `successorPoint` over 50,000 seeds. Both characteristic
+      polynomials share `λ² − 3λ + 1`, roots φ² and φ⁻², so the growth ratio is
+      now proved. Mx's extra eigenvalue 1 is why `x0` stays 0; My's extra
+      eigenvalue −1 **is** the ±2 correction. The limiting tangents follow in
+      closed form from the dominant eigenvectors `ex = (0,1,φ)`,
+      `ey = (2φ,φ²,1)`
+- [x] Two results fell out: `tan θ₂ / tan θ₁ = φ³` **independent of the seed**,
+      so no integer basis can change it; and the entire difference from
+      Euclidean Penrose is a single shear `r`, where true Penrose needs
+      `√(2+φ)` and the discrete geometry gets `(2+φ)/2`
 
 ### 5c. Research questions from the Mosaic Chat notes
 From `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`. Not code work —

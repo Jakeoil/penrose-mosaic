@@ -199,7 +199,109 @@ stand-ins for the golden directions; they are the first term of a sequence whose
 limit is something else.
 
 The limiting directions are the dominant eigenvector of the substitution, which
-is why they come out in ℚ(√5): the eigenvalue is φ².
+is why they come out in ℚ(√5): the eigenvalue is φ². The next section derives
+this rather than asserting it.
+
+## The substitution matrix
+
+`successorPoint` looks like one operation on three points, but the reflections it
+uses are `hr` (negate x) and `vr` (negate y), which act on the two coordinates
+differently. Substituting them in:
+
+```
+s0 = (-x1 + x0 + x1,  y1 + y0 + y1)  =  (x0,          y0 + 2y1)
+s1 = ( x0 + x1 + x2,  y0 + y1 + y2)  =  (x0+x1+x2,    y0+y1+y2)
+s2 = ( x1 + x2 + x2,  y1 + y2 - y2)  =  (x1 + 2x2,    y1)
+```
+
+So **x and y evolve under two different integer matrices**:
+
+```
+        ⎡1 0 0⎤              ⎡1 2 0⎤
+  Mx =  ⎢1 1 1⎥        My =  ⎢1 1 1⎥
+        ⎣0 1 2⎦              ⎣0 1 0⎦
+```
+
+Verified against `successorPoint` over 50,000 random seeds, zero mismatches.
+
+That asymmetry is the whole story. A similarity would use one matrix for both;
+this uses two, so inflation is not a rotation-and-scale.
+
+### Spectrum
+
+```
+char(Mx) = (1 − λ)(λ² − 3λ + 1)
+char(My) = (1 + λ)(λ² − 3λ + 1)
+```
+
+They share the factor `λ² − 3λ + 1`, whose roots are **φ² and φ⁻²**. Each also
+carries one extra eigenvalue of modulus 1, and both of those are meaningful:
+
+- **Mx has λ = 1.** `x0` is invariant. The `up0` direction stays at x = 0 for
+  every generation — the first column of the P table is all zeros, and this is
+  why.
+- **My has λ = −1.** An alternating component that never grows and never decays.
+  **This is the ±2 correction** recorded earlier as an empirical oddity. It is
+  not an anomaly; it is an eigenvalue sitting on the unit circle beside the
+  growth.
+
+So the growth ratio φ² is now proved, not measured.
+
+### Eigenvectors and the limiting slopes
+
+The dominant eigenvectors, exact:
+
+```
+ex = (0, 1, φ)          ey = (2φ, φ², 1)
+```
+
+A seed's limiting direction at slot k is `(cx·ex[k], cy·ey[k])`, where `cx` and
+`cy` are its projections onto those eigenvectors. Only their ratio matters. Put
+`r = cx / cy`. Then
+
+```
+tan θ₁ = r · ex[1]/|ey[1]| = r / φ²
+tan θ₂ = r · ex[2]/|ey[2]| = r · φ
+```
+
+For the quadrille seed, `r = (5 + √5)/4 = (2 + φ)/2 = 1.809016994375`, giving
+
+```
+tan θ₁ = (5 + √5)/(4φ²) = (5 − √5)/4     θ₁ = 34.643814°
+tan θ₂ = (5 + √5)·φ/4   = (5 + 3√5)/4    θ₂ = 71.137740°
+```
+
+which is exactly what iterating to fixpoint produced. The closed form is
+established.
+
+### Two consequences worth keeping
+
+**The ratio of the limiting tangents is φ³, always.**
+
+```
+tan θ₂ / tan θ₁ = (r·φ)/(r/φ²) = φ³ = 4.236067977500
+```
+
+`r` cancels. So φ³ is an invariant of the substitution itself — **no choice of
+integer seed can change it.** A different basis moves the angles; it cannot move
+their ratio.
+
+**The whole discrepancy with Euclidean Penrose is one number.** Asking which `r`
+would give exactly 36° and 72°:
+
+```
+r_true     = √(2 + φ) = 2 sin 72° = 1.902113032590
+r_discrete =  (2 + φ)/2           = 1.809016994375
+```
+
+Both are built from the same quantity `2 + φ`. True Penrose needs its **square
+root**; the discrete geometry gets **half of it**. One is irrational of degree 4,
+the other rational in φ — and that single substitution is the entire difference
+between the two geometries.
+
+That is a precise answer to what the mosaic is doing: not approximating the
+Penrose angles, but realizing the same substitution with the arithmetically
+simpler shear that the integer lattice permits.
 
 ## Shape wheels
 
