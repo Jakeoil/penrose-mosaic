@@ -201,20 +201,6 @@ function goThinRealDual(wheels, exp) {
     }
 }
 
-/**
- * This most likely used for testing results
- * Deprecate soon !!!
- */
-function compare(a, b) {
-    for (let i = 0; i < 10; i++) {
-        const aEle = a.list[i];
-        const bEle = b.list[i];
-        if (!aEle.equals(bEle)) {
-            console.log(`angle: ${i}, a: ${aEle}, b: ${bEle}`);
-        }
-    }
-}
-
 class Real {
     constructor() {
         /**

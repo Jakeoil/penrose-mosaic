@@ -70,7 +70,7 @@ export class Wheels {
 }
 
 function makeWheels(pSeed, sSeed, tSeed, dSeed) {
-    function pWheelNext(exp) {
+    function    pWheelNext(exp) {
         const p = pWheels[exp].w;
         return new Wheel(p[1].tr(p[0]).tr(p[9]), p[2].tr(p[1]).tr(p[0]), p[3].tr(p[2]).tr(p[1]));
     }
@@ -173,7 +173,6 @@ export function shapeWheel(up, won, too) {
     return [];
 }
 
-function makeShapeWheels() {}
 /***
  * shapeWheel M is a little bit stupid.
  * The only difference is how reflections are done
@@ -210,15 +209,6 @@ export function shapeWheelMosaic(up, won, too) {
     return [];
 }
 
-export function interpolateShape(up, won, too) {
-    const a0 = up.foreach((it) => it.x);
-    const b0 = up.foreach((it) => it.y);
-    const a1 = won.foreach((it) => it.x);
-    const b1 = won.foreach((it) => it.y);
-    const a2 = too.foreach((it) => it.x);
-    const b2 = too.foreach((it) => it.y);
-}
-
 /**
  * Produces the next seed from the current seed.
  * @param {*} point0
@@ -236,6 +226,43 @@ export function successorPoint(point0, point1, point2) {
     ];
 }
 
+/**
+ * Produces the PREVIOUS seed from the current seed -- one step of deflation.
+ *
+ * The name is the counterpart of successorPoint: successor goes up a
+ * generation, predecessor goes down one. It is the inverse operation, not a
+ * different formula.
+ *
+ * WHAT IS ACTUALLY GOING ON
+ *
+ * A wheel is built from three seeds and the reflections of those seeds, so
+ * only three numbers are ever free. successorPoint inflates by replacing each
+ * seed with the sum of three consecutive wheel entries:
+ *
+ *     s0 = p9 + p0 + p1
+ *     s1 = p0 + p1 + p2
+ *     s2 = p1 + p2 + p3
+ *
+ * p9 and p3 are not independent -- the wheel supplies them by reflection, as
+ * p1.hr and p2.vr. In coordinates that means x9 = -x1, y9 = y1, x3 = x2 and
+ * y3 = -y2. Substituting those turns the three vector equations into two
+ * small linear systems, one in x and one in y, each with three unknowns.
+ *
+ * Deflation is just solving those systems the other way. Two of the six
+ * equations collapse the moment the reflections are substituted -- the x
+ * system hands you x0 immediately, the y system hands you y1 -- and the rest
+ * follows by back-substitution.
+ *
+ * Everything is integer arithmetic on the discrete wheels, so the round trip
+ * is exact: interpolateWheel(successorPoint(v)) === v, verified over 20,000
+ * random triples with no rounding slack. See docs/wheels.md.
+ *
+ * NOTE: this function and interpolateWheel below are the same function.
+ * Identical formulas, term for term, confirmed over 20,000 random triples.
+ * They are kept together deliberately -- interpolateWheel carries the full
+ * derivation, written out line by line, and that reasoning is worth more than
+ * the duplication costs. interpolateWheel is the one that is called.
+ */
 export function predecessorPoint(point0, point1, point2) {
     const { x: a0, y: b0 } = point0;
     const { x: a1, y: b1 } = point1;
@@ -250,7 +277,13 @@ export function predecessorPoint(point0, point1, point2) {
     return [p(x0, y0), p(x1, y1), p(x2, y2)];
 }
 /**
- * Produced the previous seed from the current seed
+ * Produces the previous seed from the current seed -- one step of deflation.
+ *
+ * Same function as predecessorPoint above, which carries the plain-language
+ * account of what this is doing. This is the copy with the derivation, worked
+ * out in full below, and it is the one makeWheels calls -- once, to get
+ * generation 0 from the generation 1 seed.
+ *
  * @param {} point0
  * @param {*} point1
  * @param {*} point2

@@ -227,11 +227,40 @@ real one.
 - [ ] Fix `wheels.js:140` — mislabels the seeds as `up0, down3, up2`. It is
       `up1`. Contradicts the correct comment at `wheels.js:44`, and the table
       headers in `measurements.js`
-- [ ] Retire dead math, reviewed one at a time, not as a sweep:
-      - `predecessorPoint` — exact duplicate of `interpolateWheel`, no callers
-      - `interpolateShape` — calls `.foreach`, would throw, no callers
-      - `makeShapeWheels` — empty stub
-      - discarded computations in `shapeWheelTests()`
+- [x] Retire dead math, reviewed one at a time:
+      - `interpolateShape` — removed. Called `.foreach`, would have thrown
+      - `makeShapeWheels` — removed. Empty stub
+      - `compare` — removed. Already marked "Deprecate soon !!!"
+      - `predecessorPoint` — **kept**, deliberately. It is byte-identical to
+        `interpolateWheel`, but the pair carries the derivation and the
+        plain-language account between them, and that is worth the duplication
+      - `successorPoint` — **kept**. Only caller is the dead `shapeWheelTests`,
+        but it is the clean statement of the forward step, and `makeWheels`
+        arguably ought to call it instead of inlining the same sums
+- [ ] Still open: the discarded computations in `shapeWheelTests()`
+      (`measurements.js`). It runs on every measurements refresh and nothing
+      escapes it — `thickBigRhomb` and `shapesSeedSuccessor` are computed and
+      never read
+
+### 5b. Angles and asymptotics — mostly answered, see docs/wheels.md
+Answered while documenting the wheels:
+- ratio of successive radii is **φ², not φ** — `(3+√5)/2`
+- the discrete slopes converge to **algebraic numbers in ℚ(√5)**:
+  `tan = (5−√5)/4` at 34.6438° and `(5+3√5)/4` at 71.1377°, against the true
+  36° and 72° whose tangents need nested radicals
+- the recurrence is `k(n+2) = 3k(n+1) − k(n) ± k(0)`, not plain Fibonacci, but
+  Fibonacci appears exactly *between* wheels
+
+Left to look at:
+- [ ] Why those particular algebraic limits? They are simpler than the true
+      tangents, which is unexpected. Is there a closed form for the limiting
+      wheel as a whole
+- [ ] The discrete tiling is not a rounded five-fold tiling — its angles
+      converge elsewhere, yet the figure still reads correctly at scale. What
+      exactly is preserved? Combinatorics clearly; what else
+- [ ] `S` follows the same second-order law but its cross-wheel difference is
+      `S(n+1) = S(n) + 2P(n) − P(n−1)`, less tidy than P, D and T. Is there a
+      better statement of it
 - [ ] Only then consider restructuring `shape-modes.js` around two geometries.
       Adjacent to the penta/star refactor in `docs/PLANS.md` — a real revamp
 
