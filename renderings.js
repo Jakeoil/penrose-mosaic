@@ -285,7 +285,7 @@ export function drawSecondInflation(id) {
         let x = 25;
         let y = 25;
 
-        scene.pentaDual(penrose.Pe5, ang(0, UP), p(x, y), 2);
+        scene.pentaRhomb(penrose.Pe5, ang(0, UP), p(x, y), 2);
 
         let type = penrose.Pe5;
         let angle = ang(0, DOWN);
@@ -293,7 +293,7 @@ export function drawSecondInflation(id) {
         let gen = 2;
         let rhomb = true;
 
-        scene.pentaDual(type, angle, loc, gen);
+        scene.pentaRhomb(type, angle, loc, gen);
         y += 50;
         x = 25;
         type = penrose.Pe3;
