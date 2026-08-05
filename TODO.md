@@ -91,11 +91,15 @@ dual.
 - [ ] `dualRhombSelected` is currently dead — set, persisted, checkbox wired,
       never read. `drawDualRhombusPattern` gates on `rhombSelected` instead
       (`penrose-screen.js:913`). Wire the checkbox to its own layer
-- [ ] Note `drawDualRhombusPattern` indexes `thinDualRhomb[gen + 1]`, one higher
-      than `drawRhombusPattern`'s `[gen]`. Only two shape sets are ever built
-      (`shape-modes.js:448, 666, 796` — all three modes use `i < 2`), so a dual
-      draw at `gen == 1` reads `undefined` and throws. Fix this before wiring
-      the checkbox, or the first click crashes the page
+- [ ] The whole dual draw path is currently **dead code**. The only producer of
+      `layer: "dual"` is `pentaDual` (`penrose-screen.js:636`), which has no
+      callers since the expansion pages stopped hardcoding it. `drawDualDemo`
+      passes only "penta" and "rhomb"
+- [ ] `drawDualRhombusPattern` indexes `thinDualRhomb[gen + 1]`, one higher than
+      `drawRhombusPattern`'s `[gen]`. This is **not** a latent crash: the call
+      sits inside the `gen == 0` branch of `star()`, so gen is always 0 and the
+      index is always 1, which exists. Worth understanding before reusing the
+      function at other generations, nothing more
 
 #### "Dual" is probably the wrong name
 The idea is a map centered on a `Pe5` pentagon overlain with one centered on a
@@ -153,7 +157,23 @@ with the P3 rhombs overlaid in yellow.
 That asymmetry is the thing to look at first. If the Sun/Star overlay carries
 over to P1, the large RG restriction to blue is very likely where it shows up.
 
-#### New page to explore the overlays
+#### New page: two independent overlay layers
+"Dual rhombs" is too narrow a framing. What the page wants is **two overlay
+slots, each with its own controls**, drawn on one canvas. The Sun/Star
+comparison is then just one configuration of it — slot A centered on a `Pe5`,
+slot B centered on a `St5` — rather than a feature in its own right.
+
+Per slot, independently settable:
+- shape type (`Pe*`, `St*`, `Deca`) and angle/heads
+- **generation** — the interesting one. Two different generations overlaid,
+  scaled to a common size, is what shows the inflation relation directly
+- which layer to draw (penta, rhomb) and rhomb size (large/small)
+- color and opacity, so the lower slot stays readable
+
+- [ ] Scale normalization is the real work. Each slot picks its own generation,
+      so the page must scale them to a common unit before compositing. The
+      measure/render two-pass already computes bounds per scene — two scenes,
+      two bounds, one common scale
 - [ ] Add a `.pageButton` with a `data-id` to `<nav id="across">` in
       `index.html`, a matching `<div class="page">` holding a canvas, and a draw
       function in `renderings.js` called from `penroseApp`
@@ -161,6 +181,13 @@ over to P1, the large RG restriction to blue is very likely where it shows up.
       (`controls/PageNavigation.js`). Inserting a button mid-list shifts every
       index after it, so a stale cookie opens the wrong page. Append at the end,
       or press `defaults` after adding it
+
+#### The nav/content relationship is brittle
+Page identity lives in three places that must agree — the button's `data-id`, the
+`.page` div's `id`, and the string passed to the draw function in `math.js`
+(`drawDualDemo("dual")`). Nothing checks that they line up, and the `#dual`
+selector bug above is exactly what that costs. Worth a look before adding a page
+rather than after.
 
 ### 4b. Deca generations — decided against
 `wieringa-roof`'s `expandDeca` expands children at `gen` using `wheels[gen + 1]`,
