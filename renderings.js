@@ -569,7 +569,10 @@ export function drawGeneric123(id) {
     const type = controls.typeList[controls.typeIndex];
     const angle = ang(controls.fifths, controls.isDown);
     const isHeads = controls.isHeads;
-    const layer = "dual";
+    // "dual" here was a leftover of the abandoned dual rhomb research, and it
+    // meant the rhomb layer was never drawn on this page -- which is why the
+    // large/small rhomb radio did nothing here. See TODO 4a.
+    const layer = "rhomb";
 
     const isPenta =
         type === penrose.Pe1 || type === penrose.Pe3 || type === penrose.Pe5;
@@ -687,7 +690,9 @@ export function drawGeneric3(id) {
         const isHeads = controls.isHeads;
         const loc = p(0, 0).tr(base);
         const gen = 5;
-        const layer = "dual";
+        // See TODO 4a -- "dual" was a leftover, and it kept the rhomb layer
+        // from ever being drawn on this page.
+        const layer = "rhomb";
         const begin = performance.now();
 
         switch (type) {
