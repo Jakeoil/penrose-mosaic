@@ -136,7 +136,10 @@ function makeWheels(pSeed, sSeed, tSeed, dSeed) {
  * Return a shape wheel based on a minimal set of
  * shapes. The shapes with five fold symmetry only need
  * up as input. All others require element 0, 1 and 2 positions.
- * aka up0, down3, up2
+ * aka up0, down3, up1
+ *
+ * Index 2 is up1, not up2 -- see the table in docs/wheels.md. The layout is
+ * fixed by Wheel's up and down getters and by the headers in measurements.js.
  */
 export function shapeWheel(up, won, too) {
     if (up) {
