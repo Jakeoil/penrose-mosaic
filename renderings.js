@@ -733,28 +733,20 @@ export function drawGeneric3(id) {
 }
 
 /***
- * Sun/Star overlay.
+ * Sun/Star.
  *
- * The plan is two independent overlay slots composited on one canvas, each with
- * its own type, angle, generation and layer, scaled to a common size. The
- * Sun/Star comparison is then one configuration of it -- slot A centred on a
- * Pe5, slot B on a St5 -- rather than a feature of its own.
+ * The two configurations with global five-fold symmetry, side by side: a Sun
+ * centred on a pentagon, a Star centred on a five-star. Each is a plain Pe5 and
+ * St5 at the same generation -- the named patches are these with the outer tiles
+ * trimmed to round them off, so nothing composite is needed to see them.
  *
- * See TODO 4a. This is the hardwired pairing: no new controls, both slots at the
- * same generation, drawn about the same centre.
+ * Side by side is the default. An "overlay instead of side by side" toggle comes
+ * next, following wieringa-roof/unfold.html. See TODO 4a.
  *
- * There are exactly two Penrose tilings with global five-fold symmetry, and they
- * differ only in what sits at the centre -- a pentagon or a five-star. That is
- * the Sun and the Star. Overlaying them is the comparison.
- *
- * Both slots share one scene deliberately. They are at the same generation, so
- * they are already at a common scale and the existing measure/render two-pass
- * handles them together. Independent generations would need two scenes measured
- * separately and composited at a derived scale, since resizeAndRender clears the
- * canvas -- that is the next step, not this one.
- *
- * Angle and heads still come from the controls, so the pair can be turned over
- * and rotated. Only the two types are fixed.
+ * Measures each figure in its own scene, places them on a common vertical
+ * centre, then draws both into one scene and renders once -- resizeAndRender
+ * clears the canvas, so it can only be called once. Same approach as
+ * drawGeneric123.
  */
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
@@ -766,31 +758,45 @@ export function drawSunStar(id) {
     }
 
     const { shapeMode, controls } = globals;
+    const angle = ang(controls.fifths, controls.isDown);
+    const isHeads = controls.isHeads;
+    const gen = 4;
+
+    // penta() routes the star types through to star(), so one path serves both.
+    function drawOne(scene, type, loc) {
+        scene.penta({ type, angle, isHeads, loc, gen });
+        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+    }
+
+    function measure(type) {
+        const ms = new PenroseScreen(shapeMode.shapeMode);
+        ms.setToMeasure();
+        drawOne(ms, type, p(0, 0));
+        return ms.bounds;
+    }
+
+    const types = [penrose.Pe5, penrose.St5];
+    const sizes = types.map(measure).map((b) => ({
+        w: b.isEmpty ? 0 : b.maxPoint.x - b.minPoint.x,
+        h: b.isEmpty ? 0 : b.maxPoint.y - b.minPoint.y,
+        minX: b.isEmpty ? 0 : b.minPoint.x,
+        minY: b.isEmpty ? 0 : b.minPoint.y,
+    }));
+
+    const GAP = 6;
+    const MARGIN = 2;
+    const maxH = Math.max(...sizes.map((s) => s.h));
+    const centerY = MARGIN + maxH / 2;
+
+    const locs = [];
+    let curX = MARGIN;
+    for (const s of sizes) {
+        const cx = curX + s.w / 2;
+        locs.push(p(cx - (s.minX + s.w / 2), centerY - (s.minY + s.h / 2)));
+        curX += s.w + GAP;
+    }
+
     const scene = new PenroseScreen(shapeMode.shapeMode);
-    let base = p(0, 0);
-
-    const drawScreen = function () {
-        const angle = ang(controls.fifths, controls.isDown);
-        const isHeads = controls.isHeads;
-        const loc = p(0, 0).tr(base);
-        const gen = 3;
-
-        // Sun -- centred on a pentagon.
-        scene.penta({ type: penrose.Pe5, angle, isHeads, loc, gen });
-        scene.penta({ type: penrose.Pe5, angle, isHeads, loc, gen, layer: "rhomb" });
-
-        // Star -- the composite patch, centred on a five-star gap with its
-        // measured ring of Pe1, Pe3 and St3. Both patches carry rhombs: only a
-        // generation 0 star emits none, and a star patch is full of pentagons.
-        scene.starPatch({ angle, isHeads, loc, gen });
-        scene.starPatch({ angle, isHeads, loc, gen, layer: "rhomb" });
-
-        resizeAndRender(scene, canvas, 6);
-    };
-
-    scene.setToMeasure();
-    drawScreen();
-    base = base.tr(scene.bounds.minPoint.neg);
-    scene.setToRender();
-    drawScreen();
+    types.forEach((type, i) => drawOne(scene, type, locs[i]));
+    resizeAndRender(scene, canvas, 4);
 }

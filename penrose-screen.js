@@ -1,5 +1,5 @@
 "use strict";
-import { p, angFromTenth } from "./point.js";
+import { p } from "./point.js";
 import { Bounds } from "./bounds.js";
 import { penrose } from "./penrose.js";
 import { globals, measureTaskGlobals } from "./controls.js";
@@ -613,84 +613,6 @@ export class PenroseScreen {
                 }
             }
         }
-    }
-
-    /**
-     * The Star patch -- a composite seed, in the same spirit as deca().
-     *
-     * Not a substitution step. This is an *arrangement* of tiles measured from a
-     * real tiling: a five-star gap at the centre with a ring of Pe1, Pe3 and St3
-     * around it. It is one of the two configurations with global five-fold
-     * symmetry, the other being the Sun.
-     *
-     * Ring, for a centre at tenth 0 with heads, in tenth offsets from the
-     * centre's own angle:
-     *
-     *   Pe1   s-wheel[5 + 2j]   tenth 2j       heads
-     *   Pe3   t-wheel[2j]       tenth 5 + 2j   flipped
-     *   St3   t-wheel[5 + 2j]   tenth 5 + 2j   flipped
-     *
-     * expandStar(St5) cannot supply this ring by itself: it puts its boats at
-     * t-wheel 270/342/54/126/198, which in a real tiling is exactly where the
-     * Pe3 belong, with the boats 36 degrees away. Handing the ring to star()
-     * fills the Pe3 slots with tiles that emit nothing.
-     *
-     * Follows deca()'s generation convention -- children at gen - 1, wheels at
-     * [gen] -- not wieringa-roof's. See TODO 4b.
-     */
-    starPatch({ angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
-        const bounds = new Bounds();
-        if (gen == 0) {
-            return bounds;
-        }
-
-        const wheels = penrose[this.mode].wheels;
-        const sWheel = wheels.s[gen].w;
-        const tWheel = wheels.t[gen].w;
-        const base = angle.tenths;
-        const m10 = (n) => ((n % 10) + 10) % 10;
-
-        // The star shaped gap at the centre. It fills in from generation 2.
-        this.star({
-            type: penrose.St5,
-            angle,
-            isHeads,
-            loc,
-            gen: gen - 1,
-            layer,
-            ...options,
-        });
-
-        for (let j = 0; j < 5; j++) {
-            this.penta({
-                type: penrose.Pe1,
-                angle: angFromTenth(m10(2 * j + base)),
-                isHeads,
-                loc: loc.tr(sWheel[m10(5 + 2 * j + base)]),
-                gen: gen - 1,
-                layer,
-                ...options,
-            });
-            this.penta({
-                type: penrose.Pe3,
-                angle: angFromTenth(m10(5 + 2 * j + base)),
-                isHeads: !isHeads,
-                loc: loc.tr(tWheel[m10(2 * j + base)]),
-                gen: gen - 1,
-                layer,
-                ...options,
-            });
-            this.star({
-                type: penrose.St3,
-                angle: angFromTenth(m10(5 + 2 * j + base)),
-                isHeads: !isHeads,
-                loc: loc.tr(tWheel[m10(5 + 2 * j + base)]),
-                gen: gen - 1,
-                layer,
-                ...options,
-            });
-        }
-        return bounds;
     }
 
     pentaRhomb(type, angle, loc, gen) {

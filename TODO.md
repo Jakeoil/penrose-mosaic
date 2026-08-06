@@ -180,22 +180,18 @@ over to P1, the large RG restriction to blue is very likely where it shows up.
 - Controls later, but the shape is a **swap function**: the sidebar sets up the
   left one, and swap exchanges them
 
-- [x] `starPatch()` added to `penrose-screen.js` — the Star composite, ported
-      from the neighborhood measured in `wieringa-roof`'s `expandStarComposite`,
-      but following this project's generation convention (children at `gen - 1`,
-      wheels at `[gen]`). Verified non-empty and mirror-symmetric in all three
-      modes. `angFromTenth()` added to `point.js`, exact inverse of `.tenths`
-- [ ] **The Sun composite does not port directly.** Its ring sits at 18 + 72k
-      degrees — *half*-tenths — so it cannot be placed by a wheel lookup, which
-      only reaches tenths. `wieringa-roof` places it polar, at radius
-      `|s-wheel| · 2cos18°`. That is fine there because it is real-mode only, but
-      `2cos18° = √(2+φ)` is the degree-4 number from the shear analysis, so it
-      leaves the lattice and would break quadrille and mosaic. Options: express
-      the ring as a **sum of two wheel vectors** (deca already does this, e.g.
-      `pDown[...].tr(sUp[...])`, and a sum of adjacent tenths points between
-      them), or accept the Sun as real-mode only. Needs deciding
-- [ ] Meanwhile the page draws `penta(Pe5)` for the Sun slot, which is the
-      pentagon deflation rather than the measured Sun patch
+- [x] Side by side, plain `Pe5_x` and `St5_x`, vertically centred. The named Sun
+      and Star patches are just these with the outer tiles trimmed to round them
+      off, so no composite seed is needed to see them
+- [ ] Next: the **"overlay instead of side by side"** toggle, default side by side
+- [ ] Then: strokes only, fill transparent
+
+**Correction.** A composite `starPatch()` was built and backed out. Two mistakes:
+it built an overlay when side by side is the default, and it treated the patches
+as needing a measured ring when they are plain `Pe5`/`St5`. The claim that the
+Sun ring needs half-tenths was also wrong — every pentagon has a horizontal side,
+and the wheel directions cover it. The wieringa-roof polar placement solves a
+problem this project does not have.
 
 #### New page: two independent overlay layers
 "Dual rhombs" is too narrow a framing. What the page wants is **two overlay
