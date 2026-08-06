@@ -657,7 +657,12 @@ export class PenroseScreen {
 
         this.penta({ type: penrose.Pe5, angle, isHeads, loc, gen, layer, ...options });
 
-        const pWheel = penrose[this.mode].wheels.p[gen].w;
+        const wheels = penrose[this.mode].wheels;
+        const pWheel = wheels.p[gen].w;
+        const tWheel = wheels.t[gen].w;
+        const base = angle.tenths;
+        const m10 = (n) => ((n % 10) + 10) % 10;
+
         for (let i = 0; i < 5; i++) {
             const shift = angle.rot(i);
             const locPe3 = loc.tr(pWheel[shift.tenths]);
@@ -672,6 +677,20 @@ export class PenroseScreen {
                     ...options,
                 });
             }
+
+            // The diamond in the crack between this Pe3 and the next. penta()
+            // does not supply it -- its own diamonds sit at the s-wheel, and the
+            // Sun's are a ring further out at the t-wheel, halfway between the
+            // Pe3 directions.
+            this.star({
+                type: penrose.St1,
+                angle: angFromTenth(m10(2 * i + 6 + base)),
+                isHeads,
+                loc: loc.tr(tWheel[m10(1 + 2 * i + base)]),
+                gen: gen - 1,
+                layer,
+                ...options,
+            });
         }
         return bounds;
     }
@@ -692,17 +711,39 @@ export class PenroseScreen {
             return bounds;
         }
 
-        this.star({ type: penrose.St5, angle, isHeads, loc, gen, layer, ...options });
+        // The star shaped gap at the centre. It fills in from generation 2.
+        this.star({ type: penrose.St5, angle, isHeads, loc, gen: gen - 1, layer, ...options });
 
-        const tWheel = penrose[this.mode].wheels.t[gen].w;
+        const wheels = penrose[this.mode].wheels;
+        const sWheel = wheels.s[gen].w;
+        const tWheel = wheels.t[gen].w;
         const base = angle.tenths;
         const m10 = (n) => ((n % 10) + 10) % 10;
+
         for (let j = 0; j < 5; j++) {
+            this.penta({
+                type: penrose.Pe1,
+                angle: angFromTenth(m10(2 * j + base)),
+                isHeads,
+                loc: loc.tr(sWheel[m10(5 + 2 * j + base)]),
+                gen: gen - 1,
+                layer,
+                ...options,
+            });
             this.penta({
                 type: penrose.Pe3,
                 angle: angFromTenth(m10(5 + 2 * j + base)),
                 isHeads: !isHeads,
                 loc: loc.tr(tWheel[m10(2 * j + base)]),
+                gen: gen - 1,
+                layer,
+                ...options,
+            });
+            this.star({
+                type: penrose.St3,
+                angle: angFromTenth(m10(5 + 2 * j + base)),
+                isHeads: !isHeads,
+                loc: loc.tr(tWheel[m10(5 + 2 * j + base)]),
                 gen: gen - 1,
                 layer,
                 ...options,
