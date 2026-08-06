@@ -263,7 +263,16 @@
                 </div>
                 <div id="sunstar" class="page">
                     <h2>Sun/Star overlay</h2>
-                    <canvas width="1200" height="999">Sun/Star overlay</canvas>
+                    <!-- Controls sit above the drawing for now. Where they
+                         belong relative to the sidebar is still open. -->
+                    <p class="sunstar-controls">
+                        <input type="checkbox" id="sunstar-overlay" />
+                        <label for="sunstar-overlay"
+                            >overlay instead of side by side</label
+                        >
+                    </p>
+                    <canvas id="sunstar-a" class="sunstar-cell">Sun</canvas>
+                    <canvas id="sunstar-b" class="sunstar-cell">Star</canvas>
                 </div>
             </div>
         </div>

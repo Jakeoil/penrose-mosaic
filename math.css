@@ -64,6 +64,19 @@ canvas.apple-ii {
     display: inline;
 }
 
+/* Sun/Star page. Each figure gets its own canvas so the drawing areas can be
+   bordered without drawing the border into the scene. Both are rendered at the
+   same scale, so the two are directly comparable. */
+.sunstar-cell {
+    border: 1px solid #888;
+    vertical-align: top;
+    margin-right: 6px;
+}
+
+.sunstar-controls {
+    margin: 0 0 8px 0;
+}
+
 .control-group {
     border: 3px outset rgb(208, 236, 246);
     margin: 0px 0px 5px 0px;

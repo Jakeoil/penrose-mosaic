@@ -735,32 +735,35 @@ export function drawGeneric3(id) {
 /***
  * Sun/Star.
  *
- * The two configurations with global five-fold symmetry, side by side: a Sun
- * centred on a pentagon, a Star centred on a five-star. Each is a plain Pe5 and
- * St5 at the same generation -- the named patches are these with the outer tiles
- * trimmed to round them off, so nothing composite is needed to see them.
+ * The two configurations with global five-fold symmetry: a Sun centred on a
+ * pentagon, a Star centred on a five-star. Each is a plain Pe5 and St5 at the
+ * same generation -- the named patches are these with the outer tiles trimmed to
+ * round them off.
  *
- * Side by side is the default. An "overlay instead of side by side" toggle comes
- * next, following wieringa-roof/unfold.html. See TODO 4a.
+ * Two canvases rather than one. That lets each drawing area carry its own CSS
+ * border without drawing the border into the scene, and both are rendered at the
+ * same scale so the pair stays directly comparable. Overlay hides the second and
+ * draws both figures into the first.
  *
- * Measures each figure in its own scene, places them on a common vertical
- * centre, then draws both into one scene and renders once -- resizeAndRender
- * clears the canvas, so it can only be called once. Same approach as
- * drawGeneric123.
+ * See TODO 4a.
  */
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
     if (!page || page.style.display == "none") return;
-    const canvas = document.querySelector(`#${id} > canvas`);
-    if (!canvas) {
-        console.log(`drawSunStar: no canvas in #${id}`);
+    const canvasA = document.querySelector("#sunstar-a");
+    const canvasB = document.querySelector("#sunstar-b");
+    if (!canvasA || !canvasB) {
+        console.log(`drawSunStar: missing a canvas in #${id}`);
         return;
     }
 
     const { shapeMode, controls } = globals;
     const angle = ang(controls.fifths, controls.isDown);
     const isHeads = controls.isHeads;
-    const gen = 4;
+    const gen = 3;
+    const SCALE = 4;
+    const eleOverlay = document.querySelector("#sunstar-overlay");
+    const overlay = eleOverlay ? eleOverlay.checked : false;
 
     // penta() routes the star types through to star(), so one path serves both.
     function drawOne(scene, type, loc) {
@@ -768,35 +771,28 @@ export function drawSunStar(id) {
         scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
     }
 
-    function measure(type) {
+    /**
+     * Measures in a throwaway scene, then draws shifted so the figure sits
+     * against the origin. Measuring separately keeps the canvas tight -- reusing
+     * one scene for both passes leaves the unshifted geometry in its bounds.
+     */
+    function renderInto(canvas, types) {
         const ms = new PenroseScreen(shapeMode.shapeMode);
         ms.setToMeasure();
-        drawOne(ms, type, p(0, 0));
-        return ms.bounds;
+        for (const type of types) drawOne(ms, type, p(0, 0));
+        const loc = ms.bounds.isEmpty ? p(0, 0) : ms.bounds.minPoint.neg;
+
+        const scene = new PenroseScreen(shapeMode.shapeMode);
+        for (const type of types) drawOne(scene, type, loc);
+        resizeAndRender(scene, canvas, SCALE);
     }
 
-    const types = [penrose.Pe5, penrose.St5];
-    const sizes = types.map(measure).map((b) => ({
-        w: b.isEmpty ? 0 : b.maxPoint.x - b.minPoint.x,
-        h: b.isEmpty ? 0 : b.maxPoint.y - b.minPoint.y,
-        minX: b.isEmpty ? 0 : b.minPoint.x,
-        minY: b.isEmpty ? 0 : b.minPoint.y,
-    }));
-
-    const GAP = 6;
-    const MARGIN = 2;
-    const maxH = Math.max(...sizes.map((s) => s.h));
-    const centerY = MARGIN + maxH / 2;
-
-    const locs = [];
-    let curX = MARGIN;
-    for (const s of sizes) {
-        const cx = curX + s.w / 2;
-        locs.push(p(cx - (s.minX + s.w / 2), centerY - (s.minY + s.h / 2)));
-        curX += s.w + GAP;
+    if (overlay) {
+        canvasB.style.display = "none";
+        renderInto(canvasA, [penrose.Pe5, penrose.St5]);
+    } else {
+        canvasB.style.display = "";
+        renderInto(canvasA, [penrose.Pe5]);
+        renderInto(canvasB, [penrose.St5]);
     }
-
-    const scene = new PenroseScreen(shapeMode.shapeMode);
-    types.forEach((type, i) => drawOne(scene, type, locs[i]));
-    resizeAndRender(scene, canvas, 4);
 }
