@@ -740,8 +740,21 @@ export function drawGeneric3(id) {
  * Sun/Star comparison is then one configuration of it -- slot A centred on a
  * Pe5, slot B on a St5 -- rather than a feature of its own.
  *
- * See TODO 4a. Right now this is slot A alone, driven by the existing controls,
- * which is enough to prove the page is wired.
+ * See TODO 4a. This is the hardwired pairing: no new controls, both slots at the
+ * same generation, drawn about the same centre.
+ *
+ * There are exactly two Penrose tilings with global five-fold symmetry, and they
+ * differ only in what sits at the centre -- a pentagon or a five-star. That is
+ * the Sun and the Star. Overlaying them is the comparison.
+ *
+ * Both slots share one scene deliberately. They are at the same generation, so
+ * they are already at a common scale and the existing measure/render two-pass
+ * handles them together. Independent generations would need two scenes measured
+ * separately and composited at a derived scale, since resizeAndRender clears the
+ * canvas -- that is the next step, not this one.
+ *
+ * Angle and heads still come from the controls, so the pair can be turned over
+ * and rotated. Only the two types are fixed.
  */
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
@@ -757,14 +770,20 @@ export function drawSunStar(id) {
     let base = p(0, 0);
 
     const drawScreen = function () {
-        const type = controls.typeList[controls.typeIndex];
         const angle = ang(controls.fifths, controls.isDown);
         const isHeads = controls.isHeads;
         const loc = p(0, 0).tr(base);
         const gen = 3;
 
-        scene.penta({ type, angle, isHeads, loc, gen });
-        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+        // Sun -- centred on a pentagon. The penta family emits the rhombs.
+        scene.penta({ type: penrose.Pe5, angle, isHeads, loc, gen });
+        scene.penta({ type: penrose.Pe5, angle, isHeads, loc, gen, layer: "rhomb" });
+
+        // Star -- centred on a five-star, same centre. drawRhombusPattern has no
+        // St cases, so this contributes outlines only. That asymmetry is the
+        // point: in the dual it is the star family that carries the rhombs.
+        scene.star({ type: penrose.St5, angle, isHeads, loc, gen });
+        scene.star({ type: penrose.St5, angle, isHeads, loc, gen, layer: "rhomb" });
 
         resizeAndRender(scene, canvas, 6);
     };
