@@ -748,11 +748,9 @@ export function drawGeneric3(id) {
  * generation, which needs a clip the recursion does not yet have. See TODO 4a.
  */
 
-const SUNSTAR_SEED = {
-    sun: penrose.Pe5,
-    star: penrose.St5,
-    queen: penrose.Pe3,
-};
+// Sun, Star and Queen are composites, not single tiles. The Queen is the deca.
+// Verified by rhomb count in the small rhomb groups: 55, 35 and 10.
+const SUNSTAR_SEED = ["sun", "star", "queen"];
 
 function sunStarSlot(key) {
     const pick = (name, dflt) => {
@@ -760,8 +758,9 @@ function sunStarSlot(key) {
         return ele ? ele.value : dflt;
     };
     const gen = parseInt(pick("gen", "3"), 10);
+    const kind = pick("type", "sun");
     return {
-        type: SUNSTAR_SEED[pick("type", "sun")] || penrose.Pe5,
+        kind: SUNSTAR_SEED.includes(kind) ? kind : "sun",
         angle: ang(0, pick("orient", "up") === "down"),
         isHeads: pick("parity", "heads") === "heads",
         gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 3,
@@ -785,12 +784,19 @@ export function drawSunStar(id) {
     const slotA = sunStarSlot("a");
     const slotB = sunStarSlot("b");
 
-    // penta() routes the star types through to star(), so one path serves both.
+    // Sun, Star and Queen each have their own composite method.
     function drawOne(scene, slot, loc, clip) {
-        const { type, angle, isHeads, gen } = slot;
+        const { kind, angle, isHeads, gen } = slot;
         const opts = clip ? { clip } : {};
-        scene.penta({ type, angle, isHeads, loc, gen, ...opts });
-        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb", ...opts });
+        const draw = (layer) => {
+            const args = { angle, isHeads, loc, gen, ...opts };
+            if (layer) args.layer = layer;
+            if (kind === "sun") scene.sun(args);
+            else if (kind === "star") scene.starPatch(args);
+            else scene.deca(args);
+        };
+        draw(null);
+        draw("rhomb");
     }
 
     /**

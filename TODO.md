@@ -187,10 +187,9 @@ for both rhombs and pentas. The sidebar can be tweaked to suit.
 recursion-bounded — a different construction from what `penta()` and `star()`
 produce:
 
-- **Star patch**, seed at gen 0: the pentagon centers within a given radius of
-  the center of a `St5` **of indefinite generation**
-- **Sun patch**, seed at gen 0: the pentagon centers within a given radius of
-  the center of a `Pe5` **of indefinite generation**
+- **Star patch**: the pentagon centers within a given radius of the center of a
+  `St5` at the **next generation** — the star containing the patch
+- **Sun patch**: the same, about the center of a `Pe5`
 - **Queen patch**: a patch whose first generation is one yellow (`Pe3`) and two
   orange (`Pe1`) pentagons
 
@@ -213,7 +212,15 @@ bounded by where the recursion stops, not by a circle.
 - [ ] The radius is currently derived (largest circle inside the raw extent)
       rather than being what `Gen` sets. Per the spec `Gen` should set the
       radius, with the expansion deep enough to fill it
-- [ ] Queen needs a composite seed: `Pe3` plus two `Pe1`
+- [x] **The Queen is the deca**, not a `Pe3`. Confirmed by rhomb count
+- [x] `sun()` and `starPatch()` added to `penrose-screen.js`. Verified against
+      the rhomb counts in the small rhomb groups: **Sun 55, Star 35, Queen 10**,
+      all exact. Sun = `penta(Pe5)` plus the ten `Pe1` of the five Queens, hung
+      off each `Pe3` the way `deca()` hangs its own. Star = `star(St5)` plus five
+      `Pe3` at t-wheel positions, which `star()` cannot supply because it puts
+      its boats where the `Pe3` belong
+- [x] No half-tenths needed anywhere — all placements are tenth lookups or sums
+      of them, so the patches stay on the lattice in quadrille as well as real
 
 #### Direction settled 2026-08-05
 - Clearest reading is **strokes only, fill transparent or none**

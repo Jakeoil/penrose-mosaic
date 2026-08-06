@@ -1,5 +1,5 @@
 "use strict";
-import { p } from "./point.js";
+import { p, angFromTenth } from "./point.js";
 import { Bounds } from "./bounds.js";
 import { penrose } from "./penrose.js";
 import { globals, measureTaskGlobals } from "./controls.js";
@@ -637,6 +637,78 @@ export class PenroseScreen {
                 }
             }
         }
+    }
+
+    /**
+     * The Sun patch -- a blue pentagon with five Queens around it.
+     *
+     * penta(Pe5) already lays down the centre Pe5, the five Pe3 and the five
+     * St1. What it does not place are the two orange pentagons belonging to each
+     * Queen, so the Sun is that expansion plus ten Pe1, hung off each Pe3 the
+     * same way deca() hangs them off its own.
+     *
+     * Rhomb count 55 = 5 (Pe5) + 5x4 (Pe3) + 10x3 (Pe1); the St1 emit none.
+     */
+    sun({ angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
+        const bounds = new Bounds();
+        if (gen == 0) {
+            return bounds;
+        }
+
+        this.penta({ type: penrose.Pe5, angle, isHeads, loc, gen, layer, ...options });
+
+        const pWheel = penrose[this.mode].wheels.p[gen].w;
+        for (let i = 0; i < 5; i++) {
+            const shift = angle.rot(i);
+            const locPe3 = loc.tr(pWheel[shift.tenths]);
+            for (const [off, turn] of [[3, 2], [2, 3]]) {
+                this.penta({
+                    type: penrose.Pe1,
+                    angle: shift.rot(turn).inv,
+                    isHeads: !isHeads,
+                    loc: locPe3.tr(pWheel[shift.rot(off).inv.tenths]),
+                    gen: gen - 1,
+                    layer,
+                    ...options,
+                });
+            }
+        }
+        return bounds;
+    }
+
+    /**
+     * The Star patch -- a five-star gap with a ring around it.
+     *
+     * star(St5) lays down the centre St5, five Pe1 tips and five St3 boats, but
+     * puts its boats where the Pe3 belong, so the Pe3 have to be placed
+     * explicitly. Measured ring, in tenth offsets from the centre's own angle:
+     * Pe3 at t-wheel[2j], tenth 5 + 2j, flipped.
+     *
+     * Rhomb count 35 = 5x3 (Pe1) + 5x4 (Pe3); St5 and St3 emit none.
+     */
+    starPatch({ angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
+        const bounds = new Bounds();
+        if (gen == 0) {
+            return bounds;
+        }
+
+        this.star({ type: penrose.St5, angle, isHeads, loc, gen, layer, ...options });
+
+        const tWheel = penrose[this.mode].wheels.t[gen].w;
+        const base = angle.tenths;
+        const m10 = (n) => ((n % 10) + 10) % 10;
+        for (let j = 0; j < 5; j++) {
+            this.penta({
+                type: penrose.Pe3,
+                angle: angFromTenth(m10(5 + 2 * j + base)),
+                isHeads: !isHeads,
+                loc: loc.tr(tWheel[m10(2 * j + base)]),
+                gen: gen - 1,
+                layer,
+                ...options,
+            });
+        }
+        return bounds;
     }
 
     pentaRhomb(type, angle, loc, gen) {
