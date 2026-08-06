@@ -104,6 +104,29 @@ function pColor(type) {
 }
 
 /**
+ * A patch is defined by a radius around a centre, not by where the recursion
+ * stops -- "the pentagon centers within a given radius of the centre of a St5 of
+ * indefinite generation". So the expansion runs as usual and the tiles whose
+ * centres fall outside the circle are simply not drawn, which rounds the figure
+ * off.
+ *
+ * The test is on the tile's own loc, which for both penta and star is its
+ * centre. A tile just inside the circle may still poke past it, so the boundary
+ * comes out ragged by one tile. That is what a real patch looks like.
+ *
+ * clip is carried in ...options, which already flows through every level of the
+ * recursion, so nothing else needs to know about it.
+ *
+ * @param {Point} loc - the tile's centre
+ * @param {{center: Point, radius: number}} clip
+ */
+function withinClip(loc, clip) {
+    const dx = loc.x - clip.center.x;
+    const dy = loc.y - clip.center.y;
+    return dx * dx + dy * dy <= clip.radius * clip.radius;
+}
+
+/**
  * Represents a 2D scene.
  * mode: real or quadrille. Uses different tables to derive point values.
  * measure: If set, do not add to the renderlist.
@@ -290,7 +313,8 @@ export class PenroseScreen {
      * The inputs are streamlined
      *
      */
-    drawPentaPattern({ type, angle, isHeads, loc, gen, layer, ...options }) {
+    drawPentaPattern({ type, angle, isHeads, loc, gen, layer, clip, ...options }) {
+        if (clip && !withinClip(loc, clip)) return;
         const { overlays } = globals; // don't forget the options
 
         if (layer == "rhomb" || layer == "dual") {
@@ -813,7 +837,8 @@ export class PenroseScreen {
      *
      * This is only called when layer = "rhomb";
      */
-    drawRhombusPattern({ type, angle, isHeads, loc, gen, ...options }) {
+    drawRhombusPattern({ type, angle, isHeads, loc, gen, clip, ...options }) {
+        if (clip && !withinClip(loc, clip)) return;
         const bounds = new Bounds();
         const { overlays } = globals;
         const { ammannSelected, rhombSelected } = overlays;

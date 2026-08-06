@@ -786,29 +786,46 @@ export function drawSunStar(id) {
     const slotB = sunStarSlot("b");
 
     // penta() routes the star types through to star(), so one path serves both.
-    function drawOne(scene, slot, loc) {
+    function drawOne(scene, slot, loc, clip) {
         const { type, angle, isHeads, gen } = slot;
-        scene.penta({ type, angle, isHeads, loc, gen });
-        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+        const opts = clip ? { clip } : {};
+        scene.penta({ type, angle, isHeads, loc, gen, ...opts });
+        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb", ...opts });
     }
 
     /**
-     * Measures in a throwaway scene, then draws shifted so the figure sits
-     * against the origin. Measuring separately keeps the canvas tight.
+     * Three passes.
      *
-     * Each slot carries its own mode, so a scene is built per slot. When two
-     * slots share a canvas they are drawn into one scene using the first slot's
-     * mode -- mixing modes in a single scene is not meaningful.
+     * The recursion bounds a figure by where it stops, which is a shape, not a
+     * circle. A patch is the pentagon centres within a radius of a centre, so
+     * the first pass measures the figure unclipped to find that centre and a
+     * radius that rounds it off -- the inscribed circle, the largest that fits
+     * inside the raw extent. The second measures what survives the clip, and the
+     * third draws it shifted against the origin so the canvas comes out tight.
+     *
+     * The clip centre has to move with the figure on the last pass, since it is
+     * expressed in the same coordinates as loc.
      */
     function renderInto(canvas, slots) {
         const mode = slots[0].mode;
-        const ms = new PenroseScreen(mode);
-        ms.setToMeasure();
-        for (const slot of slots) drawOne(ms, slot, p(0, 0));
-        const loc = ms.bounds.isEmpty ? p(0, 0) : ms.bounds.minPoint.neg;
+
+        const raw = new PenroseScreen(mode);
+        raw.setToMeasure();
+        for (const slot of slots) drawOne(raw, slot, p(0, 0), null);
+        if (raw.bounds.isEmpty) return;
+        const { minPoint: lo, maxPoint: hi } = raw.bounds;
+        const center = p((lo.x + hi.x) / 2, (lo.y + hi.y) / 2);
+        const radius = Math.min((hi.x - lo.x) / 2, (hi.y - lo.y) / 2);
+
+        const clipped = new PenroseScreen(mode);
+        clipped.setToMeasure();
+        for (const slot of slots) drawOne(clipped, slot, p(0, 0), { center, radius });
+        if (clipped.bounds.isEmpty) return;
+        const shift = clipped.bounds.minPoint.neg;
 
         const scene = new PenroseScreen(mode);
-        for (const slot of slots) drawOne(scene, slot, loc);
+        const clip = { center: center.tr(shift), radius };
+        for (const slot of slots) drawOne(scene, slot, shift, clip);
         resizeAndRender(scene, canvas, SCALE);
     }
 

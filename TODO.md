@@ -199,11 +199,20 @@ tiling taken as arbitrarily large. `Gen` sets that radius. This is why the plain
 `Pe5`/`St5` figures are only an approximation of the named patches — they are
 bounded by where the recursion stops, not by a circle.
 
-- [ ] Implement the clip. The recursion draws directly rather than returning
-      placed tiles, so this needs either a collect-then-filter pass (as
-      `wieringa-roof` does with `allP1Tiles`) or a radius test at the leaf, in
-      `drawPentaPattern` and `drawRhombusPattern`. Options already flow through
-      the recursion via `...options`, so a center and radius could ride along
+- [x] **Clip implemented.** A `clip` of `{center, radius}` rides through
+      `...options`, which already flows through every level of the recursion, and
+      is tested at both leaves — `drawPentaPattern` and `drawRhombusPattern`.
+      The test is on the tile's own `loc`, which for penta and star is its
+      centre, so it is literally "the pentagon centers within a given radius".
+      A tile just inside the circle can still poke past it, leaving the boundary
+      ragged by one tile, which is what a real patch looks like
+- [x] The Sun/Star page renders in three passes: measure raw to find the centre
+      and the inscribed radius, measure clipped, then draw shifted against the
+      origin. Pe5 gen 3 goes from 116.1x110.5 to 112.1x110.5, St5 from
+      187.9x178.7 to 181.4x178.7 — both near square, so the patches are round
+- [ ] The radius is currently derived (largest circle inside the raw extent)
+      rather than being what `Gen` sets. Per the spec `Gen` should set the
+      radius, with the expansion deep enough to fill it
 - [ ] Queen needs a composite seed: `Pe3` plus two `Pe1`
 
 #### Direction settled 2026-08-05
