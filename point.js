@@ -131,3 +131,17 @@ function angleTest() {
 export function ang(fifths, isDown) {
     return new Angle(fifths, isDown);
 }
+
+/**
+ * The inverse of Angle.tenths.
+ *
+ * Vectors are stored in tenths, so composite seeds measured as tenth offsets
+ * need to turn a tenth back into an angle. Even tenths are up, odd are down:
+ * tenths = (fifths * 2 + (isDown ? 5 : 0)) % 10.
+ */
+export function angFromTenth(tenth) {
+    const t = ((tenth % 10) + 10) % 10;
+    return t % 2 === 0
+        ? new Angle(t / 2, false)
+        : new Angle(norm((t - 5) / 2), true);
+}

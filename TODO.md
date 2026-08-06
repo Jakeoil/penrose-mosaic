@@ -167,6 +167,36 @@ with the P3 rhombs overlaid in yellow.
 That asymmetry is the thing to look at first. If the Sun/Star overlay carries
 over to P1, the large RG restriction to blue is very likely where it shows up.
 
+#### Direction settled 2026-08-05
+- Clearest reading is **strokes only, fill transparent or none**
+- Borrow the framework from `wieringa-roof/unfold.html`: a checkbox reading
+  **"overlay instead of side by side"** (`#p1-overlay`, handled in
+  `src/workbench.ts`). Same idea here for penta vs rhombs
+- Work in **patches**, not raw generations: Sun, Star, and deca/Queen. Build them
+  as composite seeds in the style of `deca()`. Do not worry about matching
+  generation numbers between them
+- The duals of each layer are **sun/star, horizontal up or down**. All five-fold
+- **Deca is its own dual** — horizontal up and down are its duals
+- Controls later, but the shape is a **swap function**: the sidebar sets up the
+  left one, and swap exchanges them
+
+- [x] `starPatch()` added to `penrose-screen.js` — the Star composite, ported
+      from the neighborhood measured in `wieringa-roof`'s `expandStarComposite`,
+      but following this project's generation convention (children at `gen - 1`,
+      wheels at `[gen]`). Verified non-empty and mirror-symmetric in all three
+      modes. `angFromTenth()` added to `point.js`, exact inverse of `.tenths`
+- [ ] **The Sun composite does not port directly.** Its ring sits at 18 + 72k
+      degrees — *half*-tenths — so it cannot be placed by a wheel lookup, which
+      only reaches tenths. `wieringa-roof` places it polar, at radius
+      `|s-wheel| · 2cos18°`. That is fine there because it is real-mode only, but
+      `2cos18° = √(2+φ)` is the degree-4 number from the shear analysis, so it
+      leaves the lattice and would break quadrille and mosaic. Options: express
+      the ring as a **sum of two wheel vectors** (deca already does this, e.g.
+      `pDown[...].tr(sUp[...])`, and a sum of adjacent tenths points between
+      them), or accept the Sun as real-mode only. Needs deciding
+- [ ] Meanwhile the page draws `penta(Pe5)` for the Sun slot, which is the
+      pentagon deflation rather than the measured Sun patch
+
 #### New page: two independent overlay layers
 "Dual rhombs" is too narrow a framing. What the page wants is **two overlay
 slots, each with its own controls**, drawn on one canvas. The Sun/Star

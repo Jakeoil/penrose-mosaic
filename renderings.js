@@ -775,15 +775,15 @@ export function drawSunStar(id) {
         const loc = p(0, 0).tr(base);
         const gen = 3;
 
-        // Sun -- centred on a pentagon. The penta family emits the rhombs.
+        // Sun -- centred on a pentagon.
         scene.penta({ type: penrose.Pe5, angle, isHeads, loc, gen });
         scene.penta({ type: penrose.Pe5, angle, isHeads, loc, gen, layer: "rhomb" });
 
-        // Star -- centred on a five-star, same centre. drawRhombusPattern has no
-        // St cases, so this contributes outlines only. That asymmetry is the
-        // point: in the dual it is the star family that carries the rhombs.
-        scene.star({ type: penrose.St5, angle, isHeads, loc, gen });
-        scene.star({ type: penrose.St5, angle, isHeads, loc, gen, layer: "rhomb" });
+        // Star -- the composite patch, centred on a five-star gap with its
+        // measured ring of Pe1, Pe3 and St3. Both patches carry rhombs: only a
+        // generation 0 star emits none, and a star patch is full of pentagons.
+        scene.starPatch({ angle, isHeads, loc, gen });
+        scene.starPatch({ angle, isHeads, loc, gen, layer: "rhomb" });
 
         resizeAndRender(scene, canvas, 6);
     };
