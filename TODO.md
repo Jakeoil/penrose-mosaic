@@ -167,6 +167,45 @@ with the P3 rhombs overlaid in yellow.
 That asymmetry is the thing to look at first. If the Sun/Star overlay carries
 over to P1, the large RG restriction to blue is very likely where it shows up.
 
+#### Specification 2026-08-06
+
+**Per image, independent, set on screen above each image:**
+
+| control | values |
+| ------- | ------ |
+| Shape type | Star, Sun, Queen |
+| Orientation | Up / Down |
+| Parity | Heads / Tails |
+| Gen | size of the circular patch |
+| Mode | real and quadrille only — mosaic does not make sense here |
+
+**Shared, pulled from the sidebar:** layer (pentagons and stars, or small
+rhombs); stroke, fill and color. Default **solid stroke with transparent fill**
+for both rhombs and pentas. The sidebar can be tweaked to suit.
+
+**What the patches actually are.** These are radius-clipped, not
+recursion-bounded — a different construction from what `penta()` and `star()`
+produce:
+
+- **Star patch**, seed at gen 0: the pentagon centers within a given radius of
+  the center of a `St5` **of indefinite generation**
+- **Sun patch**, seed at gen 0: the pentagon centers within a given radius of
+  the center of a `Pe5` **of indefinite generation**
+- **Queen patch**: a patch whose first generation is one yellow (`Pe3`) and two
+  orange (`Pe1`) pentagons
+
+So a patch is defined by a radius clip around a center, with the underlying
+tiling taken as arbitrarily large. `Gen` sets that radius. This is why the plain
+`Pe5`/`St5` figures are only an approximation of the named patches — they are
+bounded by where the recursion stops, not by a circle.
+
+- [ ] Implement the clip. The recursion draws directly rather than returning
+      placed tiles, so this needs either a collect-then-filter pass (as
+      `wieringa-roof` does with `allP1Tiles`) or a radius test at the leaf, in
+      `drawPentaPattern` and `drawRhombusPattern`. Options already flow through
+      the recursion via `...options`, so a center and radius could ride along
+- [ ] Queen needs a composite seed: `Pe3` plus two `Pe1`
+
 #### Direction settled 2026-08-05
 - Clearest reading is **strokes only, fill transparent or none**
 - Borrow the framework from `wieringa-roof/unfold.html`: a checkbox reading

@@ -77,6 +77,25 @@ canvas.apple-ii {
     margin: 0 0 8px 0;
 }
 
+.sunstar-pair {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.sunstar-panel {
+    margin-bottom: 4px;
+}
+
+.sunstar-panel label {
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.sunstar-panel input[type="number"] {
+    width: 3.5em;
+}
+
 .control-group {
     border: 3px outset rgb(208, 236, 246);
     margin: 0px 0px 5px 0px;

@@ -147,9 +147,12 @@ function wireDefaults() {
 export const SUN_STAR = "SunStar";
 
 function wireSunStar(app) {
-    const eleOverlay = document.querySelector("#sunstar-overlay");
-    if (!eleOverlay) return false;
-    eleOverlay.addEventListener("change", () => app(SUN_STAR), false);
+    const elePage = document.querySelector("#sunstar");
+    if (!elePage) return false;
+    // One listener on the page rather than ten on the individual controls.
+    // Every setting here is a select, a number or a checkbox, so change covers
+    // all of them and the handler does not care which one moved.
+    elePage.addEventListener("change", () => app(SUN_STAR), false);
     return true;
 }
 

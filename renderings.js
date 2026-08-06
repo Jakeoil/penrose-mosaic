@@ -735,18 +735,40 @@ export function drawGeneric3(id) {
 /***
  * Sun/Star.
  *
- * The two configurations with global five-fold symmetry: a Sun centred on a
- * pentagon, a Star centred on a five-star. Each is a plain Pe5 and St5 at the
- * same generation -- the named patches are these with the outer tiles trimmed to
- * round them off.
+ * Two images, each with its own settings set above it: shape type, orientation,
+ * parity, generation and mode. Layer, stroke, fill and color still come from the
+ * sidebar, so both images share them.
  *
- * Two canvases rather than one. That lets each drawing area carry its own CSS
- * border without drawing the border into the scene, and both are rendered at the
- * same scale so the pair stays directly comparable. Overlay hides the second and
+ * Two canvases rather than one, so each drawing area can carry its own CSS
+ * border without drawing a border into the scene. Overlay hides the second and
  * draws both figures into the first.
  *
- * See TODO 4a.
+ * Sun, Star and Queen are currently approximated by a plain Pe5, St5 and Pe3.
+ * The real definitions are radius clips around a center of indefinite
+ * generation, which needs a clip the recursion does not yet have. See TODO 4a.
  */
+
+const SUNSTAR_SEED = {
+    sun: penrose.Pe5,
+    star: penrose.St5,
+    queen: penrose.Pe3,
+};
+
+function sunStarSlot(key) {
+    const pick = (name, dflt) => {
+        const ele = document.querySelector(`#ss-${key}-${name}`);
+        return ele ? ele.value : dflt;
+    };
+    const gen = parseInt(pick("gen", "3"), 10);
+    return {
+        type: SUNSTAR_SEED[pick("type", "sun")] || penrose.Pe5,
+        angle: ang(0, pick("orient", "up") === "down"),
+        isHeads: pick("parity", "heads") === "heads",
+        gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 3,
+        mode: pick("mode", "real"),
+    };
+}
+
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
     if (!page || page.style.display == "none") return;
@@ -757,42 +779,45 @@ export function drawSunStar(id) {
         return;
     }
 
-    const { shapeMode, controls } = globals;
-    const angle = ang(controls.fifths, controls.isDown);
-    const isHeads = controls.isHeads;
-    const gen = 3;
     const SCALE = 4;
     const eleOverlay = document.querySelector("#sunstar-overlay");
     const overlay = eleOverlay ? eleOverlay.checked : false;
+    const slotA = sunStarSlot("a");
+    const slotB = sunStarSlot("b");
 
     // penta() routes the star types through to star(), so one path serves both.
-    function drawOne(scene, type, loc) {
+    function drawOne(scene, slot, loc) {
+        const { type, angle, isHeads, gen } = slot;
         scene.penta({ type, angle, isHeads, loc, gen });
         scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
     }
 
     /**
      * Measures in a throwaway scene, then draws shifted so the figure sits
-     * against the origin. Measuring separately keeps the canvas tight -- reusing
-     * one scene for both passes leaves the unshifted geometry in its bounds.
+     * against the origin. Measuring separately keeps the canvas tight.
+     *
+     * Each slot carries its own mode, so a scene is built per slot. When two
+     * slots share a canvas they are drawn into one scene using the first slot's
+     * mode -- mixing modes in a single scene is not meaningful.
      */
-    function renderInto(canvas, types) {
-        const ms = new PenroseScreen(shapeMode.shapeMode);
+    function renderInto(canvas, slots) {
+        const mode = slots[0].mode;
+        const ms = new PenroseScreen(mode);
         ms.setToMeasure();
-        for (const type of types) drawOne(ms, type, p(0, 0));
+        for (const slot of slots) drawOne(ms, slot, p(0, 0));
         const loc = ms.bounds.isEmpty ? p(0, 0) : ms.bounds.minPoint.neg;
 
-        const scene = new PenroseScreen(shapeMode.shapeMode);
-        for (const type of types) drawOne(scene, type, loc);
+        const scene = new PenroseScreen(mode);
+        for (const slot of slots) drawOne(scene, slot, loc);
         resizeAndRender(scene, canvas, SCALE);
     }
 
     if (overlay) {
         canvasB.style.display = "none";
-        renderInto(canvasA, [penrose.Pe5, penrose.St5]);
+        renderInto(canvasA, [slotA, slotB]);
     } else {
         canvasB.style.display = "";
-        renderInto(canvasA, [penrose.Pe5]);
-        renderInto(canvasB, [penrose.St5]);
+        renderInto(canvasA, [slotA]);
+        renderInto(canvasB, [slotB]);
     }
 }
