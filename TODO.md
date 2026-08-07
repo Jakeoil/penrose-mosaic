@@ -178,11 +178,20 @@ to make rather than by passing a flag into the recursion, so they cannot collide
 with anything downstream. Verified: the page's call path gives identical tile
 counts to direct composite calls for all three shapes, both modes, gen 3/4/5.
 
-- [ ] **Back burner: the sidebar's own overlay controls.** There is a complex
-      interaction around "pentas and stars" — the sidebar `#penta-ovl` gates
-      drawing inside `drawPentaPattern` via `overlays.pentaSelected`, while the
-      new per-image checkbox gates whether the penta layer is drawn at all. Two
-      switches in series for one thing. Worth untangling, but not now
+- [x] **The page owns its overlays now.** The sidebar's boxes gate drawing deep
+      inside `drawPentaPattern` and `drawRhombusPattern`, and `#rhomb-ovl` is
+      unchecked by default, so nothing on this page could show rhombs however the
+      page's own checkbox was set. `PenroseScreen` now carries an optional
+      `overlays` property — `activeOverlays` prefers it, then the sidebar, then
+      the measurements iframe — and the page sets `pentaSelected`,
+      `rhombSelected` and `smallRhomb` true so its checkboxes are authoritative.
+      A per-scene property rather than anything passed through `...options`
+- [ ] Division of labor on this page: **controls, shape mode and overlays** come
+      from the per-image panels; **penta style, rhomb style and color** stay in
+      the sidebar. Tree, Ammann and Mosaic still come from the sidebar for now —
+      they have no per-image equivalent yet
+- [ ] **Back burner: untangle the sidebar's own overlay controls.** Two switches
+      in series for one thing is still the underlying shape of it
 
 #### Simplified 2026-08-07
 The per-image panels are gone. Sun, Star and Queen(Deca) are in the sidebar

@@ -144,6 +144,18 @@ export class PenroseScreen {
         this.mode = mode;
         this.measure = false;
         this.bounds = new Bounds();
+        // Per-scene overlay flags. Null means obey the sidebar. A page that owns
+        // its own overlays sets this instead of trying to pass them down through
+        // ...options, which would collide with argument names in the recursion.
+        this.overlays = null;
+    }
+
+    /**
+     * The overlay flags this scene draws by: its own if it has been given any,
+     * otherwise the sidebar's, otherwise the measurements iframe's.
+     */
+    get activeOverlays() {
+        return this.overlays || globals.overlays || measureTaskGlobals.overlays;
     }
 
     /**
@@ -315,7 +327,7 @@ export class PenroseScreen {
      */
     drawPentaPattern({ type, angle, isHeads, loc, gen, layer, clip, ...options }) {
         if (clip && !withinClip(loc, clip)) return;
-        const { overlays } = globals; // don't forget the options
+        const overlays = this.activeOverlays; // don't forget the options
 
         if (layer == "rhomb" || layer == "dual") {
             return;
@@ -416,7 +428,7 @@ export class PenroseScreen {
             case penrose.Star:
                 return this.starPatch({ angle, isHeads, layer, loc, gen, ...options });
         }
-        let { overlays } = globals;
+        let overlays = this.activeOverlays;
         if (gen == 0) {
             if (layer == "penta") {
                 this.drawPentaPattern({
@@ -542,7 +554,7 @@ export class PenroseScreen {
         gen,
         ...options
     }) {
-        const { overlays } = { ...globals, ...options };
+        const overlays = this.activeOverlays;
         const bounds = new Bounds();
 
         if (gen == 0) {
@@ -802,7 +814,7 @@ export class PenroseScreen {
      * Deca again. Same reason in sun() and starPatch().
      */
     deca({ type, angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
-        const { overlays } = globals;
+        const overlays = this.activeOverlays;
         const bounds = new Bounds();
         if (gen == 0) {
             return bounds;
@@ -963,7 +975,7 @@ export class PenroseScreen {
     drawRhombusPattern({ type, angle, isHeads, loc, gen, clip, ...options }) {
         if (clip && !withinClip(loc, clip)) return;
         const bounds = new Bounds();
-        const { overlays } = globals;
+        const overlays = this.activeOverlays;
         const { ammannSelected, rhombSelected } = overlays;
 
         const thins = penrose[this.mode].thinRhomb[gen];
@@ -1057,7 +1069,7 @@ export class PenroseScreen {
         }
     }
     drawDualRhombusPattern({ type, angle, isHeads, loc, gen, ...options }) {
-        const { overlays } = { ...globals, ...measureTaskGlobals };
+        const overlays = this.activeOverlays;
         const { ammannSelected, rhombSelected } = overlays;
 
         const thins = penrose[this.mode].thinDualRhomb[gen + 1];

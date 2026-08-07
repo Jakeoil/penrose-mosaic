@@ -770,19 +770,41 @@ export function drawSunStar(id) {
     }
 
     /**
+     * This page owns its overlays. The sidebar's Pentas-and-Stars and Rhombi
+     * boxes gate drawing deep inside drawPentaPattern and drawRhombusPattern,
+     * so with Rhombi unchecked -- its default -- nothing on this page could show
+     * rhombs however the page's own checkbox was set. Setting them true here
+     * hands control to the per-image checkboxes, which do the filtering by
+     * choosing which calls to make. Tree, Ammann and Mosaic still come from the
+     * sidebar, as do penta style, rhomb style and color.
+     */
+    function pageOverlays() {
+        return {
+            ...(globals.overlays || {}),
+            pentaSelected: true,
+            rhombSelected: true,
+            smallRhomb: true,
+        };
+    }
+
+    /**
      * Measures in a throwaway scene so the canvas comes out tight, then draws
      * shifted against the origin. Each slot builds its own scene because each
      * carries its own mode; when two share a canvas they use the first slot's.
      */
     function renderInto(canvas, group) {
         const mode = group[0].mode;
+        const overlays = pageOverlays();
+
         const ms = new PenroseScreen(mode);
+        ms.overlays = overlays;
         ms.setToMeasure();
         for (const slot of group) drawOne(ms, slot, p(0, 0));
         if (ms.bounds.isEmpty) return;
         const loc = ms.bounds.minPoint.neg;
 
         const scene = new PenroseScreen(mode);
+        scene.overlays = overlays;
         for (const slot of group) drawOne(scene, slot, loc);
         resizeAndRender(scene, canvas, SCALE);
     }
