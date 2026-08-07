@@ -373,7 +373,7 @@ export function drawGridWork(id) {
     if (page.style.display == "none") return;
     const canvas = document.querySelector(`#${id} > canvas`);
 
-    const { shapeMode, shapeColors } = globals;
+    const { shapeMode, shapeColors, overlays } = globals;
     const scene = new PenroseScreen(shapeMode.shapeMode);
     const grid = scene.grid.bind(scene);
     const figure = scene.figure.bind(scene);
@@ -388,22 +388,37 @@ export function drawGridWork(id) {
      */
     function drawBig() {
         let y = 5;
-        const mosaicShapes = [
-            mosaic.penta,
-            mosaic.diamond,
-            mosaic.star,
-            mosaic.boat,
-        ];
-
-        console.log(`grid1`);
         const spacing = 12;
-        for (const shape of mosaicShapes) {
-            for (let i = 0; i < 10; i++) {
-                let offset = p((i + 1) * spacing, y);
-                figure(shapeColors.shapeColors["pe1-color"], offset, shape[i]);
-                grid(p((i + 1) * spacing, y), 5);
+
+        // This page draws its mosaic row from the mosaic shape data directly
+        // rather than through drawPentaPattern, so it has to honour the flag
+        // itself. Turning mosaic off means no mosaic tiles anywhere, and there
+        // is no mosaic of the real geometry at all.
+        const showMosaic =
+            overlays &&
+            overlays.mosaicSelected &&
+            shapeMode.shapeMode !== shapeMode.MODE_REAL;
+
+        if (showMosaic) {
+            const mosaicShapes = [
+                mosaic.penta,
+                mosaic.diamond,
+                mosaic.star,
+                mosaic.boat,
+            ];
+
+            for (const shape of mosaicShapes) {
+                for (let i = 0; i < 10; i++) {
+                    let offset = p((i + 1) * spacing, y);
+                    figure(
+                        shapeColors.shapeColors["pe1-color"],
+                        offset,
+                        shape[i]
+                    );
+                    grid(p((i + 1) * spacing, y), 5);
+                }
+                y += spacing;
             }
-            y += spacing;
         }
 
         y = 5;
@@ -807,6 +822,10 @@ export function drawSunStar(id) {
             pentaSelected: true,
             rhombSelected: true,
             smallRhomb: true,
+            // This page has no mosaic checkbox, so it does not show mosaic
+            // tiles. Inheriting the sidebar flag would make the page change
+            // under a control it does not offer.
+            mosaicSelected: false,
         };
     }
 
