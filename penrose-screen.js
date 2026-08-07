@@ -329,7 +329,7 @@ export class PenroseScreen {
         if (clip && !withinClip(loc, clip)) return;
         const overlays = this.activeOverlays; // don't forget the options
 
-        if (layer == "rhomb" || layer == "dual") {
+        if (layer == "rhomb") {
             return;
         }
 
@@ -437,7 +437,7 @@ export class PenroseScreen {
             }
 
             if (layer == "rhomb") {
-                if (overlays && overlays.smallRhomb) {
+                if (overlays.smallRhomb) {
                     this.drawRhombusPattern({
                         type,
                         angle,
@@ -504,10 +504,10 @@ export class PenroseScreen {
                     gen: gen - 1,
                     ...options,
                 });
-                if (overlays && overlays.treeSelected)
+                if (overlays.treeSelected)
                     this.line(loc, locDiamond, "red");
             }
-            if (overlays && overlays.treeSelected)
+            if (overlays.treeSelected)
                 this.line(loc, locPenta, "black");
         }
     }
@@ -565,7 +565,7 @@ export class PenroseScreen {
             }
 
             if (layer == "rhomb") {
-                if (overlays && overlays.smallRhomb) {
+                if (overlays.smallRhomb) {
                     this.drawRhombusPattern({
                         type,
                         angle,
@@ -575,16 +575,6 @@ export class PenroseScreen {
                         ...options,
                     });
                 }
-            }
-
-            if (layer == "dual") {
-                this.drawDualRhombusPattern({
-                    type,
-                    angle,
-                    isHeads,
-                    loc,
-                    gen,
-                });
             }
 
             return;
@@ -642,7 +632,7 @@ export class PenroseScreen {
                     gen: gen - 1,
                     ...options,
                 });
-                if (overlays && overlays.treeSelected) {
+                if (overlays.treeSelected) {
                     this.line(loc, locPenta, "red");
                     this.line(loc, locBoat, "blue");
                 }
@@ -774,16 +764,6 @@ export class PenroseScreen {
         });
     }
 
-    pentaDual(type, angle, loc, gen) {
-        this.penta({ type, angle, loc, gen });
-        this.penta({
-            type,
-            angle,
-            loc,
-            gen,
-            layer: "dual",
-        });
-    }
     /**
      * Decagon is a type unto itself.
      *      * The up version.
@@ -1027,103 +1007,6 @@ export class PenroseScreen {
                     }
                     break;
                 case penrose.Pe1:
-                    switch (i) {
-                        case 0:
-                            const thick2 = thicks[shift.tenths];
-                            if (rhombSelected) {
-                                this.rhombus(
-                                    fill,
-                                    loc,
-                                    thick2,
-                                    outline,
-                                    isHeads,
-                                );
-                            }
-                            if (ammannSelected) {
-                                this.ammannSegments(loc, thick2, true);
-                            }
-                            break;
-                        case 4:
-                        case 1:
-                            const thinR2 = thins[shift.tenths];
-                            if (rhombSelected) {
-                                this.rhombus(
-                                    fill,
-                                    loc,
-                                    thinR2,
-                                    outline,
-                                    isHeads,
-                                );
-                            }
-                            if (ammannSelected) {
-                                this.ammannSegments(loc, thinR2, false);
-                            }
-                            break;
-                    }
-            }
-        }
-    }
-    drawDualRhombusPattern({ type, angle, isHeads, loc, gen, ...options }) {
-        const overlays = this.activeOverlays;
-        const { ammannSelected, rhombSelected } = overlays;
-
-        const thins = penrose[this.mode].thinDualRhomb[gen + 1];
-        const thicks = penrose[this.mode].thickDualRhomb[gen + 1];
-        let fill = pColor(type);
-        const outline = null;
-        for (let i = 0; i < 5; i++) {
-            const shift = angle.rot(i);
-            switch (type) {
-                case penrose.St5:
-                    fill = pColor(penrose.Pe5);
-                    const thick5 = thicks[shift.tenths];
-                    if (rhombSelected) {
-                        this.rhombus(fill, loc, thick5, outline, isHeads);
-                    }
-                    if (ammannSelected) {
-                        this.ammannSegments(loc, thick5, true);
-                    }
-                    break;
-                case penrose.St3:
-                    fill = pColor(penrose.Pe3);
-                    switch (i) {
-                        case 0:
-                            const thin3 = thins[shift.tenths];
-                            if (rhombSelected) {
-                                this.rhombus(
-                                    fill,
-                                    loc,
-                                    thin3,
-                                    outline,
-                                    isHeads,
-                                );
-                            }
-                            if (ammannSelected) {
-                                this.ammannSegments(loc, thin3, false);
-                            }
-                        // no break here
-                        case 1:
-                        case 4:
-                            const thick3 = thicks[shift.tenths];
-                            if (rhombSelected) {
-                                this.rhombus(
-                                    fill,
-                                    loc,
-                                    thick3,
-                                    outline,
-                                    isHeads,
-                                );
-                            }
-                            if (ammannSelected) {
-                                this.ammannSegments(loc, thick3, true);
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                case penrose.St1:
-                    fill = pColor(penrose.Pe1);
                     switch (i) {
                         case 0:
                             const thick2 = thicks[shift.tenths];

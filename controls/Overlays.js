@@ -10,9 +10,7 @@ import { cookie, globals } from "../controls.js";
  *   #rhomb-ovl     rhombSelected: boolean
  *   #ammon         ammannSelected: boolean
  *   #small-rhomb   smallRhomb: boolean
- *
- * Dual Layer
- *   #dual          dualRhombSelected: boolean
+
  *
  * Controls globals.overlays
  * Only effects the active layer
@@ -26,7 +24,6 @@ export class Overlays {
         this.eleTree = document.querySelector("#tree-penta");
         this.eleRhomb = document.querySelector("#rhomb-ovl");
         this.eleAmmann = document.querySelector("#ammann");
-        this.eleDualRhomb = document.querySelector("#dual-ovl");
         // This controls the size of both Rhomb and Ammann
         this.eleRhombSizeField = document.querySelector("#rhomb-size");
         this.radioButtons = document.querySelectorAll("input[name='rhomb']");
@@ -79,13 +76,6 @@ export class Overlays {
             );
         }
 
-        if (this.eleDualRhomb) {
-            this.eleDualRhomb.addEventListener(
-                "click",
-                this.dualRhombClicked.bind(this),
-                false
-            );
-        }
         this.reset();
         this.refresh();
     }
@@ -97,7 +87,6 @@ export class Overlays {
         this.rhombSelected = false;
         this.ammannSelected = false;
         this.smallRhomb = false;
-        this.dualRhombSelected = false;
 
         const cookieJson = cookie.get(Overlays.name, this.toString());
         this.fromString(cookieJson);
@@ -159,10 +148,6 @@ export class Overlays {
             this.eleAmmann.checked = this.ammannSelected;
         }
 
-        if (this.eleDualRhomb) {
-            this.eleDualRhomb.checked = this.dualRhombSelected;
-        }
-
         if (
             this.eleRhombSizeField &&
             this.eleSmallRhomb &&
@@ -190,7 +175,6 @@ export class Overlays {
             rhombSelected: this.rhombSelected,
             ammannSelected: this.ammannSelected,
             smallRhomb: this.smallRhomb,
-            dualRhombSelected: this.dualRhombSelected,
         });
     }
 
@@ -202,7 +186,6 @@ export class Overlays {
             rhombSelected: this.rhombSelected,
             ammannSelected: this.ammannSelected,
             smallRhomb: this.smallRhomb,
-            dualRhombSelected: this.dualRhombSelected,
         } = JSON.parse(jsonString));
     }
     pentaClicked(event) {
@@ -237,11 +220,6 @@ export class Overlays {
                 this.smallRhomb = button.id == "small-rhomb";
             }
         }
-        this.refresh();
-        this.app(Overlays.name);
-    }
-    dualRhombClicked() {
-        this.dualRhombSelected = !this.dualRhombSelected;
         this.refresh();
         this.app(Overlays.name);
     }

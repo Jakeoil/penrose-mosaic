@@ -6,7 +6,6 @@ import {
     drawGridWork,
     drawGeneric123,
     drawGeneric3,
-    drawDualDemo,
     drawSunStar,
 } from "./renderings.js";
 
@@ -51,7 +50,6 @@ export function penroseApp(source) {
     drawGridWork("gwork");
     drawGeneric123("g012");
     drawGeneric3("g3");
-    drawDualDemo("dualwork");
     drawSunStar("sunstar");
 }
 
