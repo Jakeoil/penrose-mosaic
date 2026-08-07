@@ -13,8 +13,7 @@ function activeShapeData() {
     const mode = measureTaskGlobals.shapeMode.shapeMode;
     switch (mode) {
         case "real": return real;
-        case "mosaic": return mosaic;
-        default: return quadrille;
+        default: return quadrille; // discrete
     }
 }
 

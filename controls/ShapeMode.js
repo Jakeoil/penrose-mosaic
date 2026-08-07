@@ -1,23 +1,22 @@
 import { cookie } from "../controls.js";
 /**
- * Shape-Mode:
- *   "mosaic"
- *      Mosaic tiles
- *   "quadrille"
- *      Filled outlines like on graph paper
+ * Shape-Mode. There are two geometries, and only two:
+ *
+ *   "discrete"
+ *      Integer coordinates, hand computed. Drawn either as outlines on graph
+ *      paper or as mosaic tiles -- those are presentations of one geometry, not
+ *      separate modes, and the overlay flags choose between them.
  *   "real"
- *      True five fold real symmetry todo
+ *      True five fold symmetry, from sines, cosines and phi.
+ *
+ * Mosaic used to be a third mode, which is what made "pentas and stars" dead in
+ * one mode and live in another. See TODO 7a.
  */
-// const MODE_MOSAIC = "mosaic";
-// const MODE_QUADRILLE = "quadrille";
-// export const MODE_REAL = "real";
-// const MODE_LIST = [MODE_MOSAIC, MODE_QUADRILLE, MODE_REAL];
 
 export class ShapeMode {
-    MODE_MOSAIC = "mosaic";
-    MODE_QUADRILLE = "quadrille";
+    MODE_DISCRETE = "discrete";
     MODE_REAL = "real";
-    MODE_LIST = [this.MODE_MOSAIC, this.MODE_QUADRILLE, this.MODE_REAL];
+    MODE_LIST = [this.MODE_DISCRETE, this.MODE_REAL];
     constructor(app) {
         this.app = app;
         this.eleMode = document.querySelector("#shape-mode");
@@ -50,7 +49,7 @@ export class ShapeMode {
      * would silently drop the current mode back to real instead of keeping it.
      */
     reset() {
-        if (!this.shapeMode) this.shapeMode = this.MODE_REAL;
+        if (!this.shapeMode) this.shapeMode = this.MODE_DISCRETE;
         const cookieJson = cookie.get(ShapeMode.name, this.toString());
         this.fromString(cookieJson);
     }
@@ -61,6 +60,11 @@ export class ShapeMode {
     }
     fromString(jsonString) {
         ({ shapeMode: this.shapeMode } = JSON.parse(jsonString));
+        // A cookie written before there were two geometries names a mode that no
+        // longer exists. Both old discrete modes fold into "discrete".
+        if (!this.MODE_LIST.includes(this.shapeMode)) {
+            this.shapeMode = this.MODE_DISCRETE;
+        }
     }
     clickMode() {
         let new_idx =

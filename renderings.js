@@ -740,7 +740,7 @@ function sunStarSlot(key) {
         angle: ang(0, pick("orient", "up") === "down"),
         isHeads: pick("parity", "heads") === "heads",
         gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 3,
-        mode: pick("mode", "real"),
+        mode: pick("mode", "discrete"),
         showPenta: checked("penta", true),
         showRhomb: checked("rhomb", true),
         showBigRhomb: checked("bigrhomb", false),

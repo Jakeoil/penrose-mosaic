@@ -91,10 +91,10 @@
                     <legend>Overlays and flags</legend>
                     <fieldset>
                         <legend>Pentagons</legend>
-                        <input type="checkbox" id="penta-ovl" checked />
+                        <input type="checkbox" id="penta-ovl" />
                         <label for="penta-ovl">Pentas and Stars</label>
                         <br />
-                        <input type="checkbox" id="mosaic-penta" />
+                        <input type="checkbox" id="mosaic-penta" checked />
                         <label for="mosaic-penta">Mosaic</label>
                         <br />
                         <input type="checkbox" id="tree-penta" />
@@ -153,15 +153,6 @@
                         <option value="gradient">gradient</option>
                         <option value="dihedral">dihedral</option>
                     </select>
-                    <br /><label for="opacity">Opacity</label>
-                    <input
-                        style="width: 50%"
-                        type="range"
-                        id="opacity"
-                        name="opacity"
-                        min="0"
-                        max="100"
-                    />
                 </fieldset>
                 <fieldset class="control-group">
                     <!-- ShapeColors -->
@@ -301,8 +292,8 @@
                             <label
                                 >Mode
                                 <select id="ss-a-mode">
+                                    <option value="discrete">Discrete</option>
                                     <option value="real">Real</option>
-                                    <option value="quadrille">Quadrille</option>
                                 </select></label
                             >
                             <br />
@@ -352,8 +343,8 @@
                             <label
                                 >Mode
                                 <select id="ss-b-mode">
+                                    <option value="discrete">Discrete</option>
                                     <option value="real">Real</option>
-                                    <option value="quadrille">Quadrille</option>
                                 </select></label
                             >
                             <br />

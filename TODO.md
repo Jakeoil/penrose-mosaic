@@ -532,14 +532,19 @@ the "fiddling" — the same checkbox is live or dead depending on a mode. Deleti
 the short-circuit and keeping only the overlay path removes the duplication and
 makes the checkboxes mean one thing everywhere.
 
-- [ ] `discrete` becomes a key on `penrose` alongside `real`, mapping to the
-      quadrille shape data. `mosaic` stays as shape data for the overlay but
-      stops being a mode
-- [ ] Delete the mosaic short-circuit in `drawPentaPattern`
-- [ ] **Migration hazard:** the shape-mode cookie stores the mode string, so an
-      existing cookie will say `"mosaic"` or `"quadrille"` — neither of which
-      will be in `MODE_LIST`. Map both to `discrete` on read, or the page opens
-      on a mode that no longer exists
+- [x] `discrete` is a key on `penrose` alongside `real`, mapping to the quadrille
+      shape data. `mosaic` stays as shape data for the overlay but is no longer a
+      mode. `MODE_LIST` is `[discrete, real]`, discrete default
+- [x] Mosaic short-circuit deleted. "pentas and stars" now means the same thing
+      in both geometries. Verified: pentas off suppresses outlines everywhere,
+      and both flags on gives outlines over tiles
+- [x] Stale cookies naming a mode that no longer exists fold to `discrete`
+- [x] Default presentation is the Mosaic — pentas off, mosaic on
+- [x] Blank-screen guard in `Overlays.refresh()`, and it is mode-aware: mosaic is
+      inert in real mode, so switching to real with only mosaic showing forces
+      pentas on instead of going blank. The mosaic checkbox is disabled in real
+- [x] Opacity slider removed. It was wired to nothing, and transparent fill
+      covers the need
 
 ### 7b. Strictness
 - [ ] Drop the `!overlays ||` guards. They mean "if the flags are missing, draw
@@ -569,11 +574,8 @@ Discrete only:
 - [ ] mosaic — default **show**, and disabled in real mode
 
 ### 7d. Styles
-- [ ] **Penta styles: add opacity.** Note the existing Rhomb opacity slider is
-      *not wired* — `#opacity` is read by nothing, and `lerp()` takes an
-      `opacity` argument it never uses, with a `todo!!! implement opacity` on it.
-      Implement it once in the renderer and use it for both, rather than adding a
-      second dead slider
+- [x] Opacity: dropped rather than added. The Rhomb slider was wired to nothing,
+      `lerp()` ignored the argument it took, and transparent fill covers it
 - [ ] Rhomb styles: unchanged
 - [ ] **Mosaic styles**, its own section, independent of penta styles:
       grid/no-grid (resolution rule wins) and fill none/solid/transparent.

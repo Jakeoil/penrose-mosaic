@@ -333,16 +333,11 @@ export class PenroseScreen {
             return;
         }
 
-        // Layer is "penta"
-        if (this.mode == penrose.mosaic.key) {
-            let shapes = this.mShape(type);
-            if (shapes) {
-                this.figure(pColor(type), loc, shapes[angle.tenths]);
-            }
-            return;
-        }
-
-        if (!overlays || overlays.pentaSelected) {
+        // Layer is "penta". There used to be a short-circuit here for mosaic
+        // mode which returned before consulting pentaSelected, so the checkbox
+        // did nothing in one mode and worked in another. Both presentations are
+        // overlay flags now and mean the same thing everywhere.
+        if (overlays.pentaSelected) {
             const fill = pColor(type);
             let shapes = this.pShape(type);
             if (shapes) {
@@ -351,7 +346,7 @@ export class PenroseScreen {
             }
         }
 
-        if (!overlays || overlays.mosaicSelected) {
+        if (overlays.mosaicSelected) {
             let shapes = this.mShape(type);
             if (shapes) {
                 this.figure(pColor(type), loc, shapes[angle.tenths]);

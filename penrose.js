@@ -100,9 +100,14 @@ class Penrose {
         this.Star = {
             name: this.STAR,
         };
+        // Two geometries. "discrete" is the quadrille shape data; mosaic is a
+        // presentation of the same geometry, reached through the overlay flag,
+        // not a mode of its own.
+        this.discrete = quadrille;
+        this.real = real;
+        // Shape data, still needed by mShape() and by the measurements tables.
         this.mosaic = mosaic;
         this.quadrille = quadrille;
-        this.real = real;
     }
 }
 export const penrose = new Penrose();

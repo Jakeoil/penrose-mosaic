@@ -1,4 +1,4 @@
-import { cookie } from "../controls.js";
+import { cookie, globals } from "../controls.js";
 /**
  * Overlays for the figures
  * Penta Layer
@@ -90,8 +90,9 @@ export class Overlays {
         this.refresh();
     }
     reset() {
-        this.pentaSelected = true;
-        this.mosaicSelected = false;
+        // The default presentation is the Mosaic.
+        this.pentaSelected = false;
+        this.mosaicSelected = true;
         this.treeSelected = false;
         this.rhombSelected = false;
         this.ammannSelected = false;
@@ -101,7 +102,29 @@ export class Overlays {
         const cookieJson = cookie.get(Overlays.name, this.toString());
         this.fromString(cookieJson);
     }
+    /**
+     * Mosaic is a presentation of the discrete geometry. There is no mosaic of
+     * the real one, so the flag is inert -- and the checkbox disabled -- in real
+     * mode.
+     */
+    get mosaicAvailable() {
+        return !globals.shapeMode || globals.shapeMode.shapeMode !== "real";
+    }
+
     refresh() {
+        // Never leave nothing on screen. A guard rather than a one-shot coupling
+        // from the mosaic checkbox: a one-shot leaves you stuck if you toggle in
+        // the other order. It has to know the mode, or switching to real with
+        // only mosaic showing would go blank.
+        const showingMosaic = this.mosaicSelected && this.mosaicAvailable;
+        if (!this.pentaSelected && !showingMosaic && !this.rhombSelected) {
+            this.pentaSelected = true;
+        }
+
+        if (this.eleMosaic) {
+            this.eleMosaic.disabled = !this.mosaicAvailable;
+        }
+
         if (this.elePenta) {
             this.elePenta.checked = this.pentaSelected;
         }
