@@ -573,23 +573,44 @@ Common, both geometries:
 Discrete only:
 - [ ] mosaic — default **show**, and disabled in real mode
 
-### 7d. Styles
-- [x] Opacity: dropped rather than added. The Rhomb slider was wired to nothing,
-      `lerp()` ignored the argument it took, and transparent fill covers it
-- [ ] Rhomb styles: unchanged
-- [ ] **Mosaic styles**, its own section, independent of penta styles:
-      grid/no-grid (resolution rule wins) and fill none/solid/transparent.
-      `PenroseScreen.grid()` and `CanvasRenderer.grid()` already exist and are
-      fully plumbed — nothing calls them. So this is a control and a call site,
-      not new drawing code
+### 7c. Overlays and flags — DEFERRED
+Large and small rhombs still share one flag, so they cannot be shown together
+from the sidebar. Deferred; the default is **small** for now. Doing it properly
+means a second flag and a second call to the rhomb layer on every page that
+draws rhombs, the way the Sun/Star page already does it.
 
-### 7e. Which controls apply to which page
-Today each page silently honors a subset — shape type is ignored by Inflation 1
-and 2, for instance — and nothing says so. Proposal: each page declares the
-controls it honors, and the sidebar **disables** the rest rather than hiding
-them, so the layout does not move.
+Duals are removed. Tree and Ammann already default off.
 
-- [ ] Disabling is a small visible change. Confirm before building
+### 7d. Styles — DONE
+- [x] Opacity dropped rather than added; the slider was wired to nothing
+- [x] Rhomb styles unchanged
+- [x] **Mosaic styles**, its own section, independent of penta styles:
+      - fill: none / solid / transparent
+      - border: none / grid / outline
+      The resolution rule still wins for the grid — square edges are noise below
+      `scale >= 5`. **Outline** is the exact silhouette of the tile: a mosaic tile
+      is a set of unit squares, and an edge shared by two squares is interior, so
+      keeping the edges that appear exactly once leaves the boundary. Verified on
+      a 2x2 block: 4 grid rects, or 8 boundary edges with the 4 interior ones
+      dropped
+
+### 7e. Which controls apply to which page — DROPPED
+
+### 7f. The bouncing shapes
+Changing a control makes the six example shape composites change height, so the
+page jumps. `resizeAndRender` sizes each canvas from the bounds of what was
+actually drawn, so turning a layer on or off resizes the canvas and the layout
+reflows.
+
+Proposed fix: **size the canvas from the figure, not from the overlays.** Measure
+once with every layer enabled, size the canvas to that, then draw only the
+selected layers into it. Canvas size then depends on type, generation and mode
+only, and never on which boxes are ticked. Costs one extra measure pass, which
+is nothing for six gen-0 figures.
+
+- [ ] Two alternatives, both worse: a fixed height on the container leaves the
+      canvas resizing inside it, which still moves the drawing; hard-coding a
+      size breaks when the mode changes, since real and discrete differ slightly
 
 ### Order
 7a first — it unblocks the rest and removes the duplicate path. Then 7b, which

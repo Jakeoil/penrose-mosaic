@@ -5,6 +5,7 @@ import { RhombStyle } from "./controls/RhombStyle.js";
 import { ShapeMode } from "./controls/ShapeMode.js";
 import { Figure } from "./controls/Figure.js";
 import { PentaStyle } from "./controls/PentaStyle.js";
+import { MosaicStyle } from "./controls/MosaicStyle.js";
 import { BUILD_ID } from "./build-id.js";
 
 /**
@@ -28,6 +29,11 @@ export function logRefresh(app, source) {
         case PentaStyle.name:
             console.log(
                 `Refresh ${app.name} from ${PentaStyle.name}: ${globals.pentaStyle}`
+            );
+            break;
+        case MosaicStyle.name:
+            console.log(
+                `Refresh ${app.name} from ${MosaicStyle.name}: ${globals.mosaicStyle}`
             );
             break;
         case ShapeColors.name:
@@ -84,6 +90,7 @@ export function initControls(app) {
         if (!globals.overlays) globals.overlays = new Overlays(app);
         if (!globals.rhombStyle) globals.rhombStyle = new RhombStyle(app);
         if (!globals.pentaStyle) globals.pentaStyle = new PentaStyle(app);
+        if (!globals.mosaicStyle) globals.mosaicStyle = new MosaicStyle(app);
 
         if (!globals.pageNavigation)
             globals.pageNavigation = new PageNavigation(app);

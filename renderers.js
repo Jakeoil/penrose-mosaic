@@ -16,22 +16,26 @@ export class CanvasRenderer {
      * @param {*} shape centered array of 'pixels' centered.
      * Prerequisites: Globals g and scale
      */
+    /**
+     * A mosaic tile is a set of unit squares, so it needs its own styling: the
+     * fill is per square, and the border is either every square's edge -- the
+     * grid -- or just the boundary of the whole tile.
+     *
+     * The outline is the exact boundary: an edge shared by two squares is
+     * interior, so keeping the edges that appear exactly once leaves the
+     * silhouette.
+     */
     figure(fill, offset, shape) {
-        const { pentaStyle } = globals;
+        const { mosaicStyle } = globals;
         const { g, scale } = this;
+        const fillMode = mosaicStyle ? mosaicStyle.fill : "solid";
+        const border = mosaicStyle ? mosaicStyle.border : "grid";
         g.save();
-        g.fillStyle = fill; //e.g penrose.ORANGE;
-        g.strokeStyle = penrose.OUTLINE;
 
-        for (const point of shape) {
-            g.fillRect(
-                offset.x * scale + point.x * scale,
-                offset.y * scale + point.y * scale,
-                scale,
-                scale
-            );
-            if (scale >= 5) {
-                g.strokeRect(
+        if (fillMode !== "none") {
+            g.fillStyle = fillMode === "transparent" ? fill + "80" : fill;
+            for (const point of shape) {
+                g.fillRect(
                     offset.x * scale + point.x * scale,
                     offset.y * scale + point.y * scale,
                     scale,
@@ -39,6 +43,55 @@ export class CanvasRenderer {
                 );
             }
         }
+
+        g.strokeStyle = penrose.OUTLINE;
+
+        // The resolution rule still wins -- square edges are noise below it.
+        if (border === "grid" && scale >= 5) {
+            for (const point of shape) {
+                g.strokeRect(
+                    offset.x * scale + point.x * scale,
+                    offset.y * scale + point.y * scale,
+                    scale,
+                    scale
+                );
+            }
+        } else if (border === "outline") {
+            const seen = new Map();
+            for (const point of shape) {
+                const x = point.x,
+                    y = point.y;
+                for (const e of [
+                    [x, y, x + 1, y],
+                    [x + 1, y, x + 1, y + 1],
+                    [x + 1, y + 1, x, y + 1],
+                    [x, y + 1, x, y],
+                ]) {
+                    // Undirected: normalise so the two squares sharing an edge
+                    // produce the same key.
+                    const key =
+                        e[0] < e[2] || (e[0] === e[2] && e[1] < e[3])
+                            ? `${e[0]},${e[1]},${e[2]},${e[3]}`
+                            : `${e[2]},${e[3]},${e[0]},${e[1]}`;
+                    seen.set(key, (seen.get(key) || 0) + 1);
+                }
+            }
+            g.beginPath();
+            for (const [key, count] of seen) {
+                if (count !== 1) continue;
+                const [x1, y1, x2, y2] = key.split(",").map(Number);
+                g.moveTo(
+                    (offset.x + x1) * scale,
+                    (offset.y + y1) * scale
+                );
+                g.lineTo(
+                    (offset.x + x2) * scale,
+                    (offset.y + y2) * scale
+                );
+            }
+            g.stroke();
+        }
+
         g.restore();
     }
 

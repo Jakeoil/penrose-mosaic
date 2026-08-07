@@ -86,7 +86,8 @@ export class Overlays {
         this.treeSelected = false;
         this.rhombSelected = false;
         this.ammannSelected = false;
-        this.smallRhomb = false;
+        // 7c deferred: large and small still share one flag, so pick small.
+        this.smallRhomb = true;
 
         const cookieJson = cookie.get(Overlays.name, this.toString());
         this.fromString(cookieJson);
