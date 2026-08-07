@@ -167,6 +167,31 @@ with the P3 rhombs overlaid in yellow.
 That asymmetry is the thing to look at first. If the Sun/Star overlay carries
 over to P1, the large RG restriction to blue is very likely where it shows up.
 
+#### Simplified 2026-08-07
+The per-image panels are gone. Sun, Star and Queen(Deca) are in the sidebar
+**shape type** list instead, and `penta()` routes all three, so every page driven
+by the sidebar can show them -- including Shape expansions and Gen 5 expansion.
+The Sun/Star page is now a plain single figure on the same code path as the old
+pages, which is what makes a difference between them meaningful.
+
+The clip is gone from the page. The composites *are* the patches; nothing needs
+rounding off. `withinClip` remains in `penrose-screen.js`, unused, in case a
+radius clip is wanted later.
+
+- [ ] **Open: the gen 4/5 defect.** Deca shows it in the five outermost boats
+      (St3 at gen 0 for a gen 4 figure, gen 1 for gen 5), worse in quadrille, and
+      **not on the old pages**. Ruled out by measurement: the clip drops zero
+      tiles at every generation to 5; 5-fold symmetry is exact including angle
+      and parity; no coincident or illegally close tiles; canvas size is fine at
+      gen 4 (1042x1096). Note canvas *does* exceed 4096px for Sun and Star at
+      gen 5 (~25MP), which Safari caps -- a real hazard, but not this bug
+- [x] Fixed a latent bug found on the way: `penta()` forwarded `type` into
+      `deca()`, which did not destructure it, so it sat in `...options` and was
+      spread over the `type` of every child -- options is spread last -- turning
+      every child back into a Deca. Never triggered before because nothing called
+      `penta({type: Deca})`; routing Deca through `penta()` would have. `type` is
+      now swallowed in `deca()`, `sun()` and `starPatch()`
+
 #### Specification 2026-08-06
 
 **Per image, independent, set on screen above each image:**

@@ -19,6 +19,8 @@ class Penrose {
         this.BLUE_BOAT = "St3";
         this.BLUE_DIAMOND = "St1";
         this.DECAGON = "Deca";
+        this.SUN = "Sun";
+        this.STAR = "Star";
 
         this.OUTLINE = "#4a7eba";
 
@@ -89,6 +91,14 @@ class Penrose {
         };
         this.Deca = {
             name: this.DECAGON,
+        };
+        // Composite seeds -- arrangements of tiles rather than single tiles.
+        // penta() routes them, so any page driven by the sidebar can show them.
+        this.Sun = {
+            name: this.SUN,
+        };
+        this.Star = {
+            name: this.STAR,
         };
         this.mosaic = mosaic;
         this.quadrille = quadrille;

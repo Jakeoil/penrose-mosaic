@@ -586,16 +586,9 @@ export function drawGeneric123(id) {
 
     // Helper: draw one generation at a given loc into a scene
     function drawOne(scene, gen, loc) {
-        if (isPenta) {
-            scene.penta({ type, angle, isHeads, loc, gen });
-            scene.penta({ type, angle, isHeads, loc, gen, layer });
-        } else if (isStar) {
-            scene.star({ type, angle, isHeads, loc, gen });
-            scene.star({ type, angle, isHeads, loc, gen, layer });
-        } else if (isDeca) {
-            scene.deca({ angle, isHeads, loc, gen });
-            scene.deca({ angle, isHeads, loc, gen, layer });
-        }
+        // penta() routes every type -- stars, Deca, Sun and Star included.
+        scene.penta({ type, angle, isHeads, loc, gen });
+        scene.penta({ type, angle, isHeads, loc, gen, layer });
     }
 
     // Measure each generation to get its bounding box
@@ -695,24 +688,9 @@ export function drawGeneric3(id) {
         const layer = "rhomb";
         const begin = performance.now();
 
-        switch (type) {
-            case penrose.Pe1:
-            case penrose.Pe3:
-            case penrose.Pe5:
-                penta({ type, angle, isHeads, loc, gen });
-                penta({ type, angle, isHeads, loc, gen, layer });
-                break;
-            case penrose.St1:
-            case penrose.St3:
-            case penrose.St5:
-                star({ type, angle, isHeads, loc, gen });
-                star({ type, angle, isHeads, loc, gen, layer });
-                break;
-            case penrose.Deca:
-                deca({ angle, isHeads, loc, gen });
-                deca({ angle, isHeads, loc, gen, layer });
-                break;
-        }
+        // penta() routes every type -- stars, Deca, Sun and Star included.
+        penta({ type, angle, isHeads, loc, gen });
+        penta({ type, angle, isHeads, loc, gen, layer });
 
         const built = performance.now();
         console.log(`shapes built: ${built - begin} ms`);
@@ -735,112 +713,40 @@ export function drawGeneric3(id) {
 /***
  * Sun/Star.
  *
- * Two images, each with its own settings set above it: shape type, orientation,
- * parity, generation and mode. Layer, stroke, fill and color still come from the
- * sidebar, so both images share them.
+ * Driven entirely by the sidebar, exactly like the other pages. Sun, Star and
+ * Queen(Deca) are in the shape type list now, so this page is just somewhere to
+ * look at them -- and being on the same code path as the old pages is what makes
+ * a difference between them meaningful.
  *
- * Two canvases rather than one, so each drawing area can carry its own CSS
- * border without drawing a border into the scene. Overlay hides the second and
- * draws both figures into the first.
- *
- * Sun, Star and Queen are currently approximated by a plain Pe5, St5 and Pe3.
- * The real definitions are radius clips around a center of indefinite
- * generation, which needs a clip the recursion does not yet have. See TODO 4a.
+ * No clip. The composites are the patches; nothing needs rounding off.
  */
-
-// Sun, Star and Queen are composites, not single tiles. The Queen is the deca.
-// Verified by rhomb count in the small rhomb groups: 55, 35 and 10.
-const SUNSTAR_SEED = ["sun", "star", "queen"];
-
-function sunStarSlot(key) {
-    const pick = (name, dflt) => {
-        const ele = document.querySelector(`#ss-${key}-${name}`);
-        return ele ? ele.value : dflt;
-    };
-    const gen = parseInt(pick("gen", "3"), 10);
-    const kind = pick("type", "sun");
-    return {
-        kind: SUNSTAR_SEED.includes(kind) ? kind : "sun",
-        angle: ang(0, pick("orient", "up") === "down"),
-        isHeads: pick("parity", "heads") === "heads",
-        gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 3,
-        mode: pick("mode", "real"),
-    };
-}
-
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
     if (!page || page.style.display == "none") return;
-    const canvasA = document.querySelector("#sunstar-a");
-    const canvasB = document.querySelector("#sunstar-b");
-    if (!canvasA || !canvasB) {
-        console.log(`drawSunStar: missing a canvas in #${id}`);
+    const canvas = document.querySelector("#sunstar-a");
+    if (!canvas) {
+        console.log(`drawSunStar: no canvas in #${id}`);
         return;
     }
 
-    const SCALE = 4;
-    const eleOverlay = document.querySelector("#sunstar-overlay");
-    const overlay = eleOverlay ? eleOverlay.checked : false;
-    const slotA = sunStarSlot("a");
-    const slotB = sunStarSlot("b");
+    const { shapeMode, controls } = globals;
+    const type = controls.typeList[controls.typeIndex];
+    const angle = ang(controls.fifths, controls.isDown);
+    const isHeads = controls.isHeads;
+    const gen = 3;
+    const scene = new PenroseScreen(shapeMode.shapeMode);
+    let base = p(0, 0);
 
-    // Sun, Star and Queen each have their own composite method.
-    function drawOne(scene, slot, loc, clip) {
-        const { kind, angle, isHeads, gen } = slot;
-        const opts = clip ? { clip } : {};
-        const draw = (layer) => {
-            const args = { angle, isHeads, loc, gen, ...opts };
-            if (layer) args.layer = layer;
-            if (kind === "sun") scene.sun(args);
-            else if (kind === "star") scene.starPatch(args);
-            else scene.deca(args);
-        };
-        draw(null);
-        draw("rhomb");
-    }
+    const drawScreen = function () {
+        const loc = p(0, 0).tr(base);
+        scene.penta({ type, angle, isHeads, loc, gen });
+        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+        resizeAndRender(scene, canvas, 4);
+    };
 
-    /**
-     * Three passes.
-     *
-     * The recursion bounds a figure by where it stops, which is a shape, not a
-     * circle. A patch is the pentagon centres within a radius of a centre, so
-     * the first pass measures the figure unclipped to find that centre and a
-     * radius that rounds it off -- the inscribed circle, the largest that fits
-     * inside the raw extent. The second measures what survives the clip, and the
-     * third draws it shifted against the origin so the canvas comes out tight.
-     *
-     * The clip centre has to move with the figure on the last pass, since it is
-     * expressed in the same coordinates as loc.
-     */
-    function renderInto(canvas, slots) {
-        const mode = slots[0].mode;
-
-        const raw = new PenroseScreen(mode);
-        raw.setToMeasure();
-        for (const slot of slots) drawOne(raw, slot, p(0, 0), null);
-        if (raw.bounds.isEmpty) return;
-        const { minPoint: lo, maxPoint: hi } = raw.bounds;
-        const center = p((lo.x + hi.x) / 2, (lo.y + hi.y) / 2);
-        const radius = Math.min((hi.x - lo.x) / 2, (hi.y - lo.y) / 2);
-
-        const clipped = new PenroseScreen(mode);
-        clipped.setToMeasure();
-        for (const slot of slots) drawOne(clipped, slot, p(0, 0), { center, radius });
-        if (clipped.bounds.isEmpty) return;
-        const shift = clipped.bounds.minPoint.neg;
-
-        const scene = new PenroseScreen(mode);
-        const clip = { center: center.tr(shift), radius };
-        for (const slot of slots) drawOne(scene, slot, shift, clip);
-        resizeAndRender(scene, canvas, SCALE);
-    }
-
-    if (overlay) {
-        canvasB.style.display = "none";
-        renderInto(canvasA, [slotA, slotB]);
-    } else {
-        canvasB.style.display = "";
-        renderInto(canvasA, [slotA]);
-        renderInto(canvasB, [slotB]);
-    }
+    scene.setToMeasure();
+    drawScreen();
+    base = base.tr(scene.bounds.minPoint.neg);
+    scene.setToRender();
+    drawScreen();
 }

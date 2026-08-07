@@ -6,7 +6,7 @@ import { norm } from "../point.js";
  * A clustered set of globals
  * Cannot say whether it was a good idea to cluster them
  * Added cookie handling
- */
+ */1
 export class Figure {
     constructor(app, fifths, typeIndex, isDown) {
         this.app = app;
@@ -101,6 +101,8 @@ export class Figure {
         penrose.St3,
         penrose.St5,
         penrose.Deca,
+        penrose.Sun,
+        penrose.Star,
     ];
     //refresh() {}
     refresh() {

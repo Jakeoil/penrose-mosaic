@@ -411,6 +411,10 @@ export class PenroseScreen {
                     gen,
                     ...options,
                 });
+            case penrose.Sun:
+                return this.sun({ angle, isHeads, layer, loc, gen, ...options });
+            case penrose.Star:
+                return this.starPatch({ angle, isHeads, layer, loc, gen, ...options });
         }
         let { overlays } = globals;
         if (gen == 0) {
@@ -649,7 +653,7 @@ export class PenroseScreen {
      *
      * Rhomb count 55 = 5 (Pe5) + 5x4 (Pe3) + 10x3 (Pe1); the St1 emit none.
      */
-    sun({ angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
+    sun({ type, angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
         const bounds = new Bounds();
         if (gen == 0) {
             return bounds;
@@ -705,7 +709,7 @@ export class PenroseScreen {
      *
      * Rhomb count 35 = 5x3 (Pe1) + 5x4 (Pe3); St5 and St3 emit none.
      */
-    starPatch({ angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
+    starPatch({ type, angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
         const bounds = new Bounds();
         if (gen == 0) {
             return bounds;
@@ -791,7 +795,13 @@ export class PenroseScreen {
      * @returns {Bounds} - Rectangle describing space taken by shape
      * *
      */
-    deca({ angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
+    /**
+     * `type` is destructured and ignored on purpose. It is always Deca, but if
+     * it were left in ...options it would be spread over the `type` of every
+     * child below -- options is spread last -- and every child would become a
+     * Deca again. Same reason in sun() and starPatch().
+     */
+    deca({ type, angle, isHeads = true, loc, gen, layer = "penta", ...options }) {
         const { overlays } = globals;
         const bounds = new Bounds();
         if (gen == 0) {

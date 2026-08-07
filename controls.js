@@ -50,9 +50,6 @@ export function logRefresh(app, source) {
                 `Refresh ${app.name} from ${ShapeMode.name}: ${globals.shapeMode}`
             );
             break;
-        case SUN_STAR:
-            console.log(`Refresh ${app.name} from ${SUN_STAR}`);
-            break;
         default:
             const val = source.constructor.name;
             switch (val) {
@@ -89,7 +86,6 @@ export function initControls(app) {
             globals.pageNavigation = new PageNavigation(app);
 
         if (!globals.defaultsWired) globals.defaultsWired = wireDefaults();
-        if (!globals.sunStarWired) globals.sunStarWired = wireSunStar(app);
     } else if (app.name == "measureTasks") {
         if (!measureTaskGlobals.shapeMode)
             measureTaskGlobals.shapeMode = new ShapeMode(app);
@@ -134,25 +130,6 @@ function wireDefaults() {
         },
         false
     );
-    return true;
-}
-
-/**
- * The Sun/Star page's own control, which lives on the page rather than in the
- * sidebar. Where it belongs once the sidebar is sorted out is still open, so it
- * is wired here rather than promoted to a class in controls/.
- *
- * Not persisted. Side by side is the default every time the page loads.
- */
-export const SUN_STAR = "SunStar";
-
-function wireSunStar(app) {
-    const elePage = document.querySelector("#sunstar");
-    if (!elePage) return false;
-    // One listener on the page rather than ten on the individual controls.
-    // Every setting here is a select, a number or a checkbox, so change covers
-    // all of them and the handler does not care which one moved.
-    elePage.addEventListener("change", () => app(SUN_STAR), false);
     return true;
 }
 
