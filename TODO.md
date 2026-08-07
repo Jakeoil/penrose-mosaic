@@ -167,6 +167,23 @@ with the P3 rhombs overlaid in yellow.
 That asymmetry is the thing to look at first. If the Sun/Star overlay carries
 over to P1, the large RG restriction to blue is very likely where it shows up.
 
+#### Controls rebuilt 2026-08-07
+Per-image panels are back, seven controls each: Shape (Sun/Star/Queen),
+Orientation, Parity, Gen, Mode, and two new filter checkboxes — **pentas and
+stars** and **small rhombs** — plus the shared overlay toggle.
+
+Built to respect the rule above. Everything is a named parameter; nothing goes
+through `...options`. The two checkboxes work by choosing which `penta()` calls
+to make rather than by passing a flag into the recursion, so they cannot collide
+with anything downstream. Verified: the page's call path gives identical tile
+counts to direct composite calls for all three shapes, both modes, gen 3/4/5.
+
+- [ ] **Back burner: the sidebar's own overlay controls.** There is a complex
+      interaction around "pentas and stars" — the sidebar `#penta-ovl` gates
+      drawing inside `drawPentaPattern` via `overlays.pentaSelected`, while the
+      new per-image checkbox gates whether the penta layer is drawn at all. Two
+      switches in series for one thing. Worth untangling, but not now
+
 #### Simplified 2026-08-07
 The per-image panels are gone. Sun, Star and Queen(Deca) are in the sidebar
 **shape type** list instead, and `penta()` routes all three, so every page driven

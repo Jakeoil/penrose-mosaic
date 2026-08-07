@@ -713,40 +713,86 @@ export function drawGeneric3(id) {
 /***
  * Sun/Star.
  *
- * Driven entirely by the sidebar, exactly like the other pages. Sun, Star and
- * Queen(Deca) are in the shape type list now, so this page is just somewhere to
- * look at them -- and being on the same code path as the old pages is what makes
- * a difference between them meaningful.
+ * Two images, each with its own settings above it. Layer, stroke, fill and color
+ * still come from the sidebar; both images share those.
  *
- * No clip. The composites are the patches; nothing needs rounding off.
+ * IMPORTANT -- read before adding a setting here. Every recursive call in
+ * penrose-screen.js spreads ...options LAST, so any stray key riding in options
+ * silently overrides the explicit argument of the same name, all the way down.
+ * That is what corrupted the figures the first time this page had controls. Pass
+ * per-figure settings as named parameters only. Nothing here goes through
+ * options, and the two layer checkboxes work by choosing which calls to make
+ * rather than by passing a flag down. See TODO 4a.
  */
+const SUNSTAR_TYPE = {
+    sun: penrose.Sun,
+    star: penrose.Star,
+    queen: penrose.Deca,
+};
+
+function sunStarSlot(key) {
+    const ele = (name) => document.querySelector(`#ss-${key}-${name}`);
+    const pick = (name, dflt) => (ele(name) ? ele(name).value : dflt);
+    const checked = (name, dflt) => (ele(name) ? ele(name).checked : dflt);
+    const gen = parseInt(pick("gen", "3"), 10);
+    return {
+        type: SUNSTAR_TYPE[pick("type", "sun")] || penrose.Sun,
+        angle: ang(0, pick("orient", "up") === "down"),
+        isHeads: pick("parity", "heads") === "heads",
+        gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 3,
+        mode: pick("mode", "real"),
+        showPenta: checked("penta", true),
+        showRhomb: checked("rhomb", true),
+    };
+}
+
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
     if (!page || page.style.display == "none") return;
-    const canvas = document.querySelector("#sunstar-a");
-    if (!canvas) {
-        console.log(`drawSunStar: no canvas in #${id}`);
+    const canvasA = document.querySelector("#sunstar-a");
+    const canvasB = document.querySelector("#sunstar-b");
+    if (!canvasA || !canvasB) {
+        console.log(`drawSunStar: missing a canvas in #${id}`);
         return;
     }
 
-    const { shapeMode, controls } = globals;
-    const type = controls.typeList[controls.typeIndex];
-    const angle = ang(controls.fifths, controls.isDown);
-    const isHeads = controls.isHeads;
-    const gen = 3;
-    const scene = new PenroseScreen(shapeMode.shapeMode);
-    let base = p(0, 0);
+    const SCALE = 4;
+    const eleOverlay = document.querySelector("#sunstar-overlay");
+    const overlay = eleOverlay ? eleOverlay.checked : false;
+    const slots = [sunStarSlot("a"), sunStarSlot("b")];
 
-    const drawScreen = function () {
-        const loc = p(0, 0).tr(base);
-        scene.penta({ type, angle, isHeads, loc, gen });
-        scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
-        resizeAndRender(scene, canvas, 4);
-    };
+    // Named parameters only. The two checkboxes decide which calls happen; they
+    // are never handed to the recursion.
+    function drawOne(scene, slot, loc) {
+        const { type, angle, isHeads, gen, showPenta, showRhomb } = slot;
+        if (showPenta) scene.penta({ type, angle, isHeads, loc, gen });
+        if (showRhomb) scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+    }
 
-    scene.setToMeasure();
-    drawScreen();
-    base = base.tr(scene.bounds.minPoint.neg);
-    scene.setToRender();
-    drawScreen();
+    /**
+     * Measures in a throwaway scene so the canvas comes out tight, then draws
+     * shifted against the origin. Each slot builds its own scene because each
+     * carries its own mode; when two share a canvas they use the first slot's.
+     */
+    function renderInto(canvas, group) {
+        const mode = group[0].mode;
+        const ms = new PenroseScreen(mode);
+        ms.setToMeasure();
+        for (const slot of group) drawOne(ms, slot, p(0, 0));
+        if (ms.bounds.isEmpty) return;
+        const loc = ms.bounds.minPoint.neg;
+
+        const scene = new PenroseScreen(mode);
+        for (const slot of group) drawOne(scene, slot, loc);
+        resizeAndRender(scene, canvas, SCALE);
+    }
+
+    if (overlay) {
+        canvasB.style.display = "none";
+        renderInto(canvasA, slots);
+    } else {
+        canvasB.style.display = "";
+        renderInto(canvasA, [slots[0]]);
+        renderInto(canvasB, [slots[1]]);
+    }
 }
