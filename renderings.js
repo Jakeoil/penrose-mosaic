@@ -743,6 +743,7 @@ function sunStarSlot(key) {
         mode: pick("mode", "real"),
         showPenta: checked("penta", true),
         showRhomb: checked("rhomb", true),
+        showBigRhomb: checked("bigrhomb", false),
     };
 }
 
@@ -761,12 +762,34 @@ export function drawSunStar(id) {
     const overlay = eleOverlay ? eleOverlay.checked : false;
     const slots = [sunStarSlot("a"), sunStarSlot("b")];
 
-    // Named parameters only. The two checkboxes decide which calls happen; they
-    // are never handed to the recursion.
-    function drawOne(scene, slot, loc) {
-        const { type, angle, isHeads, gen, showPenta, showRhomb } = slot;
-        if (showPenta) scene.penta({ type, angle, isHeads, loc, gen });
-        if (showRhomb) scene.penta({ type, angle, isHeads, loc, gen, layer: "rhomb" });
+    /**
+     * Named parameters only. The checkboxes decide which calls happen; nothing
+     * is handed to the recursion.
+     *
+     * Big and small rhombs are the same layer one generation apart -- small
+     * recurses to gen 0 and draws shape index 0, large short-circuits at gen 1
+     * and draws index 1. Which one you get is `smallRhomb`, so drawing both
+     * means calling the rhomb layer twice with the flag flipped between. The
+     * scene reads its overlays at draw time, so setting the property between
+     * calls is enough.
+     */
+    function drawOne(scene, slot, loc, overlays) {
+        const { type, angle, isHeads, gen, showPenta, showRhomb, showBigRhomb } = slot;
+        const args = { type, angle, isHeads, loc, gen };
+
+        if (showPenta) {
+            scene.overlays = overlays;
+            scene.penta(args);
+        }
+        if (showRhomb) {
+            scene.overlays = { ...overlays, smallRhomb: true };
+            scene.penta({ ...args, layer: "rhomb" });
+        }
+        if (showBigRhomb) {
+            scene.overlays = { ...overlays, smallRhomb: false };
+            scene.penta({ ...args, layer: "rhomb" });
+        }
+        scene.overlays = overlays;
     }
 
     /**
@@ -797,15 +820,13 @@ export function drawSunStar(id) {
         const overlays = pageOverlays();
 
         const ms = new PenroseScreen(mode);
-        ms.overlays = overlays;
         ms.setToMeasure();
-        for (const slot of group) drawOne(ms, slot, p(0, 0));
+        for (const slot of group) drawOne(ms, slot, p(0, 0), overlays);
         if (ms.bounds.isEmpty) return;
         const loc = ms.bounds.minPoint.neg;
 
         const scene = new PenroseScreen(mode);
-        scene.overlays = overlays;
-        for (const slot of group) drawOne(scene, slot, loc);
+        for (const slot of group) drawOne(scene, slot, loc, overlays);
         resizeAndRender(scene, canvas, SCALE);
     }
 
