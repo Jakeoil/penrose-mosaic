@@ -178,7 +178,33 @@ The clip is gone from the page. The composites *are* the patches; nothing needs
 rounding off. `withinClip` remains in `penrose-screen.js`, unused, in case a
 radius clip is wanted later.
 
-- [ ] **Open: the gen 4/5 defect.** Deca shows it in the five outermost boats
+#### Resolved: the gen 4/5 defect was the per-image controls
+Confirmed 2026-08-07. With the panels gone every shape is correct, including the
+new ones: Sun and Star render correctly at gen 1-4 on Shape expansions and at
+gen 5 on Gen 5 expansion, same for Star, and the Sun/Star page is right.
+
+**The mechanism, and it is general.** Every recursive call in
+`penrose-screen.js` spreads `...options` **last**:
+
+    this.penta({ type: penrose.Pe3, angle, ..., ...options });
+
+So any stray key riding in `options` silently overrides the explicit argument of
+the same name, all the way down the recursion. `star()` is worse still --
+`const { overlays } = { ...globals, ...options };` -- so a key named `overlays`
+in options would replace the real overlays for that whole subtree.
+
+Two instances found:
+- `penta()` forwarded `type` into `deca()`, which did not destructure it, so
+  every child was turned back into a Deca. Fixed by swallowing `type` in
+  `deca()`, `sun()` and `starPatch()`
+- the per-image page passed `clip` through `options`, which is the same channel
+
+**How to apply when the controls are rebuilt:** do not pass per-figure settings
+through `...options`. Give them named parameters, or destructure and swallow them
+at the top of every method that forwards options. Anything added to that channel
+is invisible until it collides with a name several levels down.
+
+- [ ] Old note, kept for the record: **the gen 4/5 defect.** Deca shows it in the five outermost boats
       (St3 at gen 0 for a gen 4 figure, gen 1 for gen 5), worse in quadrille, and
       **not on the old pages**. Ruled out by measurement: the clip drops zero
       tiles at every generation to 5; 5-fold symmetry is exact including angle
