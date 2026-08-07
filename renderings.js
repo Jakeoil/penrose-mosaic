@@ -29,7 +29,12 @@ export function resizeAndRender(scene, canvas, scale) {
 
     let bounds = scene.bounds;
     if (bounds.isEmpty) {
-        console.log(`isEmpty`);
+        // Nothing to draw is a legitimate state -- every overlay can be turned
+        // off. Returning here left the previous frame on the canvas, so the last
+        // thing drawn stayed visible and the flag looked like it had been
+        // ignored. Clear, then leave.
+        g.fillStyle = "white";
+        g.fillRect(0, 0, canvas.width, canvas.height);
         return;
     }
 
