@@ -64,6 +64,21 @@ export function resizeAndRender(scene, canvas, scale) {
  * Shape depends on passed in ID.
  * Measures twice before rendering.
  */
+/**
+ * Every layer on. The six illustration canvases are sized from this rather than
+ * from what is actually showing, so their size depends on type, generation and
+ * mode only -- never on which overlay boxes are ticked. They sit inline in a
+ * sentence, so a canvas that changed height reflowed the whole line.
+ */
+const ALL_LAYERS = {
+    pentaSelected: true,
+    mosaicSelected: true,
+    rhombSelected: true,
+    smallRhomb: true,
+    treeSelected: false,
+    ammannSelected: true,
+};
+
 export function makeCanvas(canvasId) {
     const { shapeMode } = globals;
     const canvas = document.getElementById(canvasId);
@@ -72,10 +87,8 @@ export function makeCanvas(canvasId) {
         return;
     }
 
-    const scene = new PenroseScreen(shapeMode.shapeMode);
-    let loc = p(0, 0);
-
     const gen = 0;
+    const SCALE = 10;
     const [type, angle] =
         canvasId == "p5"
             ? [penrose.Pe5, ang(0, true)]
@@ -90,22 +103,43 @@ export function makeCanvas(canvasId) {
                     : canvasId == "s1"
                       ? [penrose.St1, ang(1, false)]
                       : [];
+    if (!type) return;
 
-    function drawScene() {
-        scene.pentaRhomb(type, angle, loc, gen);
-        scene.bounds.pad(0.1);
-        scene.bounds.round(0.1);
-        resizeAndRender(scene, canvas, 10);
+    const measure = (overlays) => {
+        const ms = new PenroseScreen(shapeMode.shapeMode);
+        if (overlays) ms.overlays = overlays;
+        ms.setToMeasure();
+        ms.pentaRhomb(type, angle, p(0, 0), gen);
+        ms.bounds.pad(0.1);
+        ms.bounds.round(0.1);
+        return ms.bounds;
+    };
+
+    // The box, from everything this figure could ever draw.
+    const box = measure(ALL_LAYERS);
+    if (box.isEmpty) return;
+    const boxW = box.maxPoint.x - box.minPoint.x;
+    const boxH = box.maxPoint.y - box.minPoint.y;
+
+    // What is actually selected, centred in that box.
+    const shown = measure(null);
+    let loc = p(0, 0);
+    if (!shown.isEmpty) {
+        const w = shown.maxPoint.x - shown.minPoint.x;
+        const h = shown.maxPoint.y - shown.minPoint.y;
+        loc = p(
+            (boxW - w) / 2 - shown.minPoint.x,
+            (boxH - h) / 2 - shown.minPoint.y
+        );
     }
 
-    // todo suppress bounds.renderList
-    scene.setToMeasure();
-    drawScene();
-
-    // Adjust the location and relist
-    loc = loc.tr(scene.bounds.minPoint.neg);
-    scene.setToRender();
-    drawScene();
+    const scene = new PenroseScreen(shapeMode.shapeMode);
+    scene.pentaRhomb(type, angle, loc, gen);
+    // Pin the canvas to the box whatever was drawn -- including nothing, so an
+    // empty figure still holds its place instead of collapsing the line.
+    scene.bounds.addPoint(p(0, 0), p(0, 0));
+    scene.bounds.addPoint(p(0, 0), p(boxW, boxH));
+    resizeAndRender(scene, canvas, SCALE);
 }
 
 /**

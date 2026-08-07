@@ -608,9 +608,15 @@ selected layers into it. Canvas size then depends on type, generation and mode
 only, and never on which boxes are ticked. Costs one extra measure pass, which
 is nothing for six gen-0 figures.
 
-- [ ] Two alternatives, both worse: a fixed height on the container leaves the
-      canvas resizing inside it, which still moves the drawing; hard-coding a
-      size breaks when the mode changes, since real and discrete differ slightly
+- [x] **Done.** `makeCanvas` measures twice: once with every layer on for the
+      box, once for what is actually selected, and centres the second in the
+      first. The canvas is pinned to the box whatever was drawn — including
+      nothing, so an empty figure holds its place instead of collapsing the line.
+      Verified identical sizes across five overlay combinations in both
+      geometries
+- [ ] Note `PentaStyle` has no null guard on its elements, unlike every other
+      control. It throws if `#penta-fill` is absent. Harmless in the app, but it
+      is the odd one out
 
 ### Order
 7a first — it unblocks the rest and removes the duplicate path. Then 7b, which
