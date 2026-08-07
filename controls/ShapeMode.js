@@ -1,4 +1,4 @@
-import { cookie } from "../controls.js";
+import { cookie, globals } from "../controls.js";
 /**
  * Shape-Mode. There are two geometries, and only two:
  *
@@ -72,6 +72,11 @@ export class ShapeMode {
             this.MODE_LIST.length;
         this.shapeMode = this.MODE_LIST[new_idx];
         this.refresh();
+        // The overlays have to be told. Mosaic is a presentation of the discrete
+        // geometry only, so changing geometry clears and disables it and turns
+        // pentas on. Overlays.refresh() is otherwise only reached from its own
+        // checkboxes, so without this the flags never learn the mode moved.
+        if (globals.overlays) globals.overlays.refresh();
         this.app(ShapeMode.name);
     }
 }
