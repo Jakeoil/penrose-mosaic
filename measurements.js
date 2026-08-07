@@ -47,6 +47,8 @@ export function measureTasks(source) {
         }
         console.log(`measureTasks: mode=${after}, source=${source}, cookie=${document.cookie}`);
     }
+    // The iframe keeps its own Overlays, so it has to be told about the mode too
+    if (measureTaskGlobals.overlays) measureTaskGlobals.overlays.refresh();
 
     drawQuadrille();
     drawImage();
@@ -69,10 +71,15 @@ function drawQuadrille() {
 
     scene.setToMeasure();
     drawScreen();
-    loc = loc.tr(scene.bounds.minPoint.neg);
+    // Nothing to draw is legitimate -- every overlay can be off, and there is no
+    // mosaic of the real geometry. minPoint is null on empty bounds, so shifting
+    // by it threw, and because refreshMeasurements() is the first thing
+    // penroseApp does, that one throw aborted every page's redraw.
+    if (!scene.bounds.isEmpty) {
+        loc = loc.tr(scene.bounds.minPoint.neg);
+    }
     scene.setToRender();
     drawScreen();
-    const img = canvas.toDataURL("img.png");
 }
 
 function drawImage() {
@@ -89,6 +96,7 @@ function drawImage() {
     const gen = 1;
     scene.setToMeasure();
     scene.deca({ angle, loc, gen });
+    if (scene.bounds.isEmpty) return;
     scene.bounds.pad(1);
     const scale = 5;
     resizeAndRender(scene, canvas, scale);

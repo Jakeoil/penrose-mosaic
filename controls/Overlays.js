@@ -1,4 +1,4 @@
-import { cookie, globals } from "../controls.js";
+import { cookie, globals, measureTaskGlobals } from "../controls.js";
 /**
  * Overlays for the figures
  * Penta Layer
@@ -97,7 +97,16 @@ export class Overlays {
      * mode.
      */
     get mosaicAvailable() {
-        return !globals.shapeMode || globals.shapeMode.shapeMode !== "real";
+        return this.currentMode !== "real";
+    }
+
+    /**
+     * The sidebar's mode, or the measurements iframe's -- the iframe has its own
+     * ShapeMode and its own Overlays, and globals is empty there.
+     */
+    get currentMode() {
+        const sm = globals.shapeMode || measureTaskGlobals.shapeMode;
+        return sm ? sm.shapeMode : null;
     }
 
     /**
@@ -114,7 +123,7 @@ export class Overlays {
      * the checkbox is right there, and `defaults` brings the Mosaic back.
      */
     syncToMode() {
-        const mode = globals.shapeMode ? globals.shapeMode.shapeMode : null;
+        const mode = this.currentMode;
         if (mode === this.lastMode) return;
         this.lastMode = mode;
         if (mode === "real" && this.mosaicSelected) {
