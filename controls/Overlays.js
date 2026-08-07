@@ -111,15 +111,31 @@ export class Overlays {
         return !globals.shapeMode || globals.shapeMode.shapeMode !== "real";
     }
 
-    refresh() {
-        // Never leave nothing on screen. A guard rather than a one-shot coupling
-        // from the mosaic checkbox: a one-shot leaves you stuck if you toggle in
-        // the other order. It has to know the mode, or switching to real with
-        // only mosaic showing would go blank.
-        const showingMosaic = this.mosaicSelected && this.mosaicAvailable;
-        if (!this.pentaSelected && !showingMosaic && !this.rhombSelected) {
-            this.pentaSelected = true;
+    /**
+     * Switching to real turns mosaic off, since there is no mosaic of the real
+     * geometry, and turns pentas on so the switch does not land on a blank
+     * screen.
+     *
+     * This fires on the mode *change*, not on every refresh. A guard that ran
+     * every time would keep re-enabling pentas, so unchecking them could never
+     * stick -- turning everything off has to remain something you are allowed to
+     * ask for.
+     *
+     * Going back to discrete does not restore mosaic. Predictable beats clever;
+     * the checkbox is right there, and `defaults` brings the Mosaic back.
+     */
+    syncToMode() {
+        const mode = globals.shapeMode ? globals.shapeMode.shapeMode : null;
+        if (mode === this.lastMode) return;
+        this.lastMode = mode;
+        if (mode === "real" && this.mosaicSelected) {
+            this.mosaicSelected = false;
+            if (!this.rhombSelected) this.pentaSelected = true;
         }
+    }
+
+    refresh() {
+        this.syncToMode();
 
         if (this.eleMosaic) {
             this.eleMosaic.disabled = !this.mosaicAvailable;
