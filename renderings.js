@@ -109,6 +109,115 @@ export function makeCanvas(canvasId) {
 }
 
 /**
+ * The first expansion draws penta(1) and star(1) variants
+ * Sets the globals g and scale
+ */
+export function drawFirstInflation(id) {
+    const page = document.querySelector(`#${id}`);
+    if (page.style.display == "none") return;
+    const canvas = document.querySelector(`#${id} > canvas`);
+    if (!canvas) {
+        console.log("canvasId is null!");
+        return;
+    }
+    const { shapeMode } = globals;
+    const scene = new PenroseScreen(shapeMode.shapeMode);
+
+    const drawScreen = function () {
+        let x = 11;
+        let y = 9;
+        const UP = false;
+        const DOWN = true;
+
+        let type = penrose.Pe5;
+        let angle = ang(0, UP);
+        let loc = p(x, y);
+        const gen = 1;
+
+        scene.pentaRhomb(type, angle, loc, gen);
+
+        type = penrose.Pe5;
+        angle = ang(0, DOWN);
+        loc = p(25, y);
+
+        scene.pentaRhomb(type, angle, loc, gen);
+        y += 18;
+        type = penrose.Pe3;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, UP);
+            loc = p(x + i * 20, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+
+        y += 20;
+
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, DOWN);
+            loc = p(x + i * 20, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+        y += 20;
+        type = penrose.Pe1;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, UP);
+            loc = p(x + i * 20, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+        y += 20;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, DOWN);
+            loc = p(x + i * 20, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+        y += 25;
+        type = penrose.St5;
+        angle = ang(0, UP);
+        loc = p(15, y);
+
+        scene.pentaRhomb(type, angle, loc, gen);
+
+        angle = ang(0, DOWN);
+        loc = p(45, y);
+        scene.pentaRhomb(type, angle, loc, gen);
+
+        x = 10;
+        y += 30;
+
+        type = penrose.St1;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, UP);
+            loc = p(x + i * 20, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+        y += 25;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, DOWN);
+            loc = p(x + i * 20, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+
+        x = 15;
+        y += 25;
+        type = penrose.St3;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, UP);
+            loc = p(x + i * 25, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+        y += 25;
+        for (let i = 0; i < 5; i++) {
+            angle = ang(i, DOWN);
+            loc = p(x + i * 25, y);
+            scene.pentaRhomb(type, angle, loc, gen);
+        }
+
+        resizeAndRender(scene, canvas, 10);
+    };
+
+    drawScreen();
+}
+
+/**
  *
  * @param {*} id
  * @returns
@@ -433,6 +542,9 @@ export function drawGeneric123(id) {
     const type = controls.typeList[controls.typeIndex];
     const angle = ang(controls.fifths, controls.isDown);
     const isHeads = controls.isHeads;
+    // "dual" here was a leftover of the abandoned dual rhomb research, and it
+    // meant the rhomb layer was never drawn on this page -- which is why the
+    // large/small rhomb radio did nothing here. See TODO 4a.
     const layer = "rhomb";
 
     const isPenta =
