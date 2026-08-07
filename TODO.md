@@ -617,6 +617,14 @@ is nothing for six gen-0 figures.
 - [x] Note `Bounds.pad()` sets empty bounds to (0,0), so `isEmpty` reads false
       afterwards. Emptiness has to be checked before padding or a figure that
       drew nothing looks like one of zero size
+- [x] **Root cause of the oversized boxes: `PenroseScreen.line()`.** It recorded
+      `addPoint(loc, loc)` and `addPoint(loc, end)`, but `addPoint` offsets its
+      second argument by its first, so those were `loc+loc` and `loc+end` — every
+      segment claimed about twice its own extent. Ammann bars are all lines, so a
+      figure showing them nearly doubled: a gen 0 Pe5 went from 10x10 to
+      18.8x18.1. Fixed; Ammann and tree now add nothing to a figure's size, which
+      is correct since both draw inside the tiles. Illustration heights dropped
+      from 193 to 112 for `#p5`
 - [ ] Note `PentaStyle` has no null guard on its elements, unlike every other
       control. It throws if `#penta-fill` is absent. Harmless in the app, but it
       is the odd one out

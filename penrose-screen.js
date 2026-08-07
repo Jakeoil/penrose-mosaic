@@ -273,10 +273,20 @@ export class PenroseScreen {
         this.bounds.expand(bounds);
     }
 
+    /**
+     * loc and end are both absolute -- that is how the renderer treats them.
+     *
+     * The bounds were being taken as addPoint(loc, loc) and addPoint(loc, end),
+     * but addPoint offsets its second argument by its first, so those were
+     * loc+loc and loc+end: every segment claimed roughly twice its own extent.
+     * Nothing noticed until Ammann bars, which are all lines, nearly doubled the
+     * size of any figure showing them.
+     */
     line(loc, end, strokeStyle) {
         const bounds = new Bounds();
-        bounds.addPoint(loc, loc);
-        bounds.addPoint(loc, end);
+        const origin = p(0, 0);
+        bounds.addPoint(origin, loc);
+        bounds.addPoint(origin, end);
         if (this.measure) {
             this.bounds.expand(bounds);
             return;
