@@ -608,12 +608,15 @@ selected layers into it. Canvas size then depends on type, generation and mode
 only, and never on which boxes are ticked. Costs one extra measure pass, which
 is nothing for six gen-0 figures.
 
-- [x] **Done.** `makeCanvas` measures twice: once with every layer on for the
-      box, once for what is actually selected, and centres the second in the
-      first. The canvas is pinned to the box whatever was drawn — including
-      nothing, so an empty figure holds its place instead of collapsing the line.
-      Verified identical sizes across five overlay combinations in both
-      geometries
+- [x] **Done.** Only the **height** is pinned, measured with every layer on. The
+      **width hugs** what is drawn, as before — these sit inline, so a changing
+      width just shifts text along, while a changing height moves the line box.
+      The figure is nailed to the **bottom** of the box, not centred; centring
+      floated it off the text baseline. Verified heights constant across four
+      overlay combinations in both geometries
+- [x] Note `Bounds.pad()` sets empty bounds to (0,0), so `isEmpty` reads false
+      afterwards. Emptiness has to be checked before padding or a figure that
+      drew nothing looks like one of zero size
 - [ ] Note `PentaStyle` has no null guard on its elements, unlike every other
       control. It throws if `#penta-fill` is absent. Harmless in the app, but it
       is the odd one out

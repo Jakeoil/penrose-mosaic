@@ -105,11 +105,15 @@ export function makeCanvas(canvasId) {
                       : [];
     if (!type) return;
 
+    // Returns null when nothing was drawn. The emptiness has to be read before
+    // padding: pad() on empty bounds sets them to (0,0), which makes isEmpty
+    // false and a genuinely empty figure look like a zero-sized one.
     const measure = (overlays) => {
         const ms = new PenroseScreen(shapeMode.shapeMode);
         if (overlays) ms.overlays = overlays;
         ms.setToMeasure();
         ms.pentaRhomb(type, angle, p(0, 0), gen);
+        if (ms.bounds.isEmpty) return null;
         ms.bounds.pad(0.1);
         ms.bounds.round(0.1);
         return ms.bounds;
@@ -117,28 +121,31 @@ export function makeCanvas(canvasId) {
 
     // The box, from everything this figure could ever draw.
     const box = measure(ALL_LAYERS);
-    if (box.isEmpty) return;
+    if (!box) return;
     const boxW = box.maxPoint.x - box.minPoint.x;
     const boxH = box.maxPoint.y - box.minPoint.y;
 
-    // What is actually selected, centred in that box.
+    // Only the height is pinned. These sit inline in a sentence, so a changing
+    // height moves the line box and everything after it; a changing width just
+    // shifts the text along, which is what it did before and is fine.
+    //
+    // The figure sits on the bottom of the box, not centred -- centring floats
+    // it away from the text baseline.
     const shown = measure(null);
     let loc = p(0, 0);
-    if (!shown.isEmpty) {
-        const w = shown.maxPoint.x - shown.minPoint.x;
+    let width = boxW; // nothing drawn: hold the slot rather than show a sliver
+    if (shown) {
+        width = shown.maxPoint.x - shown.minPoint.x;
         const h = shown.maxPoint.y - shown.minPoint.y;
-        loc = p(
-            (boxW - w) / 2 - shown.minPoint.x,
-            (boxH - h) / 2 - shown.minPoint.y
-        );
+        loc = p(-shown.minPoint.x, boxH - h - shown.minPoint.y);
     }
 
     const scene = new PenroseScreen(shapeMode.shapeMode);
     scene.pentaRhomb(type, angle, loc, gen);
-    // Pin the canvas to the box whatever was drawn -- including nothing, so an
-    // empty figure still holds its place instead of collapsing the line.
+    // Pin the height whatever was drawn -- including nothing, so an empty figure
+    // holds its place rather than collapsing the line.
     scene.bounds.addPoint(p(0, 0), p(0, 0));
-    scene.bounds.addPoint(p(0, 0), p(boxW, boxH));
+    scene.bounds.addPoint(p(0, 0), p(width, boxH));
     resizeAndRender(scene, canvas, SCALE);
 }
 
