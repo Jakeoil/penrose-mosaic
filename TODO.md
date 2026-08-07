@@ -506,3 +506,89 @@ Generational comparison is on the back burner, so this is parked with it.
 ### 6. Wheel line diagrams — deferred
 Moved to last. Cannot be done justice without revamping the measurements page.
 See item 3 for the content; do it after items 4 and 5.
+
+## 7. Straighten out the control sidebar
+
+Keep the look and feel. The one deliberate exception is the default presentation,
+which becomes the Mosaic.
+
+### 7a. Two geometries, not three modes  — do this first
+`ShapeMode.MODE_LIST` is `[mosaic, quadrille, real]`. It becomes **`[discrete,
+real]`**, discrete first and default.
+
+**This is the root of the ambiguity, not just tidying.** `drawPentaPattern`
+currently has two different code paths for the same job:
+
+    if (this.mode == penrose.mosaic.key) {
+        ...draw the mosaic figure...
+        return;                        // <-- pentaSelected never consulted
+    }
+    if (!overlays || overlays.pentaSelected) ...outlines...
+    if (!overlays || overlays.mosaicSelected) ...mosaic figure...
+
+In mosaic *mode* the early return means **"pentas and stars" does nothing at
+all**, and neither does the mosaic checkbox. In quadrille mode both work. That is
+the "fiddling" — the same checkbox is live or dead depending on a mode. Deleting
+the short-circuit and keeping only the overlay path removes the duplication and
+makes the checkboxes mean one thing everywhere.
+
+- [ ] `discrete` becomes a key on `penrose` alongside `real`, mapping to the
+      quadrille shape data. `mosaic` stays as shape data for the overlay but
+      stops being a mode
+- [ ] Delete the mosaic short-circuit in `drawPentaPattern`
+- [ ] **Migration hazard:** the shape-mode cookie stores the mode string, so an
+      existing cookie will say `"mosaic"` or `"quadrille"` — neither of which
+      will be in `MODE_LIST`. Map both to `discrete` on read, or the page opens
+      on a mode that no longer exists
+
+### 7b. Strictness
+- [ ] Drop the `!overlays ||` guards. They mean "if the flags are missing, draw
+      anyway", which is the literal non-strictness. Overlays are now guaranteed
+      by `activeOverlays` (scene, then sidebar, then iframe), so the guard only
+      hides a real fault
+
+### 7c. Overlays and flags
+Common, both geometries:
+- [ ] pentas and stars — default **no-show**, and auto-show when mosaic is turned
+      off so the screen is never blank. Better as a guard at refresh time ("if
+      nothing would be visible, show pentas") than a one-shot coupling; a
+      one-shot leaves the user stuck if they toggle in the other order
+- [ ] small rhombs — default no-show
+- [ ] large rhombs — default no-show. Needs its own flag; today large/small is a
+      radio on one flag, so the two cannot be shown together in the sidebar even
+      though the Sun/Star page already does it by calling the layer twice
+- [ ] tree — default no-show
+- [ ] ammann — default no-show
+- [ ] **Remove duals.** The whole path is already dead: `pentaDual` has no
+      callers, `dualRhombSelected` is read by nothing, `drawDualRhombusPattern`
+      is unreachable. Remove the checkbox, the layer and the dead page.
+      **Keep `goThickDual`/`thinDualRhomb`** — that is a separate rhomb geometry
+      off the p and s wheels and may be a genuine dual
+
+Discrete only:
+- [ ] mosaic — default **show**, and disabled in real mode
+
+### 7d. Styles
+- [ ] **Penta styles: add opacity.** Note the existing Rhomb opacity slider is
+      *not wired* — `#opacity` is read by nothing, and `lerp()` takes an
+      `opacity` argument it never uses, with a `todo!!! implement opacity` on it.
+      Implement it once in the renderer and use it for both, rather than adding a
+      second dead slider
+- [ ] Rhomb styles: unchanged
+- [ ] **Mosaic styles**, its own section, independent of penta styles:
+      grid/no-grid (resolution rule wins) and fill none/solid/transparent.
+      `PenroseScreen.grid()` and `CanvasRenderer.grid()` already exist and are
+      fully plumbed — nothing calls them. So this is a control and a call site,
+      not new drawing code
+
+### 7e. Which controls apply to which page
+Today each page silently honors a subset — shape type is ignored by Inflation 1
+and 2, for instance — and nothing says so. Proposal: each page declares the
+controls it honors, and the sidebar **disables** the rest rather than hiding
+them, so the layout does not move.
+
+- [ ] Disabling is a small visible change. Confirm before building
+
+### Order
+7a first — it unblocks the rest and removes the duplicate path. Then 7b, which
+is two lines once 7a lands. Then 7c defaults, then 7d styles, then 7e.
