@@ -64,23 +64,34 @@ canvas.apple-ii {
     display: inline;
 }
 
-/* Sun/Star page. Each figure gets its own canvas so the drawing areas can be
-   bordered without drawing the border into the scene. Both are rendered at the
-   same scale, so the two are directly comparable. */
+/* Sun/Star page. Fixed viewports rather than canvases sized to their drawing:
+   both panels share one scale so the two figures stay comparable, and the
+   drawing does not move when a layer is toggled. */
 .sunstar-cell {
     border: 1px solid #888;
     vertical-align: top;
-    margin-right: 6px;
+    display: block;
 }
 
 .sunstar-controls {
     margin: 0 0 8px 0;
 }
 
+.sunstar-hint {
+    margin-left: 12px;
+    font-size: 0.85em;
+    opacity: 0.7;
+}
+
 .sunstar-pair {
     display: flex;
     gap: 8px;
     align-items: flex-start;
+}
+
+.sunstar-slot {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .sunstar-panel {

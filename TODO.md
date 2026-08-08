@@ -56,6 +56,15 @@ Default is **small**. Doing it properly means a second flag and a second call to
 the rhomb layer on every page that draws rhombs, the way the Sun/Star page
 already does it by flipping `smallRhomb` between calls.
 
+### C0. Sun/Star viewports — panning
+The two panels are fixed viewports now: one shared scale, each centred on its own
+seed, scale written upper left. Wheel zooms both together, double click refits.
+The fit is recomputed every draw and only the zoom persists, so changing shape or
+generation refits by itself.
+
+- [ ] **Panning is not implemented.** Centre is fixed on the seed. When it is
+      added it has to stay synchronous between the two panels, like the zoom
+
 ### C. The P1 over P3 overlay
 The geometry is all there — pentas and stars plus big rhombs on the Sun/Star
 page is the configuration. What is missing is styling: the rhombs need no fill

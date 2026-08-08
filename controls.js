@@ -7,6 +7,7 @@ import { Figure } from "./controls/Figure.js";
 import { PentaStyle } from "./controls/PentaStyle.js";
 import { MosaicStyle } from "./controls/MosaicStyle.js";
 import { BUILD_ID } from "./build-id.js";
+import { sunStarZoomBy, sunStarResetZoom } from "./renderings.js";
 
 /**
  * Controls are
@@ -154,9 +155,33 @@ export const SUN_STAR = "SunStar";
 function wireSunStar(app) {
     const elePage = document.querySelector("#sunstar");
     if (!elePage) return false;
-    // One listener on the page rather than fourteen on the controls. Everything
+    // One listener on the page rather than sixteen on the controls. Everything
     // here is a select, a number or a checkbox, so change covers all of them.
     elePage.addEventListener("change", () => app(SUN_STAR), false);
+
+    // The two viewports are synchronous, so zoom is one shared number rather
+    // than per canvas. Double click refits.
+    for (const id of ["#sunstar-a", "#sunstar-b"]) {
+        const canvas = document.querySelector(id);
+        if (!canvas) continue;
+        canvas.addEventListener(
+            "wheel",
+            (event) => {
+                event.preventDefault();
+                sunStarZoomBy(event.deltaY < 0 ? 1.1 : 1 / 1.1);
+                app(SUN_STAR);
+            },
+            { passive: false }
+        );
+        canvas.addEventListener(
+            "dblclick",
+            () => {
+                sunStarResetZoom();
+                app(SUN_STAR);
+            },
+            false
+        );
+    }
     return true;
 }
 

@@ -727,22 +727,32 @@ export function drawGeneric3(id) {
 /***
  * Sun/Star.
  *
- * Two images, each with its own settings above it. Layer, stroke, fill and color
- * still come from the sidebar; both images share those.
+ * Fixed viewports rather than canvases sized to their drawing. The two panels
+ * are synchronous: one shared scale, each centred on its own seed, so the
+ * figures stay directly comparable and nothing moves when a layer is toggled.
  *
- * IMPORTANT -- read before adding a setting here. Every recursive call in
- * penrose-screen.js spreads ...options LAST, so any stray key riding in options
- * silently overrides the explicit argument of the same name, all the way down.
- * That is what corrupted the figures the first time this page had controls. Pass
- * per-figure settings as named parameters only. Nothing here goes through
- * options, and the two layer checkboxes work by choosing which calls to make
- * rather than by passing a flag down. See TODO 4a.
+ * Scale starts at whatever fits the larger of the two figures and is then
+ * multiplied by a zoom the wheel adjusts. Changing shape or generation refits,
+ * because the fit is recomputed every draw and only the zoom persists.
+ *
+ * Side by side gives two half-width viewports; overlay gives one full-width
+ * viewport with both figures drawn into it about the same centre.
+ *
+ * IMPORTANT -- everything here is a named parameter. Nothing goes through
+ * ...options; see the hazard note at the top of TODO.md.
  */
 const SUNSTAR_TYPE = {
     sun: penrose.Sun,
     star: penrose.Star,
     queen: penrose.Deca,
 };
+
+const SUNSTAR_VIEW_W = 1200; // whole drawing area
+const SUNSTAR_VIEW_H = 620;
+const SUNSTAR_GAP = 8;
+const SUNSTAR_MARGIN = 0.94; // leave a little air at the fitted scale
+
+let sunStarZoom = 1;
 
 function sunStarSlot(key) {
     const ele = (name) => document.querySelector(`#ss-${key}-${name}`);
@@ -761,99 +771,139 @@ function sunStarSlot(key) {
     };
 }
 
+/**
+ * This page owns its overlays. The sidebar's boxes gate drawing deep inside
+ * drawPentaPattern and drawRhombusPattern, and Rhombi is unchecked by default,
+ * so without this the page could never show rhombs however its own checkbox was
+ * set. Mosaic is off because the page offers no mosaic checkbox.
+ */
+function sunStarOverlays() {
+    return {
+        ...(globals.overlays || {}),
+        pentaSelected: true,
+        rhombSelected: true,
+        smallRhomb: true,
+        mosaicSelected: false,
+    };
+}
+
+/**
+ * Big and small rhombs are the same layer one generation apart, chosen by
+ * smallRhomb, so showing both means calling the layer twice with the flag
+ * flipped. The scene reads its overlays at draw time.
+ */
+function sunStarDraw(scene, slot, overlays) {
+    const { type, angle, isHeads, gen, showPenta, showRhomb, showBigRhomb } = slot;
+    const args = { type, angle, isHeads, loc: p(0, 0), gen };
+    if (showPenta) {
+        scene.overlays = overlays;
+        scene.penta(args);
+    }
+    if (showRhomb) {
+        scene.overlays = { ...overlays, smallRhomb: true };
+        scene.penta({ ...args, layer: "rhomb" });
+    }
+    if (showBigRhomb) {
+        scene.overlays = { ...overlays, smallRhomb: false };
+        scene.penta({ ...args, layer: "rhomb" });
+    }
+    scene.overlays = overlays;
+}
+
+function sunStarMeasure(slot, overlays) {
+    const ms = new PenroseScreen(slot.mode);
+    ms.setToMeasure();
+    sunStarDraw(ms, slot, overlays);
+    return ms.bounds;
+}
+
+/**
+ * Draws into a viewport of fixed pixel size. The scene is built about the
+ * origin, and the origin is put at the centre of the canvas, so zooming holds
+ * the centre still.
+ */
+function sunStarRender(canvas, w, h, slots, overlays, scale) {
+    canvas.width = w;
+    canvas.height = h;
+    const g = canvas.getContext("2d");
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = "white";
+    g.fillRect(0, 0, w, h);
+
+    for (const slot of slots) {
+        const scene = new PenroseScreen(slot.mode);
+        sunStarDraw(scene, slot, overlays);
+        if (scene.bounds.isEmpty) continue;
+        g.save();
+        g.translate(w / 2, h / 2);
+        new CanvasRenderer(g, scale).render(scene.bounds.renderList);
+        g.restore();
+    }
+
+    g.save();
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = "#444";
+    g.font = "12px sans-serif";
+    g.textBaseline = "top";
+    g.fillText(`scale ${scale.toFixed(2)}`, 6, 6);
+    g.restore();
+}
+
 export function drawSunStar(id) {
     const page = document.querySelector(`#${id}`);
     if (!page || page.style.display == "none") return;
     const canvasA = document.querySelector("#sunstar-a");
     const canvasB = document.querySelector("#sunstar-b");
+    const slotEleB = document.querySelector("#sunstar-slot-b");
     if (!canvasA || !canvasB) {
         console.log(`drawSunStar: missing a canvas in #${id}`);
         return;
     }
 
-    const SCALE = 4;
     const eleOverlay = document.querySelector("#sunstar-overlay");
     const overlay = eleOverlay ? eleOverlay.checked : false;
+    const overlays = sunStarOverlays();
     const slots = [sunStarSlot("a"), sunStarSlot("b")];
 
-    /**
-     * Named parameters only. The checkboxes decide which calls happen; nothing
-     * is handed to the recursion.
-     *
-     * Big and small rhombs are the same layer one generation apart -- small
-     * recurses to gen 0 and draws shape index 0, large short-circuits at gen 1
-     * and draws index 1. Which one you get is `smallRhomb`, so drawing both
-     * means calling the rhomb layer twice with the flag flipped between. The
-     * scene reads its overlays at draw time, so setting the property between
-     * calls is enough.
-     */
-    function drawOne(scene, slot, loc, overlays) {
-        const { type, angle, isHeads, gen, showPenta, showRhomb, showBigRhomb } = slot;
-        const args = { type, angle, isHeads, loc, gen };
+    const viewW = overlay
+        ? SUNSTAR_VIEW_W
+        : Math.floor((SUNSTAR_VIEW_W - SUNSTAR_GAP) / 2);
+    const viewH = SUNSTAR_VIEW_H;
 
-        if (showPenta) {
-            scene.overlays = overlays;
-            scene.penta(args);
-        }
-        if (showRhomb) {
-            scene.overlays = { ...overlays, smallRhomb: true };
-            scene.penta({ ...args, layer: "rhomb" });
-        }
-        if (showBigRhomb) {
-            scene.overlays = { ...overlays, smallRhomb: false };
-            scene.penta({ ...args, layer: "rhomb" });
-        }
-        scene.overlays = overlays;
+    // Fit the larger figure. Half-extents about the origin, since that is where
+    // the seed sits and where the viewport is centred.
+    let halfW = 0;
+    let halfH = 0;
+    for (const slot of slots) {
+        const b = sunStarMeasure(slot, overlays);
+        if (b.isEmpty) continue;
+        halfW = Math.max(halfW, Math.abs(b.minPoint.x), Math.abs(b.maxPoint.x));
+        halfH = Math.max(halfH, Math.abs(b.minPoint.y), Math.abs(b.maxPoint.y));
     }
-
-    /**
-     * This page owns its overlays. The sidebar's Pentas-and-Stars and Rhombi
-     * boxes gate drawing deep inside drawPentaPattern and drawRhombusPattern,
-     * so with Rhombi unchecked -- its default -- nothing on this page could show
-     * rhombs however the page's own checkbox was set. Setting them true here
-     * hands control to the per-image checkboxes, which do the filtering by
-     * choosing which calls to make. Tree, Ammann and Mosaic still come from the
-     * sidebar, as do penta style, rhomb style and color.
-     */
-    function pageOverlays() {
-        return {
-            ...(globals.overlays || {}),
-            pentaSelected: true,
-            rhombSelected: true,
-            smallRhomb: true,
-            // This page has no mosaic checkbox, so it does not show mosaic
-            // tiles. Inheriting the sidebar flag would make the page change
-            // under a control it does not offer.
-            mosaicSelected: false,
-        };
-    }
-
-    /**
-     * Measures in a throwaway scene so the canvas comes out tight, then draws
-     * shifted against the origin. Each slot builds its own scene because each
-     * carries its own mode; when two share a canvas they use the first slot's.
-     */
-    function renderInto(canvas, group) {
-        const mode = group[0].mode;
-        const overlays = pageOverlays();
-
-        const ms = new PenroseScreen(mode);
-        ms.setToMeasure();
-        for (const slot of group) drawOne(ms, slot, p(0, 0), overlays);
-        if (ms.bounds.isEmpty) return;
-        const loc = ms.bounds.minPoint.neg;
-
-        const scene = new PenroseScreen(mode);
-        for (const slot of group) drawOne(scene, slot, loc, overlays);
-        resizeAndRender(scene, canvas, SCALE);
-    }
+    const fit =
+        halfW > 0 && halfH > 0
+            ? Math.min(viewW / (2 * halfW), viewH / (2 * halfH)) * SUNSTAR_MARGIN
+            : 4;
+    const scale = fit * sunStarZoom;
 
     if (overlay) {
-        canvasB.style.display = "none";
-        renderInto(canvasA, slots);
+        if (slotEleB) slotEleB.style.display = "none";
+        sunStarRender(canvasA, viewW, viewH, slots, overlays, scale);
     } else {
-        canvasB.style.display = "";
-        renderInto(canvasA, [slots[0]]);
-        renderInto(canvasB, [slots[1]]);
+        if (slotEleB) slotEleB.style.display = "";
+        sunStarRender(canvasA, viewW, viewH, [slots[0]], overlays, scale);
+        sunStarRender(canvasB, viewW, viewH, [slots[1]], overlays, scale);
     }
+}
+
+/**
+ * Wheel zooms both viewports together; double click refits. Wired once, from
+ * controls.js, which is where the page's other controls are wired.
+ */
+export function sunStarZoomBy(factor) {
+    sunStarZoom = Math.max(0.05, Math.min(40, sunStarZoom * factor));
+}
+
+export function sunStarResetZoom() {
+    sunStarZoom = 1;
 }
