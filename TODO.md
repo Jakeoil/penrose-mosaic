@@ -5,630 +5,135 @@
 **Do not change the look of this program.** Fixes are behavior-only. Correcting a
 dangling `for=` so a label finally reaches its checkbox is fine; changing fonts,
 colors, spacing, adding or removing visible controls, or rearranging a page is
-not — not even as a small improvement alongside an approved change. Adding a nav
-button or a page counts as changing the look. Console logging, internal renames
-and selector corrections do not. If a fix genuinely needs a visible change, ask
-first.
+not — not even as a small improvement alongside an approved change. Console
+logging, internal renames and selector corrections do not count. If a fix
+genuinely needs a visible change, ask first.
 
-## Measurements Page
+## The hazard to know about
 
-### 1. Tie tables to control mode (DONE)
-- [x] Wire wheel tables to the shape mode control (mosaic, quadrille, real)
-- [x] When mode is real, show rounded floating-point values in the tables
-- [x] When mode is quadrille/mosaic, show integer values (current behavior)
-
-### 1a. Intermittent: mode change doesn't update tables
-- [x] Cause found: not a race. `cookie.set` used `max-age: 3600`, so the cookie
-      expired under a page left open. `ShapeMode.reset()` then fell back to its
-      default because it overwrote `this.shapeMode` before building the fallback
-      it hands to `cookie.get` — the fallback was always "real", never the value
-      the object held
-- [x] `max-age` raised to 30 days (`COOKIE_MAX_AGE` in `controls.js`)
-- [x] `ShapeMode.reset()` now only applies its default on first construction
-- [x] Added a `defaults` button on the Controls heading to clear cookies and reload
-- [ ] Not yet confirmed gone in normal use — leave open for a while
-- [ ] Diagnostic logging still in `measureTasks()` and `wheelTables()`; remove
-      once 1a is confirmed dead
-
-### 2. Decagon figures match mode (low priority, parked)
-- [x] `drawQuadrille()` and `drawImage()` passed the constant `shapeMode.MODE_REAL`
-      instead of `shapeMode.shapeMode`, so they were pinned to real. Fixed
-- [ ] Fixing that did **not** change what renders. Observed, after the fix:
-      - mode mosaic → figure shows real
-      - mode real → figure shows real
-      - mode quadrille → figure shows mosaic
-- [ ] Hypothesis (unconfirmed): the figures render one mode behind. Cycle order
-      is mosaic → quadrille → real, and two of the three cases match the
-      predecessor (mosaic shows real, quadrille shows mosaic). The real case does
-      not fit, so this is at best partial. Looks like a sync/repaint issue rather
-      than a mode-plumbing issue
-- [ ] Not worth chasing. These figures started as an experiment in image
-      generation and are decorative. Mosaic at larger sizes shows internal
-      squares, which is fine
-- [ ] Ignore overlay values and colors
-
-### 3. Wheel line diagrams
-- [ ] Draw small figures showing the line each wheel (P, S, T, D) represents
-- [ ] Place each diagram to the left of its respective table
-- [ ] P: distance between pentagon centers
-- [ ] S: pentagon corner to star (pgon.R + pgram.R)
-- [ ] T: star center to boat center (2 × (pgram.R + pgram.y))
-- [ ] D: pentagon center to corner (pgon.r)
-
-### 4. Small rhombs consistency
-- [ ] Small rhombs do not work when rhombs are selected on the two shape
-      expansion pages (`g012` / `drawGeneric123`, `g3` / `drawGeneric3`)
-- [ ] Involves the large/small rhomb radio pair (`#small-rhomb` /
-      `#large-rhomb`) in `Overlays`
-- [x] Cause: an error of omission. Both pages hardcode `layer = "dual"` and
-      draw only the penta and dual layers, never `layer: "rhomb"`. Every
-      `smallRhomb` branch sits inside `if (layer == "rhomb")`, so the radio pair
-      is inert there. `drawGridWork` works because it passes both layers
-- [x] Confirmed: large and small rhombs are sized exactly one generation apart,
-      and large is the earlier generation. `drawRhombusPattern` indexes shapes
-      by the gen it is called at (`thickRhomb[gen]`). Large short-circuits at
-      `gen == 1` → index 1; small recurses to `gen == 0` → index 0
-
-Nothing to back-port from `wieringa-roof` here. The thick/thin rhomb shapes are
-term-for-term identical in both projects, and the `isHeads` rules agree with the
-table in `docs/PLANS.md`. The `[0,±1,±2,±1]` vertex-index caution from the
-wieringa work is about 3D height indices and has no counterpart in this project.
-
-### 4a. Dual rhombs — finish the research feature
-Started and abandoned as too complex. The leftover is the hardcoded
-`layer = "dual"` on the two expansion pages. Restate of the idea:
-
-When a colored P1 tiling is overlain with small rhombs, the thick and the thin
-rhomb each pick up a **unique pattern of the P1 colors**. So tiling with just
-those two colored rhombs reproduces the P1 pattern.
-
-Generation 0 of a pentagon is a single pentagon (`Pe5`, `Pe3`, `Pe1`). Generation
-0 of the small rhombs is the cluster:
-
-| P1 tile | cluster |
-|---|---|
-| rhomb star (`Pe5`) | 5 thick |
-| rhomb boat (`Pe3`) | 3 thick + 1 thin |
-| rhomb diamond (`Pe1`) | 1 thick + 2 thin |
-
-The `St*` tiles generate no small rhombs at all. **The dual is the other way
-around**: the `St*` generate the small rhombs and the `Pe*` generate nothing.
-
-Equivalently: a `Pe*` seed overlain with the corresponding `St*` seed is the P1
-dual.
-
-- [ ] Implement soon
-- [ ] `dualRhombSelected` is currently dead — set, persisted, checkbox wired,
-      never read. `drawDualRhombusPattern` gates on `rhombSelected` instead
-      (`penrose-screen.js:913`). Wire the checkbox to its own layer
-- [ ] The whole dual draw path is currently **dead code**. The only producer of
-      `layer: "dual"` is `pentaDual` (`penrose-screen.js:636`), which has no
-      callers since the expansion pages stopped hardcoding it. `drawDualDemo`
-      passes only "penta" and "rhomb"
-- [ ] `drawDualRhombusPattern` indexes `thinDualRhomb[gen + 1]`, one higher than
-      `drawRhombusPattern`'s `[gen]`. This is **not** a latent crash: the call
-      sits inside the `gen == 0` branch of `star()`, so gen is always 0 and the
-      index is always 1, which exists. Worth understanding before reusing the
-      function at other generations, nothing more
-
-#### "Dual" is probably the wrong name
-The idea is a map centered on a `Pe5` pentagon overlain with one centered on a
-`St5` star. That is **not** a dual in the usual sense — a dual exchanges vertices
-and faces. What it actually describes is a known pair: there are exactly **two**
-Penrose tilings with global five-fold symmetry, conventionally called **Sun** and
-**Star**, distinguished by precisely this — whether the center is a pentagon
-vertex or a five-star.
-
-`wieringa-roof` already uses that vocabulary (`expandSun`, `expandStarComposite`,
-and the queen/sun/star empire framing), so the two projects would agree.
-
-- [x] **DECIDED: the feature is called the Sun/Star overlay.** Use that name for
-      the page, the control label and any new identifier
-- [ ] Scope of the rename is still open. "Dual" appears in ~50 places, but not
-      all of them mean the same thing. The *shape* identifiers — `goThickDual`,
-      `goThinDual`, `thickDualRhomb`, `thinDualRhomb` — are a distinct rhomb
-      geometry built from the p and s wheels instead of t, and may be a genuine
-      dual. Renaming those to Sun/Star could be simply wrong. Rename the
-      user-facing feature first; leave the shape math alone until we know
-
-#### BUG: the Dual rhombs checkbox is wired to the wrong element
-`controls/Overlays.js:29` reads
-
-    this.eleDualRhomb = document.querySelector("#dual");
-
-Every other overlay queries its `-ovl` id (`#penta-ovl`, `#rhomb-ovl`). The
-checkbox is `#dual-ovl` (`index.html:110`). `#dual` does exist — it is the
-**page div** at `index.html:254`. So:
-
-- the real checkbox has no listener, and `dualRhombSelected` never changes
-- `refresh()` sets `.checked` on a `<div>`, which does nothing
-- the click listener is attached to the Dual test page, so clicking anywhere on
-  that page silently toggles `dualRhombSelected`
-
-- [ ] Fix the selector to `#dual-ovl`, or rename the ids as part of the Sun/Star
-      rename so the collision cannot recur
-
-#### The relation being sought has a name: MLD
-P1 and P3 are **mutually locally derivable** — each can be reconstructed from the
-other by local rules alone. That is the formal version of "the overlaid pattern
-will produce a P1 tiling, one pattern on thick and the other on thin": each P3
-rhomb carries a fixed piece of P1 decoration, one for thick and one for thin.
-This is the same property already observed for the small rhombs.
-
-Reference image: `Penrose_Tiling_(P1_over_P3).svg.webp` in the math-legacy root
-(Wikipedia). P1 in black outline — gray pentagons, blue non-pentagon tiles —
-with the P3 rhombs overlaid in yellow.
-
-#### How the two rhomb groups differ (see docs/rhomb-groups.md)
-- **large RG** centers land on blue `Pe5_0` pentagons **only**
-- **small RG** centers land on **every** pentagon type `Pe*_0`
-- one inflation step apart
-
-That asymmetry is the thing to look at first. If the Sun/Star overlay carries
-over to P1, the large RG restriction to blue is very likely where it shows up.
-
-#### Controls rebuilt 2026-08-07
-Per-image panels are back, seven controls each: Shape (Sun/Star/Queen),
-Orientation, Parity, Gen, Mode, and two new filter checkboxes — **pentas and
-stars** and **small rhombs** — plus the shared overlay toggle.
-
-Built to respect the rule above. Everything is a named parameter; nothing goes
-through `...options`. The two checkboxes work by choosing which `penta()` calls
-to make rather than by passing a flag into the recursion, so they cannot collide
-with anything downstream. Verified: the page's call path gives identical tile
-counts to direct composite calls for all three shapes, both modes, gen 3/4/5.
-
-- [x] **The page owns its overlays now.** The sidebar's boxes gate drawing deep
-      inside `drawPentaPattern` and `drawRhombusPattern`, and `#rhomb-ovl` is
-      unchecked by default, so nothing on this page could show rhombs however the
-      page's own checkbox was set. `PenroseScreen` now carries an optional
-      `overlays` property — `activeOverlays` prefers it, then the sidebar, then
-      the measurements iframe — and the page sets `pentaSelected`,
-      `rhombSelected` and `smallRhomb` true so its checkboxes are authoritative.
-      A per-scene property rather than anything passed through `...options`
-- [ ] Division of labor on this page: **controls, shape mode and overlays** come
-      from the per-image panels; **penta style, rhomb style and color** stay in
-      the sidebar. Tree, Ammann and Mosaic still come from the sidebar for now —
-      they have no per-image equivalent yet
-- [ ] **Back burner: untangle the sidebar's own overlay controls.** Two switches
-      in series for one thing is still the underlying shape of it
-
-#### Simplified 2026-08-07
-The per-image panels are gone. Sun, Star and Queen(Deca) are in the sidebar
-**shape type** list instead, and `penta()` routes all three, so every page driven
-by the sidebar can show them -- including Shape expansions and Gen 5 expansion.
-The Sun/Star page is now a plain single figure on the same code path as the old
-pages, which is what makes a difference between them meaningful.
-
-The clip is gone from the page. The composites *are* the patches; nothing needs
-rounding off. `withinClip` remains in `penrose-screen.js`, unused, in case a
-radius clip is wanted later.
-
-#### Resolved: the gen 4/5 defect was the per-image controls
-Confirmed 2026-08-07. With the panels gone every shape is correct, including the
-new ones: Sun and Star render correctly at gen 1-4 on Shape expansions and at
-gen 5 on Gen 5 expansion, same for Star, and the Sun/Star page is right.
-
-**The mechanism, and it is general.** Every recursive call in
-`penrose-screen.js` spreads `...options` **last**:
+Every recursive call in `penrose-screen.js` spreads `...options` **last**:
 
     this.penta({ type: penrose.Pe3, angle, ..., ...options });
 
 So any stray key riding in `options` silently overrides the explicit argument of
-the same name, all the way down the recursion. `star()` is worse still --
-`const { overlays } = { ...globals, ...options };` -- so a key named `overlays`
-in options would replace the real overlays for that whole subtree.
+the same name, all the way down the recursion. This corrupted the figures once
+already, at generation 4 and beyond, and took a long time to find because the
+composites were correct in isolation — only the page's call path was wrong.
 
-Two instances found:
-- `penta()` forwarded `type` into `deca()`, which did not destructure it, so
-  every child was turned back into a Deca. Fixed by swallowing `type` in
-  `deca()`, `sun()` and `starPatch()`
-- the per-image page passed `clip` through `options`, which is the same channel
+**Per-figure settings must be named parameters**, or swallowed at the top of
+every method that forwards options. `deca()`, `sun()` and `starPatch()` swallow
+`type` for exactly this reason. Per-scene state goes on the scene instead —
+`PenroseScreen.overlays` is the model.
 
-**How to apply when the controls are rebuilt:** do not pass per-figure settings
-through `...options`. Give them named parameters, or destructure and swallow them
-at the top of every method that forwards options. Anything added to that channel
-is invisible until it collides with a name several levels down.
+## Where things are written down
 
-- [ ] Old note, kept for the record: **the gen 4/5 defect.** Deca shows it in the five outermost boats
-      (St3 at gen 0 for a gen 4 figure, gen 1 for gen 5), worse in quadrille, and
-      **not on the old pages**. Ruled out by measurement: the clip drops zero
-      tiles at every generation to 5; 5-fold symmetry is exact including angle
-      and parity; no coincident or illegally close tiles; canvas size is fine at
-      gen 4 (1042x1096). Note canvas *does* exceed 4096px for Sun and Star at
-      gen 5 (~25MP), which Safari caps -- a real hazard, but not this bug
-- [x] Fixed a latent bug found on the way: `penta()` forwarded `type` into
-      `deca()`, which did not destructure it, so it sat in `...options` and was
-      spread over the `type` of every child -- options is spread last -- turning
-      every child back into a Deca. Never triggered before because nothing called
-      `penta({type: Deca})`; routing Deca through `penta()` would have. `type` is
-      now swallowed in `deca()`, `sun()` and `starPatch()`
+- `docs/wheels.md` — the two geometries, three stored rotations, the four wheels,
+  the substitution matrices and the closed-form limiting slopes
+- `docs/basis-search.md` — whether `(4,0),(3,2),(1,4)` is optimal
+- `docs/rhomb-groups.md` — large vs small rhomb groups, Sun/Star naming, MLD
+- `docs/PLANS.md` — the penta/star refactor, the isHeads propagation table
+- `tools/stamp.mjs` — run after changing any script; the stamp shows on hover
+  over `defaults`. Check it before debugging a change that "did nothing"
+- `tools/basis-search.mjs` — `node tools/basis-search.mjs 64`
 
-#### Specification 2026-08-06
+---
 
-**Per image, independent, set on screen above each image:**
+## Open
 
-| control | values |
-| ------- | ------ |
-| Shape type | Star, Sun, Queen |
-| Orientation | Up / Down |
-| Parity | Heads / Tails |
-| Gen | size of the circular patch |
-| Mode | real and quadrille only — mosaic does not make sense here |
+### A. Wheel line diagrams — deferred to last
+Small figures showing the line each wheel represents, left of its table on the
+measurements page. P is the distance between pentagon centers, S pentagon corner
+to star (`pgon.R + pgram.R`), T star center to boat center
+(`2 x (pgram.R + pgram.y)`), D pentagon center to corner (`pgon.r`).
 
-**Shared, pulled from the sidebar:** layer (pentagons and stars, or small
-rhombs); stroke, fill and color. Default **solid stroke with transparent fill**
-for both rhombs and pentas. The sidebar can be tweaked to suit.
+Deferred because it cannot be done justice without revamping the measurements
+page. Decide first whether the diagrams are schematic — two dots, a line, a
+label, a legend — or real renderings through `PenroseScreen`.
 
-**What the patches actually are.** These are radius-clipped, not
-recursion-bounded — a different construction from what `penta()` and `star()`
-produce:
+### B. Large and small rhombs as independent flags
+They share one flag today, so they cannot be shown together from the sidebar.
+Default is **small**. Doing it properly means a second flag and a second call to
+the rhomb layer on every page that draws rhombs, the way the Sun/Star page
+already does it by flipping `smallRhomb` between calls.
 
-- **Star patch**: the pentagon centers within a given radius of the center of a
-  `St5` at the **next generation** — the star containing the patch
-- **Sun patch**: the same, about the center of a `Pe5`
-- **Queen patch**: a patch whose first generation is one yellow (`Pe3`) and two
-  orange (`Pe1`) pentagons
+### C. The P1 over P3 overlay
+The geometry is all there — pentas and stars plus big rhombs on the Sun/Star
+page is the configuration. What is missing is styling: the rhombs need no fill
+and a stroke that reads against the pentagons, or they cover them. Check whether
+the sidebar can already express that before adding anything.
 
-So a patch is defined by a radius clip around a center, with the underlying
-tiling taken as arbitrarily large. `Gen` sets that radius. This is why the plain
-`Pe5`/`St5` figures are only an approximation of the named patches — they are
-bounded by where the recursion stops, not by a circle.
+### D. Untangle the sidebar's overlay controls
+Still two switches in series in places. The Sun/Star page owns its overlays via
+`PenroseScreen.overlays`; the sidebar has not been given the same treatment.
 
-- [x] **Clip implemented.** A `clip` of `{center, radius}` rides through
-      `...options`, which already flows through every level of the recursion, and
-      is tested at both leaves — `drawPentaPattern` and `drawRhombusPattern`.
-      The test is on the tile's own `loc`, which for penta and star is its
-      centre, so it is literally "the pentagon centers within a given radius".
-      A tile just inside the circle can still poke past it, leaving the boundary
-      ragged by one tile, which is what a real patch looks like
-- [x] The Sun/Star page renders in three passes: measure raw to find the centre
-      and the inscribed radius, measure clipped, then draw shifted against the
-      origin. Pe5 gen 3 goes from 116.1x110.5 to 112.1x110.5, St5 from
-      187.9x178.7 to 181.4x178.7 — both near square, so the patches are round
-- [ ] The radius is currently derived (largest circle inside the raw extent)
-      rather than being what `Gen` sets. Per the spec `Gen` should set the
-      radius, with the expansion deep enough to fill it
-- [x] **The Queen is the deca**, not a `Pe3`. Confirmed by rhomb count
-- [x] `sun()` and `starPatch()` added to `penrose-screen.js`. Verified against
-      the rhomb counts in the small rhomb groups: **Sun 55, Star 35, Queen 10**,
-      all exact. Sun = `penta(Pe5)` plus the ten `Pe1` of the five Queens, hung
-      off each `Pe3` the way `deca()` hangs its own. Star = `star(St5)` plus five
-      `Pe3` at t-wheel positions, which `star()` cannot supply because it puts
-      its boats where the `Pe3` belong
-- [x] No half-tenths needed anywhere — all placements are tenth lookups or sums
-      of them, so the patches stay on the lattice in quadrille as well as real
+### E. Restructure `shape-modes.js` around two geometries
+`Real`, `Quadrille`, `Mosaic` and `Typographic` are still four peer classes,
+though the mathematics has two geometries and mosaic is a presentation. Adjacent
+to the penta/star refactor in `docs/PLANS.md`. The big one.
 
-#### Direction settled 2026-08-05
-- Clearest reading is **strokes only, fill transparent or none**
-- Borrow the framework from `wieringa-roof/unfold.html`: a checkbox reading
-  **"overlay instead of side by side"** (`#p1-overlay`, handled in
-  `src/workbench.ts`). Same idea here for penta vs rhombs
-- Work in **patches**, not raw generations: Sun, Star, and deca/Queen. Build them
-  as composite seeds in the style of `deca()`. Do not worry about matching
-  generation numbers between them
-- The duals of each layer are **sun/star, horizontal up or down**. All five-fold
-- **Deca is its own dual** — horizontal up and down are its duals
-- Controls later, but the shape is a **swap function**: the sidebar sets up the
-  left one, and swap exchanges them
+### F. Research questions
+From `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`. Not code work.
 
-- [x] Side by side, plain `Pe5_x` and `St5_x`, vertically centred. The named Sun
-      and Star patches are just these with the outer tiles trimmed to round them
-      off, so no composite seed is needed to see them
-- [ ] Next: the **"overlay instead of side by side"** toggle, default side by side
-- [ ] Then: strokes only, fill transparent
+- **Is the mosaic literally a polyomino tiling?** Every tile is a fixed set of
+  unit squares, so is it a tiling of Z^2 by six fixed polyominoes?
+- **Literature check.** The strong claim: a finite set of canonical
+  integer-coordinate P1 prototiles preserving matching rules *and* substitution,
+  whose inflation converges to a degree-2 geometry rather than to Euclidean
+  Penrose. That last clause is the distinguishing part
+- **Pentagrid experiment.** Brief written up at `pentagrid/RESEARCH.md`
+- **Basis search** is exhaustive only to bound 64, and scores the pentagon only.
+  Star, boat and diamond close on the same three vectors so should follow
+- `S` follows the same second-order law as the other wheels but its cross-wheel
+  difference is `S(n+1) = S(n) + 2P(n) - P(n-1)`. Is there a tidier statement
+- A **"why this isn't just pixel art"** page for the site: why those vectors, why
+  every tile is canonical, how this differs from rasterization, quadrille versus
+  mosaic, how substitution still works. Deferred — a new page changes the look
 
-**Correction.** A composite `starPatch()` was built and backed out. Two mistakes:
-it built an overlay when side by side is the default, and it treated the patches
-as needing a measured ring when they are plain `Pe5`/`St5`. The claim that the
-Sun ring needs half-tenths was also wrong — every pentagon has a horizontal side,
-and the wheel directions cover it. The wieringa-roof polar placement solves a
-problem this project does not have.
+---
 
-#### New page: two independent overlay layers
-"Dual rhombs" is too narrow a framing. What the page wants is **two overlay
-slots, each with its own controls**, drawn on one canvas. The Sun/Star
-comparison is then just one configuration of it — slot A centered on a `Pe5`,
-slot B centered on a `St5` — rather than a feature in its own right.
+## Done
 
-Per slot, independently settable:
-- shape type (`Pe*`, `St*`, `Deca`) and angle/heads
-- **generation** — the interesting one. Two different generations overlaid,
-  scaled to a common size, is what shows the inflation relation directly
-- which layer to draw (penta, rhomb) and rhomb size (large/small)
-- color and opacity, so the lower slot stays readable
+- **Small rhombs** work on the expansion pages. Both pages hardcoded
+  `layer = "dual"` and never drew the rhomb layer at all
+- **Sun, Star and Queen** are real composites, verified against the rhomb counts
+  in the small rhomb groups: 55, 35 and 10. Queen is the deca. They are in the
+  sidebar shape type list, so every page can show them
+- **Two geometries**, `[discrete, real]`, discrete default, opening on the
+  Mosaic. Mosaic is a presentation reached through its overlay flag, not a mode.
+  That removed the short-circuit which made "pentas and stars" dead in one mode
+  and live in another
+- **Mosaic styles** — fill none/solid/transparent, border none/grid/outline.
+  Outline is the exact silhouette: an edge shared by two squares is interior, so
+  the edges appearing once are the boundary
+- **The example shapes no longer bounce.** Height pinned from a measurement with
+  every layer on, figure nailed to the bottom, width hugging content
+- **`line()` bounds** were `loc+loc` and `loc+end`, so every segment claimed
+  twice its extent. Ammann bars nearly doubled any figure showing them
+- **Dual layer removed** — checkbox, layer, `pentaDual`,
+  `drawDualRhombusPattern`, `drawDualDemo` and its orphan page. The
+  `goThickDual`/`thinDualRhomb` shape math is kept: it is a separate geometry off
+  the p and s wheels and may be a genuine dual
+- **Measurements page** — tables follow the mode; the decagon figures do too now
+  that mosaic is not a mode. The intermittent stale-table bug was cookie expiry
+  plus a fallback in `ShapeMode.reset()`, both fixed, and the diagnostics are out
+- **The mathematics** — `docs/wheels.md` and `docs/basis-search.md`. The mosaic
+  is not a rational approximant; it generates its own irrational geometry
+- Dead math retired: `interpolateShape`, `makeShapeWheels`, `compare`,
+  `shapeWheelTests`
 
-- [ ] Scale normalization is the real work. Each slot picks its own generation,
-      so the page must scale them to a common unit before compositing. The
-      measure/render two-pass already computes bounds per scene — two scenes,
-      two bounds, one common scale
-- [ ] Add a `.pageButton` with a `data-id` to `<nav id="across">` in
-      `index.html`, a matching `<div class="page">` holding a canvas, and a draw
-      function in `renderings.js` called from `penroseApp`
-- [ ] CAUTION: `PageNavigation` persists `activeButtonIndex` by **position**
-      (`controls/PageNavigation.js`). Inserting a button mid-list shifts every
-      index after it, so a stale cookie opens the wrong page. Append at the end,
-      or press `defaults` after adding it
+## Sharp edges found along the way
 
-#### The nav/content relationship is brittle
-Page identity lives in three places that must agree — the button's `data-id`, the
-`.page` div's `id`, and the string passed to the draw function in `math.js`
-(`drawDualDemo("dual")`). Nothing checks that they line up, and the `#dual`
-selector bug above is exactly what that costs. Worth a look before adding a page
-rather than after.
-
-### 4b. Deca generations — decided against
-`wieringa-roof`'s `expandDeca` expands children at `gen` using `wheels[gen + 1]`,
-where this project expands at `gen - 1` using `wheels[gen]`, leaving deca a
-generation behind everything else. `renderings.js` compensates with
-`topGens = isDeca ? [1,2,3] : [0,1,2]`.
-
-**Do not import this.** What is good for wieringa-roof is not good here — that
-change was made to define deca, penta and star as queen, sun and star empire
-patches. Leave this project's deca as it is.
-
-### 5. Bring the mathematics up to date
-There are two geometries, not four shape modes: **real** (sines, cosines, φ) and
-**discrete** (integer, hand-computed). Quadrille and mosaic are both discrete —
-they differ only in rendering and in how reflections are done (`shapeWheel` uses
-`vr/neg/hr`, `shapeWheelMosaic` uses `vrm/negm/hrm`). A third typographic
-geometry exists but is unreachable and has no current purpose.
-
-Only three rotations are ever stored — nicknamed `up, won, too`, and in wheel
-index terms `up0, down3, up1`. Everything else is vertical and horizontal
-reflection. The discrete wheels were reverse-engineered by counting squares on a
-mosaic printout; two generations were enough to extrapolate the rest with
-k(n+2) = k(n) + k(n+1). At scale the discrete tiling is uncannily close to the
-real one.
-
-- [ ] Write `docs/wheels.md` capturing the above, including the origin story
-- [ ] Fix `wheels.js:140` — mislabels the seeds as `up0, down3, up2`. It is
-      `up1`. Contradicts the correct comment at `wheels.js:44`, and the table
-      headers in `measurements.js`
-- [x] Retire dead math, reviewed one at a time:
-      - `interpolateShape` — removed. Called `.foreach`, would have thrown
-      - `makeShapeWheels` — removed. Empty stub
-      - `compare` — removed. Already marked "Deprecate soon !!!"
-      - `predecessorPoint` — **kept**, deliberately. It is byte-identical to
-        `interpolateWheel`, but the pair carries the derivation and the
-        plain-language account between them, and that is worth the duplication
-      - `shapeWheelTests` and its helper `makeShapesSeedSuccessor` — removed.
-        They ran on every measurements refresh and nothing escaped them
-      - `successorPoint` — **kept**, though it now has no callers at all. It is
-        the clean statement of the forward step, and `makeWheels` arguably
-        ought to call it instead of inlining the same sums
-
-### 5b. Angles and asymptotics — mostly answered, see docs/wheels.md
-Answered while documenting the wheels:
-- ratio of successive radii is **φ², not φ** — `(3+√5)/2`
-- the discrete slopes converge to **algebraic numbers in ℚ(√5)**:
-  `tan = (5−√5)/4` at 34.6438° and `(5+3√5)/4` at 71.1377°, against the true
-  36° and 72° whose tangents need nested radicals
-- the recurrence is `k(n+2) = 3k(n+1) − k(n) ± k(0)`, not plain Fibonacci, but
-  Fibonacci appears exactly *between* wheels
-
-Sharpened after re-reading `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`:
-the x-components are **alternate Fibonacci numbers** and the recurrence
-`a(n+1) = 3a(n) − a(n−1)` is exact in x. One inflation is two Fibonacci steps,
-which is why the ratio is φ². The limits are the dominant eigenvector of the
-substitution, eigenvalue φ² — hence ℚ(√5).
-
-**The mosaic is therefore not a rational approximant.** It generates its own
-irrational geometry rather than converging back to Euclidean Penrose.
-
-Left to look at:
-- [ ] `S` follows the same second-order law but its cross-wheel difference is
-      `S(n+1) = S(n) + 2P(n) − P(n−1)`, less tidy than P, D and T. Is there a
-      better statement of it
-- [x] **Substitution matrix — done, see docs/wheels.md.** x and y evolve under
-      two *different* integer matrices, because `hr` negates x and `vr` negates
-      y. `Mx = [[1,0,0],[1,1,1],[0,1,2]]`, `My = [[1,2,0],[1,1,1],[0,1,0]]`,
-      verified against `successorPoint` over 50,000 seeds. Both characteristic
-      polynomials share `λ² − 3λ + 1`, roots φ² and φ⁻², so the growth ratio is
-      now proved. Mx's extra eigenvalue 1 is why `x0` stays 0; My's extra
-      eigenvalue −1 **is** the ±2 correction. The limiting tangents follow in
-      closed form from the dominant eigenvectors `ex = (0,1,φ)`,
-      `ey = (2φ,φ²,1)`
-- [x] Two results fell out: `tan θ₂ / tan θ₁ = φ³` **independent of the seed**,
-      so no integer basis can change it; and the entire difference from
-      Euclidean Penrose is a single shear `r`, where true Penrose needs
-      `√(2+φ)` and the discrete geometry gets `(2+φ)/2`
-
-### 5c. Research questions from the Mosaic Chat notes
-From `~/Documents/obsidian/projects/penrose/Mosaic Chat.md`. Not code work —
-these are the mathematical claims worth establishing or checking against the
-literature.
-
-- [x] **Is the basis optimal? — answered. See `docs/basis-search.md`**, tool at
-      `tools/basis-search.mjs`. Closure is the exact Diophantine condition
-      `p = 2(q − s)`. Scored by Fourier irregularity, exhaustive to bound 64
-      (5.9M closing convex bases):
-      - `(4,0),(3,2),(1,4)` **is a record holder** — the best at size 4 and the
-        first with usable fidelity, halving the error of the only smaller option
-      - Sweet spots are real and lumpy, exactly as predicted: gains of 2.11 at
-        size 4, 2.08 at 22, 1.68 at 36, against ~1.2 elsewhere
-      - Every record from size 8 up belongs to one family, Lucas in x and
-        Fibonacci in y: `p=2L(n−1), q=L(n), r=F(n+1), s=L(n−2), t=F(n+2)`.
-        **The mosaic basis is not in it** — the family member at size 4 is 3.5×
-        worse, and the systematic sequence only takes over at size 8
-      - **The family plateaus at 2.0245e-3 and never converges.** It gets `q/p`
-        and `s/p` exactly right (φ/2 and 1/(2φ), both in ℚ(√5)) but `r/p` and
-        `t/p` wrong, because `sin 36°` and `sin 72°` are degree 4 over ℚ and
-        Fibonacci/Lucas ratios generate only ℚ(√5)
-      - Same obstruction as the shear in `docs/wheels.md`: x is reachable, y is
-        not. No integer basis is optimal in the limit, because the target is not
-        in the field the lattice can reach
-- [ ] Still open: the search is exhaustive only to bound 64. A large non-family
-      basis might break the plateau — it would need to approximate a degree-4
-      number, so look at continued fractions of `sin 36°`
-- [ ] Still open: only the pentagon is scored. Star, boat and diamond close on
-      the same three vectors so should follow, but that is assumed
-- [ ] **Is it a polyomino tiling?** In mosaic mode every tile is a fixed set of
-      unit squares. Is the mosaic literally a tiling of ℤ² by six fixed
-      polyominoes? If so that is a stronger object than a rendering
-- [ ] **Literature check.** The strong claim is not "Penrose tiles on graph
-      paper" but: a finite set of canonical integer-coordinate P1 prototiles
-      preserving matching rules *and* substitution. Related but distinct known
-      areas: rational approximants, cut-and-project lattices, de Bruijn
-      pentagrids, pixel renderings, decagonal digital tilings
-- [ ] **Pentagrid experiment.** A de Bruijn pentagrid built from the discrete
-      directions. At any finite generation the slopes are rational, so the grid
-      is periodic — a rational approximant whose period grows with generation.
-      In the limit it should become genuinely aperiodic but geometrically
-      distinct from the standard pentagrid, since the limiting slopes are the
-      ones above rather than 36°/72°. Note the three edge lengths differ
-      (4, √13, √17), so an integral dual gives ten parallelogram types rather
-      than two golden rhombs. Cannot have exact lattice coordinates, equal edge
-      lengths, and five rational directions simultaneously — pick two
-
-### 5d. A "why this isn't just pixel art" page — deferred
-Suggested for the published site: one page explaining why the vectors are
-`(4,0), (3,2), (1,4)`, why every tile is canonical, how this differs from
-rasterization, quadrille versus mosaic, and how substitution still works.
-
-Deferred — a new page changes the look. Raise it before building.
-- [ ] Only then consider restructuring `shape-modes.js` around two geometries.
-      Adjacent to the penta/star refactor in `docs/PLANS.md` — a real revamp
-
-### 5a. Generation index on penta/star/deca — back burner
-Add a `+`/`-` **index** parameter to the `penta()` and `star()` calls, possibly
-`deca()` too, shifting which generation of shapes is drawn relative to the
-recursion depth.
-
-This would do deliberately what the small rhombs already do **by accident**: the
-small/large rhomb pair are one inflation apart only because small recurses one
-level further before drawing, via a hardcoded short-circuit per size. Turning
-that offset into a parameter would give generational comparison generally,
-without a special case for each.
-
-Generational comparison is on the back burner, so this is parked with it.
-
-### 6. Wheel line diagrams — deferred
-Moved to last. Cannot be done justice without revamping the measurements page.
-See item 3 for the content; do it after items 4 and 5.
-
-## 7. Straighten out the control sidebar
-
-Keep the look and feel. The one deliberate exception is the default presentation,
-which becomes the Mosaic.
-
-### 7a. Two geometries, not three modes  — do this first
-`ShapeMode.MODE_LIST` is `[mosaic, quadrille, real]`. It becomes **`[discrete,
-real]`**, discrete first and default.
-
-**This is the root of the ambiguity, not just tidying.** `drawPentaPattern`
-currently has two different code paths for the same job:
-
-    if (this.mode == penrose.mosaic.key) {
-        ...draw the mosaic figure...
-        return;                        // <-- pentaSelected never consulted
-    }
-    if (!overlays || overlays.pentaSelected) ...outlines...
-    if (!overlays || overlays.mosaicSelected) ...mosaic figure...
-
-In mosaic *mode* the early return means **"pentas and stars" does nothing at
-all**, and neither does the mosaic checkbox. In quadrille mode both work. That is
-the "fiddling" — the same checkbox is live or dead depending on a mode. Deleting
-the short-circuit and keeping only the overlay path removes the duplication and
-makes the checkboxes mean one thing everywhere.
-
-- [x] `discrete` is a key on `penrose` alongside `real`, mapping to the quadrille
-      shape data. `mosaic` stays as shape data for the overlay but is no longer a
-      mode. `MODE_LIST` is `[discrete, real]`, discrete default
-- [x] Mosaic short-circuit deleted. "pentas and stars" now means the same thing
-      in both geometries. Verified: pentas off suppresses outlines everywhere,
-      and both flags on gives outlines over tiles
-- [x] Stale cookies naming a mode that no longer exists fold to `discrete`
-- [x] Default presentation is the Mosaic — pentas off, mosaic on
-- [x] Blank-screen guard in `Overlays.refresh()`, and it is mode-aware: mosaic is
-      inert in real mode, so switching to real with only mosaic showing forces
-      pentas on instead of going blank. The mosaic checkbox is disabled in real
-- [x] Opacity slider removed. It was wired to nothing, and transparent fill
-      covers the need
-
-### 7b. Strictness
-- [ ] Drop the `!overlays ||` guards. They mean "if the flags are missing, draw
-      anyway", which is the literal non-strictness. Overlays are now guaranteed
-      by `activeOverlays` (scene, then sidebar, then iframe), so the guard only
-      hides a real fault
-
-### 7c. Overlays and flags
-Common, both geometries:
-- [ ] pentas and stars — default **no-show**, and auto-show when mosaic is turned
-      off so the screen is never blank. Better as a guard at refresh time ("if
-      nothing would be visible, show pentas") than a one-shot coupling; a
-      one-shot leaves the user stuck if they toggle in the other order
-- [ ] small rhombs — default no-show
-- [ ] large rhombs — default no-show. Needs its own flag; today large/small is a
-      radio on one flag, so the two cannot be shown together in the sidebar even
-      though the Sun/Star page already does it by calling the layer twice
-- [ ] tree — default no-show
-- [ ] ammann — default no-show
-- [ ] **Remove duals.** The whole path is already dead: `pentaDual` has no
-      callers, `dualRhombSelected` is read by nothing, `drawDualRhombusPattern`
-      is unreachable. Remove the checkbox, the layer and the dead page.
-      **Keep `goThickDual`/`thinDualRhomb`** — that is a separate rhomb geometry
-      off the p and s wheels and may be a genuine dual
-
-Discrete only:
-- [ ] mosaic — default **show**, and disabled in real mode
-
-### 7c. Overlays and flags — DEFERRED
-Large and small rhombs still share one flag, so they cannot be shown together
-from the sidebar. Deferred; the default is **small** for now. Doing it properly
-means a second flag and a second call to the rhomb layer on every page that
-draws rhombs, the way the Sun/Star page already does it.
-
-Duals are removed. Tree and Ammann already default off.
-
-### 7d. Styles — DONE
-- [x] Opacity dropped rather than added; the slider was wired to nothing
-- [x] Rhomb styles unchanged
-- [x] **Mosaic styles**, its own section, independent of penta styles:
-      - fill: none / solid / transparent
-      - border: none / grid / outline
-      The resolution rule still wins for the grid — square edges are noise below
-      `scale >= 5`. **Outline** is the exact silhouette of the tile: a mosaic tile
-      is a set of unit squares, and an edge shared by two squares is interior, so
-      keeping the edges that appear exactly once leaves the boundary. Verified on
-      a 2x2 block: 4 grid rects, or 8 boundary edges with the 4 interior ones
-      dropped
-
-### 7e. Which controls apply to which page — DROPPED
-
-### 7f. The bouncing shapes
-Changing a control makes the six example shape composites change height, so the
-page jumps. `resizeAndRender` sizes each canvas from the bounds of what was
-actually drawn, so turning a layer on or off resizes the canvas and the layout
-reflows.
-
-Proposed fix: **size the canvas from the figure, not from the overlays.** Measure
-once with every layer enabled, size the canvas to that, then draw only the
-selected layers into it. Canvas size then depends on type, generation and mode
-only, and never on which boxes are ticked. Costs one extra measure pass, which
-is nothing for six gen-0 figures.
-
-- [x] **Done.** Only the **height** is pinned, measured with every layer on. The
-      **width hugs** what is drawn, as before — these sit inline, so a changing
-      width just shifts text along, while a changing height moves the line box.
-      The figure is nailed to the **bottom** of the box, not centred; centring
-      floated it off the text baseline. Verified heights constant across four
-      overlay combinations in both geometries
-- [x] Note `Bounds.pad()` sets empty bounds to (0,0), so `isEmpty` reads false
-      afterwards. Emptiness has to be checked before padding or a figure that
-      drew nothing looks like one of zero size
-- [x] **Root cause of the oversized boxes: `PenroseScreen.line()`.** It recorded
-      `addPoint(loc, loc)` and `addPoint(loc, end)`, but `addPoint` offsets its
-      second argument by its first, so those were `loc+loc` and `loc+end` — every
-      segment claimed about twice its own extent. Ammann bars are all lines, so a
-      figure showing them nearly doubled: a gen 0 Pe5 went from 10x10 to
-      18.8x18.1. Fixed; Ammann and tree now add nothing to a figure's size, which
-      is correct since both draw inside the tiles. Illustration heights dropped
-      from 193 to 112 for `#p5`
-- [ ] Note `PentaStyle` has no null guard on its elements, unlike every other
-      control. It throws if `#penta-fill` is absent. Harmless in the app, but it
-      is the odd one out
-
-### Order
-7a first — it unblocks the rest and removes the duplicate path. Then 7b, which
-is two lines once 7a lands. Then 7c defaults, then 7d styles, then 7e.
+- `Bounds.pad()` sets empty bounds to `(0,0)`, so `isEmpty` reads false
+  afterwards. Check emptiness **before** padding
+- `resizeAndRender` used to return on empty bounds before clearing, leaving the
+  previous frame on screen. Any "turn everything off" control would have looked
+  broken
+- `PentaStyle` has no null guard on its elements, unlike every other control. It
+  throws if `#penta-fill` is absent
+- Page identity lives in three places that must agree — the button's `data-id`,
+  the page div's `id`, and the id passed to the draw function in `math.js`.
+  `PageNavigation.checkWiring()` reports mismatches
+- `PageNavigation` remembers the active page by button **position**, so inserting
+  a button shifts every index after it
+- Canvas area: Sun and Star at generation 5 come out near 25MP, past Safari's
+  ~4096px cap. Queen at generation 5 is fine

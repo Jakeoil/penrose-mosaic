@@ -37,15 +37,9 @@ export function measureTasks(source) {
     logRefresh(measureTasks, source);
     initControls(measureTasks);
 
-    // Re-read mode from cookie (parent may have changed it)
+    // Re-read the mode from the cookie -- the parent may have changed it.
     if (measureTaskGlobals.shapeMode) {
-        const before = measureTaskGlobals.shapeMode.shapeMode;
         measureTaskGlobals.shapeMode.reset();
-        const after = measureTaskGlobals.shapeMode.shapeMode;
-        if (before !== after) {
-            console.log(`measureTasks: mode changed ${before} → ${after} (source: ${source})`);
-        }
-        console.log(`measureTasks: mode=${after}, source=${source}, cookie=${document.cookie}`);
     }
     // The iframe keeps its own Overlays, so it has to be told about the mode too
     if (measureTaskGlobals.overlays) measureTaskGlobals.overlays.refresh();
@@ -112,10 +106,8 @@ function drawImage() {
 }
 
 function wheelTables() {
-    const mode = measureTaskGlobals.shapeMode.shapeMode;
     const shapeData = activeShapeData();
     const wheels = shapeData.wheels;
-    console.log(`wheelTables: rendering mode=${mode}, data=${shapeData.constructor.name}`);
 
     wheelTable("pWheel", wheels.p);
     wheelTable("sWheel", wheels.s);
