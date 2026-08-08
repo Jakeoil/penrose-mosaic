@@ -752,23 +752,25 @@ const SUNSTAR_VIEW_H = 620;
 const SUNSTAR_GAP = 8;
 const SUNSTAR_MARGIN = 0.94; // leave a little air at the fitted scale
 
-let sunStarZoom = 1;
-
+/**
+ * The settings live on globals.sunStar, which persists them by cookie like the
+ * sidebar controls. This turns one slot's stored settings into what the drawing
+ * needs. Parity and geometry are fixed on this page -- heads, and real -- so
+ * neither is a control.
+ */
 function sunStarSlot(key) {
-    const ele = (name) => document.querySelector(`#ss-${key}-${name}`);
-    const pick = (name, dflt) => (ele(name) ? ele(name).value : dflt);
-    const checked = (name, dflt) => (ele(name) ? ele(name).checked : dflt);
-    const gen = parseInt(pick("gen", "2"), 10);
+    const stored = globals.sunStar
+        ? globals.sunStar[key]
+        : { type: key === "a" ? "sun" : "star", orient: "up", gen: 2, penta: true };
     return {
-        type: SUNSTAR_TYPE[pick("type", "sun")] || penrose.Sun,
-        angle: ang(0, pick("orient", "up") === "down"),
-        // Parity and geometry are fixed on this page: heads, and real.
+        type: SUNSTAR_TYPE[stored.type] || penrose.Sun,
+        angle: ang(0, stored.orient === "down"),
         isHeads: true,
-        gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 2,
+        gen: stored.gen,
         mode: "real",
-        showPenta: checked("penta", true),
-        showRhomb: checked("rhomb", false),
-        showBigRhomb: checked("bigrhomb", false),
+        showPenta: !!stored.penta,
+        showRhomb: !!stored.rhomb,
+        showBigRhomb: !!stored.bigrhomb,
     };
 }
 
@@ -887,14 +889,12 @@ export function drawSunStar(id) {
     if (!page || page.style.display == "none") return;
     const canvasA = document.querySelector("#sunstar-a");
     const canvasB = document.querySelector("#sunstar-b");
-    const slotEleB = document.querySelector("#sunstar-slot-b");
     if (!canvasA || !canvasB) {
         console.log(`drawSunStar: missing a canvas in #${id}`);
         return;
     }
 
-    const eleOverlay = document.querySelector("#sunstar-overlay");
-    const overlay = eleOverlay ? eleOverlay.checked : false;
+    const overlay = globals.sunStar ? globals.sunStar.overlay : false;
     const overlays = sunStarOverlays();
     const slots = [sunStarSlot("a"), sunStarSlot("b")];
 
@@ -928,26 +928,15 @@ export function drawSunStar(id) {
         halfW > 0 && halfH > 0
             ? Math.min(viewW / (2 * halfW), viewH / (2 * halfH)) * SUNSTAR_MARGIN
             : 4;
-    const scale = fit * sunStarZoom;
+    const scale = fit * (globals.sunStar ? globals.sunStar.zoom : 1);
 
+    // Only the viewports change between modes. Both control panels stay.
     if (overlay) {
-        if (slotEleB) slotEleB.style.display = "none";
+        canvasB.style.display = "none";
         sunStarRender(canvasA, viewW, viewH, slots, overlays, scale);
     } else {
-        if (slotEleB) slotEleB.style.display = "";
+        canvasB.style.display = "";
         sunStarRender(canvasA, viewW, viewH, [slots[0]], overlays, scale);
         sunStarRender(canvasB, viewW, viewH, [slots[1]], overlays, scale);
     }
-}
-
-/**
- * Wheel zooms both viewports together; double click refits. Wired once, from
- * controls.js, which is where the page's other controls are wired.
- */
-export function sunStarZoomBy(factor) {
-    sunStarZoom = Math.max(0.05, Math.min(40, sunStarZoom * factor));
-}
-
-export function sunStarResetZoom() {
-    sunStarZoom = 1;
 }

@@ -89,6 +89,12 @@ canvas.apple-ii {
     align-items: flex-start;
 }
 
+.sunstar-views {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
 .sunstar-slot {
     flex: 1 1 0;
     min-width: 0;

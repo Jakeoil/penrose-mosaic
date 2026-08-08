@@ -6,8 +6,8 @@ import { ShapeMode } from "./controls/ShapeMode.js";
 import { Figure } from "./controls/Figure.js";
 import { PentaStyle } from "./controls/PentaStyle.js";
 import { MosaicStyle } from "./controls/MosaicStyle.js";
+import { SunStar } from "./controls/SunStar.js";
 import { BUILD_ID } from "./build-id.js";
-import { sunStarZoomBy, sunStarResetZoom } from "./renderings.js";
 
 /**
  * Controls are
@@ -57,8 +57,10 @@ export function logRefresh(app, source) {
                 `Refresh ${app.name} from ${ShapeMode.name}: ${globals.shapeMode}`
             );
             break;
-        case SUN_STAR:
-            console.log(`Refresh ${app.name} from ${SUN_STAR}`);
+        case SunStar.name:
+            console.log(
+                `Refresh ${app.name} from ${SunStar.name}: ${globals.sunStar}`
+            );
             break;
         default:
             const val = source.constructor.name;
@@ -97,7 +99,7 @@ export function initControls(app) {
             globals.pageNavigation = new PageNavigation(app);
 
         if (!globals.defaultsWired) globals.defaultsWired = wireDefaults();
-        if (!globals.sunStarWired) globals.sunStarWired = wireSunStar(app);
+        if (!globals.sunStar) globals.sunStar = new SunStar(app);
     } else if (app.name == "measureTasks") {
         if (!measureTaskGlobals.shapeMode)
             measureTaskGlobals.shapeMode = new ShapeMode(app);
@@ -142,69 +144,6 @@ function wireDefaults() {
         },
         false
     );
-    return true;
-}
-
-/**
- * The Sun/Star page's own controls, which live on the page rather than in the
- * sidebar. Not persisted, and deliberately not promoted to a class in controls/
- * -- where they belong once the sidebar is sorted out is still open.
- */
-export const SUN_STAR = "SunStar";
-
-function wireSunStar(app) {
-    const elePage = document.querySelector("#sunstar");
-    if (!elePage) return false;
-    // One listener on the page rather than sixteen on the controls. Everything
-    // here is a select, a number or a checkbox, so change covers all of them.
-    elePage.addEventListener("change", () => app(SUN_STAR), false);
-
-    // Small and big rhombs are exclusive, but both may be off. A listener on
-    // each box rather than a radio pair, because a radio cannot be unset.
-    // These fire before the page listener above, so the redraw sees the result.
-    for (const key of ["a", "b"]) {
-        const small = document.querySelector(`#ss-${key}-rhomb`);
-        const big = document.querySelector(`#ss-${key}-bigrhomb`);
-        if (!small || !big) continue;
-        small.addEventListener(
-            "change",
-            () => {
-                if (small.checked) big.checked = false;
-            },
-            false
-        );
-        big.addEventListener(
-            "change",
-            () => {
-                if (big.checked) small.checked = false;
-            },
-            false
-        );
-    }
-
-    // The two viewports are synchronous, so zoom is one shared number rather
-    // than per canvas. Double click refits.
-    for (const id of ["#sunstar-a", "#sunstar-b"]) {
-        const canvas = document.querySelector(id);
-        if (!canvas) continue;
-        canvas.addEventListener(
-            "wheel",
-            (event) => {
-                event.preventDefault();
-                sunStarZoomBy(event.deltaY < 0 ? 1.1 : 1 / 1.1);
-                app(SUN_STAR);
-            },
-            { passive: false }
-        );
-        canvas.addEventListener(
-            "dblclick",
-            () => {
-                sunStarResetZoom();
-                app(SUN_STAR);
-            },
-            false
-        );
-    }
     return true;
 }
 
