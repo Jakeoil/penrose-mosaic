@@ -758,32 +758,37 @@ function sunStarSlot(key) {
     const ele = (name) => document.querySelector(`#ss-${key}-${name}`);
     const pick = (name, dflt) => (ele(name) ? ele(name).value : dflt);
     const checked = (name, dflt) => (ele(name) ? ele(name).checked : dflt);
-    const gen = parseInt(pick("gen", "3"), 10);
+    const gen = parseInt(pick("gen", "2"), 10);
     return {
         type: SUNSTAR_TYPE[pick("type", "sun")] || penrose.Sun,
         angle: ang(0, pick("orient", "up") === "down"),
-        isHeads: pick("parity", "heads") === "heads",
-        gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 3,
-        mode: pick("mode", "discrete"),
+        // Parity and geometry are fixed on this page: heads, and real.
+        isHeads: true,
+        gen: Number.isFinite(gen) ? Math.max(1, Math.min(5, gen)) : 2,
+        mode: "real",
         showPenta: checked("penta", true),
-        showRhomb: checked("rhomb", true),
+        showRhomb: checked("rhomb", false),
         showBigRhomb: checked("bigrhomb", false),
     };
 }
 
 /**
- * This page owns its overlays. The sidebar's boxes gate drawing deep inside
- * drawPentaPattern and drawRhombusPattern, and Rhombi is unchecked by default,
- * so without this the page could never show rhombs however its own checkbox was
- * set. Mosaic is off because the page offers no mosaic checkbox.
+ * This page ignores the sidebar entirely -- its Controls, Shape mode and
+ * Overlays groups are ghosted out while it is showing. Every flag is stated
+ * here rather than inherited, so nothing the sidebar remembers can leak in.
+ *
+ * The sidebar's boxes gate drawing deep inside drawPentaPattern and
+ * drawRhombusPattern, so these have to be true for the panel checkboxes to have
+ * any say; the panel filters by choosing which calls to make.
  */
 function sunStarOverlays() {
     return {
-        ...(globals.overlays || {}),
         pentaSelected: true,
         rhombSelected: true,
         smallRhomb: true,
         mosaicSelected: false,
+        treeSelected: false,
+        ammannSelected: false,
     };
 }
 

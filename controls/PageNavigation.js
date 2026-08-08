@@ -86,6 +86,11 @@ export class PageNavigation {
             }
         }
 
+        // Some pages drive themselves and ignore the sidebar. Ghost those
+        // groups out rather than leaving them looking live -- a disabled
+        // fieldset greys its contents and blocks input, which is the reminder.
+        this.ghostIgnoredGroups(activeNavButton.getAttribute("data-id"));
+
         // Only display the active page.
         this.pages.forEach((page) => (page.style.display = "none"));
         const activePageId = activeNavButton.getAttribute("data-id");
@@ -99,6 +104,26 @@ export class PageNavigation {
         }
 
         cookie.set(PageNavigation.name, this.toString());
+    }
+
+    /**
+     * Groups a page ignores. The Sun/Star page carries its own shape, geometry
+     * and overlay settings on each panel, so the sidebar's copies of those would
+     * do nothing if touched.
+     */
+    ghostIgnoredGroups(pageId) {
+        const ignored =
+            pageId === "sunstar"
+                ? ["#group-figure", "#group-shape-mode", "#group-overlays"]
+                : [];
+        for (const id of [
+            "#group-figure",
+            "#group-shape-mode",
+            "#group-overlays",
+        ]) {
+            const group = document.querySelector(id);
+            if (group) group.disabled = ignored.includes(id);
+        }
     }
 
     toString() {

@@ -159,6 +159,29 @@ function wireSunStar(app) {
     // here is a select, a number or a checkbox, so change covers all of them.
     elePage.addEventListener("change", () => app(SUN_STAR), false);
 
+    // Small and big rhombs are exclusive, but both may be off. A listener on
+    // each box rather than a radio pair, because a radio cannot be unset.
+    // These fire before the page listener above, so the redraw sees the result.
+    for (const key of ["a", "b"]) {
+        const small = document.querySelector(`#ss-${key}-rhomb`);
+        const big = document.querySelector(`#ss-${key}-bigrhomb`);
+        if (!small || !big) continue;
+        small.addEventListener(
+            "change",
+            () => {
+                if (small.checked) big.checked = false;
+            },
+            false
+        );
+        big.addEventListener(
+            "change",
+            () => {
+                if (big.checked) small.checked = false;
+            },
+            false
+        );
+    }
+
     // The two viewports are synchronous, so zoom is one shared number rather
     // than per canvas. Double click refits.
     for (const id of ["#sunstar-a", "#sunstar-b"]) {

@@ -74,7 +74,7 @@
                     <h3>Controls</h3>
                     <button id="defaults">defaults</button>
                 </div>
-                <fieldset class="control-group">
+                <fieldset class="control-group" id="group-figure">
                     <legend>Controls</legend>
                     <h4>Shape type</h4>
                     <button id="type">Type</button>
@@ -83,11 +83,11 @@
                     <button id="fifths">Fifths</button>
                     <button id="isDown">isDown</button>
                 </fieldset>
-                <fieldset class="control-group">
+                <fieldset class="control-group" id="group-shape-mode">
                     <legend>Shape mode</legend>
                     <button id="shape-mode"></button>
                 </fieldset>
-                <fieldset class="control-group">
+                <fieldset class="control-group" id="group-overlays">
                     <legend>Overlays and flags</legend>
                     <fieldset>
                         <legend>Pentagons</legend>
@@ -290,30 +290,16 @@
                                 </select></label
                             >
                             <label
-                                >Parity
-                                <select id="ss-a-parity">
-                                    <option value="heads">Heads</option>
-                                    <option value="tails">Tails</option>
-                                </select></label
-                            >
-                            <label
                                 >Gen
-                                <input type="number" id="ss-a-gen" value="3" min="1" max="5"
+                                <input type="number" id="ss-a-gen" value="2" min="1" max="5"
                             /></label>
-                            <label
-                                >Mode
-                                <select id="ss-a-mode">
-                                    <option value="discrete">Discrete</option>
-                                    <option value="real">Real</option>
-                                </select></label
-                            >
                             <br />
                             <label
                                 ><input type="checkbox" id="ss-a-penta" checked />
                                 pentas and stars</label
                             >
                             <label
-                                ><input type="checkbox" id="ss-a-rhomb" checked />
+                                ><input type="checkbox" id="ss-a-rhomb" />
                                 small rhombs</label
                             >
                             <label
@@ -341,30 +327,16 @@
                                 </select></label
                             >
                             <label
-                                >Parity
-                                <select id="ss-b-parity">
-                                    <option value="heads">Heads</option>
-                                    <option value="tails">Tails</option>
-                                </select></label
-                            >
-                            <label
                                 >Gen
-                                <input type="number" id="ss-b-gen" value="3" min="1" max="5"
+                                <input type="number" id="ss-b-gen" value="2" min="1" max="5"
                             /></label>
-                            <label
-                                >Mode
-                                <select id="ss-b-mode">
-                                    <option value="discrete">Discrete</option>
-                                    <option value="real">Real</option>
-                                </select></label
-                            >
                             <br />
                             <label
                                 ><input type="checkbox" id="ss-b-penta" checked />
                                 pentas and stars</label
                             >
                             <label
-                                ><input type="checkbox" id="ss-b-rhomb" checked />
+                                ><input type="checkbox" id="ss-b-rhomb" />
                                 small rhombs</label
                             >
                             <label
