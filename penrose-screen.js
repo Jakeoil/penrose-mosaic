@@ -806,14 +806,14 @@ export class PenroseScreen {
         }
 
         const wheels = penrose[this.mode].wheels;
-        const dWheel = wheels.d[gen];
-        const sWheel = wheels.s[gen];
 
-        // Move the center of the decagon to the real center.
-        let dUp = wheels.d[gen].up;
-        let dDown = wheels.d[gen].down;
-        let dOff = angle.isDown ? dUp[angle.fifths] : dDown[angle.fifths];
-        let base = loc.tr(dOff);
+        // loc is the centre, as it is for every other seed. This used to shift
+        // the figure off loc by a d-wheel vector, and in opposite directions for
+        // up and down -- so an up Queen and a down Queen drawn at the same loc
+        // came out 2 * |d| apart instead of sharing a centre. Everything below
+        // is placed relative to base, so dropping the shift only translates the
+        // figure; the pages that draw a deca all normalise by measured bounds.
+        const base = loc;
 
         let offs; // Work variable
 
