@@ -823,6 +823,33 @@ function sunStarMeasure(slot, overlays) {
 }
 
 /**
+ * Where a figure should be centred, which is not always where its seed sits.
+ *
+ * Sun and Star are five-fold about their seed, so the seed is the centre and
+ * `loc` -- the origin here -- is it.
+ *
+ * The Queen is not. Its centre is **the common point of its three pentagons**,
+ * where the Pe3 and the two Pe1 meet. That vertex lies |s|/phi from the Pe3's
+ * own centre, on opposite sides for up and down, so centring on the seed leaves
+ * an up Queen and a down Queen 2|s|/phi apart.
+ *
+ * The bounding box centre is that same vertex -- checked to 1e-9 at generation
+ * 1, and the box measures 1.051 : 1, which is 1/cos 18, the ratio a regular
+ * decagon's box has. So the box is used: it needs no knowledge of which tiles
+ * are showing, where hunting for the shared vertex would.
+ *
+ * Centred this way the two orientations coincide, reflected in the horizontal
+ * axis through that point.
+ */
+function sunStarCentre(slot, bounds) {
+    if (slot.type !== penrose.Deca || bounds.isEmpty) return p(0, 0);
+    return p(
+        (bounds.minPoint.x + bounds.maxPoint.x) / 2,
+        (bounds.minPoint.y + bounds.maxPoint.y) / 2
+    );
+}
+
+/**
  * Draws into a viewport of fixed pixel size. The scene is built about the
  * origin, and the origin is put at the centre of the canvas, so zooming holds
  * the centre still.
@@ -839,8 +866,9 @@ function sunStarRender(canvas, w, h, slots, overlays, scale) {
         const scene = new PenroseScreen(slot.mode);
         sunStarDraw(scene, slot, overlays);
         if (scene.bounds.isEmpty) continue;
+        const c = sunStarCentre(slot, scene.bounds);
         g.save();
-        g.translate(w / 2, h / 2);
+        g.translate(w / 2 - c.x * scale, h / 2 - c.y * scale);
         new CanvasRenderer(g, scale).render(scene.bounds.renderList);
         g.restore();
     }
@@ -882,8 +910,19 @@ export function drawSunStar(id) {
     for (const slot of slots) {
         const b = sunStarMeasure(slot, overlays);
         if (b.isEmpty) continue;
-        halfW = Math.max(halfW, Math.abs(b.minPoint.x), Math.abs(b.maxPoint.x));
-        halfH = Math.max(halfH, Math.abs(b.minPoint.y), Math.abs(b.maxPoint.y));
+        // Half extents about the figure's own centre, which is what the
+        // viewport is centred on.
+        const c = sunStarCentre(slot, b);
+        halfW = Math.max(
+            halfW,
+            Math.abs(b.minPoint.x - c.x),
+            Math.abs(b.maxPoint.x - c.x)
+        );
+        halfH = Math.max(
+            halfH,
+            Math.abs(b.minPoint.y - c.y),
+            Math.abs(b.maxPoint.y - c.y)
+        );
     }
     const fit =
         halfW > 0 && halfH > 0
