@@ -817,10 +817,23 @@ function sunStarDraw(scene, slot, overlays) {
     scene.overlays = overlays;
 }
 
+/**
+ * Measured with every layer on, whatever the checkboxes say.
+ *
+ * The layers do not agree on extent -- a generation 2 Star reaches 37.7 in its
+ * pentas, 32.2 in its small rhombs and 28.8 in its big ones -- so measuring only
+ * what is showing let a checkbox act as a zoom, and because the scale is shared
+ * a filter on one side resized the other. The figure is the same figure whether
+ * or not a layer is drawn, so the box that fits it is the full one.
+ */
 function sunStarMeasure(slot, overlays) {
     const ms = new PenroseScreen(slot.mode);
     ms.setToMeasure();
-    sunStarDraw(ms, slot, overlays);
+    sunStarDraw(
+        ms,
+        { ...slot, showPenta: true, showRhomb: true, showBigRhomb: true },
+        overlays
+    );
     return ms.bounds;
 }
 
@@ -868,7 +881,10 @@ function sunStarRender(canvas, w, h, slots, overlays, scale) {
         const scene = new PenroseScreen(slot.mode);
         sunStarDraw(scene, slot, overlays);
         if (scene.bounds.isEmpty) continue;
-        const c = sunStarCentre(slot, scene.bounds);
+        // The centre comes from the full-layer measure for the same reason the
+        // scale does: the Queen's is its bounding box centre, and a box drawn
+        // around some of the layers is not the box the centring rule means.
+        const c = slot.centre || p(0, 0);
         g.save();
         g.translate(w / 2 - c.x * scale, h / 2 - c.y * scale);
         new CanvasRenderer(g, scale).render(scene.bounds.renderList);
@@ -909,10 +925,12 @@ export function drawSunStar(id) {
     let halfH = 0;
     for (const slot of slots) {
         const b = sunStarMeasure(slot, overlays);
+        // Kept on the slot so the render uses the same centre it was fitted to.
+        const c = sunStarCentre(slot, b);
+        slot.centre = c;
         if (b.isEmpty) continue;
         // Half extents about the figure's own centre, which is what the
         // viewport is centred on.
-        const c = sunStarCentre(slot, b);
         halfW = Math.max(
             halfW,
             Math.abs(b.minPoint.x - c.x),
