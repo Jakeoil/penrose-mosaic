@@ -140,6 +140,119 @@ swap.
 
 ---
 
+## The core as a library
+
+Assessed 2026-10-20, not started. The question was whether other projects could
+import this from GitHub. They could, and less work stands in the way than the
+closure design suggests — the coupling that matters is the module globals, not
+the closures.
+
+Everything below was measured by standing up a pretend outside consumer: plain
+node, no DOM, no canvas, no globals.
+
+### The closures are the asset
+
+A consumer supplies its own renderer and replays the list:
+
+    class TallyRenderer {
+      outline(fill) { ... }  figure(fill) { ... }  grid() { ... }
+      line() { ... }         rhombus(fill) { ... }
+      render(list) { for (const item of list) item(this); }
+    }
+
+    const s = new PenroseScreen("real");
+    s.overlays = { pentaSelected: true, ... };
+    s.penta({ type: penrose.Star, angle: ang(0, false), isHeads: true,
+              loc: p(0, 0), gen: 3 });
+    new TallyRenderer().render(s.bounds.renderList);
+
+That yielded 851 outline commands, the three default fills, and bounds of
+±93.96 by −89.88/+98.79, with nothing from the browser involved. So the render
+list is renderer-agnostic drawing commands, and the five-method interface is the
+whole API surface a target needs. Most tiling libraries hand over vertex arrays
+and leave the hard part — which tile, what parity, what colour — to the caller.
+This hands over the decisions.
+
+The cost is that the list can only be replayed, not inspected or serialised.
+`USE_FUNCTION_LIST = false` already switches it to `{command, ...}` objects
+dispatched by `render2`, so both shapes exist. Documenting that flag answers the
+objection.
+
+### What already works
+
+Every geometry module imports in plain node with no stubs at all: `point.js`,
+`wheels.js`, `shape-modes.js`, `penrose.js`, `bounds.js`, `penrose-screen.js`,
+and `renderers.js` too. Every `document` touch is deferred into a control
+constructor and `controls.js` runs none at module scope. That is normally what
+kills a browser project as a library. Import costs 15ms and 4.2MB of heap.
+
+`pColor` falls back to `type.defaultColor` when `globals.shapeColors` is absent,
+which is why the consumer above got the real palette.
+
+### What blocks it
+
+**`scene.overlays` is a required input that throws.** `activeOverlays` is
+`this.overlays || globals.overlays || measureTaskGlobals.overlays`, so omitting
+it fails deep in the recursion with
+
+    TypeError: Cannot read properties of undefined (reading 'pentaSelected')
+
+which is the first thing any new user would hit. Defaulting the getter to an
+all-on literal fixes it and retires the globals fallback at the same time.
+
+**The globals reads.** Three in `penrose-screen.js` (`pColor`, and the
+`activeOverlays` fallback) and four in `renderers.js` (`figure`, `outline`, and
+`rhombus`). Few enough to be an afternoon. The real objection is that they read
+a mutable module singleton, so two consumers on one page cannot hold different
+settings.
+
+**`CanvasRenderer.rhombus` requires globals, inconsistently.** `figure` guards
+with `mosaicStyle ? ... : "solid"` and `outline` with `!pentaStyle || ...`, but
+`rhombus` reads `rhombStyle.fill` bare. So the one method a consumer most wants
+is the only one that throws without a DOM-built control object. Give it the same
+guard shape as its siblings.
+
+**`penrose` is a mutable singleton** carrying both the type data and the mode
+shape tables (`penrose.real`, `penrose.discrete`). Workable, but it means one
+tiling configuration per page.
+
+**Packaging.** No `package.json`, no `LICENSE`, no entry point, no API doc. ESM
+straight from GitHub works today, but without a manifest there is no name,
+version or `exports` map, and without a license nobody may legally use it.
+
+**No runnable tests.** `testBounds()`, `testLerp()` and `testAngle()` all exist
+with their call sites commented out, and the verified isHeads table further down
+this file is asking to be executable.
+
+### The split
+
+Two entry points, one repo:
+
+- **core** — `point.js`, `wheels.js`, `shape-modes.js`, `penrose.js`,
+  `bounds.js`, `penrose-screen.js`. About 2,700 lines, no DOM. Needs the
+  overlays default and the globals reads gone, nothing else.
+- **render-canvas** — `renderers.js`, with styles injected rather than read.
+- **app** — `controls/`, `renderings.js`, `math.js`, `index.html`. Stays here.
+
+This is the same change the refactor section above asks for, and the same
+prerequisite the SVG section lists. Three independent reasons landing on one
+refactor is a good sign it is the right one.
+
+### Whether it is worth it
+
+The audience is narrow but underserved. Nearly every Penrose library does P3
+rhombs or de Bruijn; this does P1 — pentagon, star, boat, diamond — with correct
+inflation and parity. And the discrete integer-grid geometry is original, per
+`docs/wheels.md`: it generates its own geometry rather than converging on
+Euclidean Penrose. The closure condition `p = 2(q − s)` and the closed-form
+limiting slopes are the novel content, and that is arguably a paper before it is
+a package.
+
+So the realistic pull is this project's own future work plus a small number of
+tiling people. The refactor is worth doing for the first reason alone.
+
+---
+
 ## New chapter: 3D Penrose Surfaces
 
 The isogloss and gradient rendering of rhombs is beautiful — it makes the
