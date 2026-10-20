@@ -31,7 +31,8 @@ every method that forwards options. `deca()`, `sun()` and `starPatch()` swallow
   the substitution matrices and the closed-form limiting slopes
 - `docs/basis-search.md` — whether `(4,0),(3,2),(1,4)` is optimal
 - `docs/rhomb-groups.md` — large vs small rhomb groups, Sun/Star naming, MLD
-- `docs/PLANS.md` — the penta/star refactor, the isHeads propagation table
+- `docs/PLANS.md` — the penta/star refactor, rendering with SVG, the
+  isHeads propagation table
 - `tools/stamp.mjs` — run after changing any script; the stamp shows on hover
   over `defaults`. Check it before debugging a change that "did nothing"
 - `tools/basis-search.mjs` — `node tools/basis-search.mjs 64`

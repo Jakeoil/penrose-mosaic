@@ -68,7 +68,8 @@ are already answered in writing — check before re-deriving.
   is the exact condition `p = 2(q − s)`. It is a record holder; no integer basis
   converges, and the reason is arithmetic.
 - **`docs/rhomb-groups.md`** — large and small rhomb groups, one inflation apart.
-- **`docs/PLANS.md`** — the penta/star refactor, and the isHeads propagation table.
+- **`docs/PLANS.md`** — the penta/star refactor, rendering with SVG, and the
+  isHeads propagation table.
 - **`TODO.md`** — open work. Note the ground rule at the top.
 
 Tools: `tools/stamp.mjs` (build stamp, see below) and `tools/basis-search.mjs`
