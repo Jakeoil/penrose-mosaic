@@ -70,6 +70,9 @@ are already answered in writing — check before re-deriving.
 - **`docs/rhomb-groups.md`** — large and small rhomb groups, one inflation apart.
 - **`docs/PLANS.md`** — the penta/star refactor, rendering with SVG, the core
   as a library, and the isHeads propagation table.
+- **`docs/penrose.txt`** — the typographic mode worked by hand: a patch of the
+  mosaic in `.`/`*`/`o` at two characters per cell, and the drafts the
+  `Typographic` glyph set came from. A worksheet, errors included.
 - **`TODO.md`** — open work. Note the ground rule at the top.
 
 Tools: `tools/stamp.mjs` (build stamp, see below) and `tools/basis-search.mjs`
