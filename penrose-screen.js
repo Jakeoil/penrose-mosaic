@@ -651,11 +651,11 @@ export class PenroseScreen {
     }
 
     /**
-     * The Sun patch -- a blue pentagon with five Queens around it.
+     * The Sun patch -- a `Pe5` with the tiles that round it out.
      *
      * penta(Pe5) already lays down the center Pe5, the five Pe3 and the five
      * St1. What it does not place are the two orange pentagons belonging to each
-     * Queen, so the Sun is that expansion plus ten Pe1, hung off each Pe3 the
+     * Pe3, so the Sun is that expansion plus ten Pe1, hung off each Pe3 the
      * same way deca() hangs them off its own.
      *
      * Rhomb count 55 = 5 (Pe5) + 5x4 (Pe3) + 10x3 (Pe1); the St1 emit none.
@@ -809,7 +809,7 @@ export class PenroseScreen {
 
         // loc is the center, as it is for every other seed. This used to shift
         // the figure off loc by a d-wheel vector, and in opposite directions for
-        // up and down -- so an up Queen and a down Queen drawn at the same loc
+        // up and down -- so an up Deca and a down Deca drawn at the same loc
         // came out 2 * |d| apart instead of sharing a center. Everything below
         // is placed relative to base, so dropping the shift only translates the
         // figure; the pages that draw a deca all normalize by measured bounds.

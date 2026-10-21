@@ -53,6 +53,10 @@ export class SunStar {
         this.zoom = Number.isFinite(parsed.zoom) ? parsed.zoom : 1;
         for (const key of this.KEYS) {
             this[key] = { ...this.defaults(key), ...(parsed[key] || {}) };
+            // A cookie written while the deca patch was called the queen names a
+            // type that no longer exists. Fold it, the way ShapeMode folds the
+            // retired geometry names, or the select renders blank.
+            if (this[key].type === "queen") this[key].type = "deca";
         }
     }
 

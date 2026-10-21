@@ -744,7 +744,7 @@ export function drawGeneric3(id) {
 const SUNSTAR_TYPE = {
     sun: penrose.Sun,
     star: penrose.Star,
-    queen: penrose.Deca,
+    deca: penrose.Deca,
 };
 
 const SUNSTAR_VIEW_W = 1200; // whole drawing area
@@ -843,10 +843,10 @@ function sunStarMeasure(slot, overlays) {
  * Sun and Star are five-fold about their seed, so the seed is the center and
  * `loc` -- the origin here -- is it.
  *
- * The Queen is not. Its center is **the common point of its three pentagons**,
+ * The Deca is not. Its center is **the common point of its three pentagons**,
  * where the Pe3 and the two Pe1 meet. That vertex lies |s|/phi from the Pe3's
  * own center, on opposite sides for up and down, so centering on the seed leaves
- * an up Queen and a down Queen 2|s|/phi apart.
+ * an up Deca and a down Deca 2|s|/phi apart.
  *
  * The bounding box center is that same vertex -- checked to 1e-9 at generation
  * 1, and the box measures 1.051 : 1, which is 1/cos 18, the ratio a regular
@@ -882,7 +882,7 @@ function sunStarRender(canvas, w, h, slots, overlays, scale) {
         sunStarDraw(scene, slot, overlays);
         if (scene.bounds.isEmpty) continue;
         // The center comes from the full-layer measure for the same reason the
-        // scale does: the Queen's is its bounding box center, and a box drawn
+        // scale does: the Deca's is its bounding box center, and a box drawn
         // around some of the layers is not the box the centering rule means.
         const c = slot.center || p(0, 0);
         g.save();

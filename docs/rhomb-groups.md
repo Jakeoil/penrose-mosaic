@@ -75,6 +75,21 @@ exactly this choice of center. `wieringa-roof` already uses that vocabulary
 
 The feature is therefore called the **Sun/Star overlay**, not the dual.
 
+### What the three patches are
+
+**Jeff, 2026-10-21**, on the construction rather than the names:
+
+| patch   | what it is                                                  |
+| ------- | ----------------------------------------------------------- |
+| `Sun`   | a `Pe5` with some extra tiles to round it out               |
+| `Star`  | a `St5` with some tiles                                     |
+| `Deca`  | a deca composite with the next generation of tiles added    |
+
+All three are composites, which is why they carry no shape data of their own --
+`penrose.js` gives each only a name, and `penta()` routes them to `sun()`,
+`starPatch()` and `deca()`. That is also why they are a different kind of thing
+from the six tiles, and why the tile names are not up for revision.
+
 ### The names are not the papers' names
 
 **Jeff, 2026-10-21:** the code's assignment is backwards against the literature.
@@ -98,8 +113,11 @@ cookie and buy nothing. Capitals in prose are the fix: STAR when the paper's
 figure is meant, `Sun` in backticks when this code's seed is.
 
 Queen was a third name for `Deca`, used while the Sun/Star page was being built.
-It is retired -- `Deca` in code, CARTWHEEL in prose. The page's dropdown still
-reads Queen, which is a visible string and so is not changed here.
+**Jeff, 2026-10-21:** *queen was the wrong term by all accounts. Call the larger
+deca patch deca everywhere.* Done -- the Sun/Star dropdown reads Deca, the stored
+type is `deca`, and a cookie still saying `queen` is folded on read in
+`SunStar.fromString`, the way `ShapeMode` folds the retired geometry names.
+`Deca` in code, CARTWHEEL in prose.
 
 None of this touches the tiles. `Pe5`, `Pe3`, `Pe1`, `St5`, `St3`, `St1` are the
 six tile names and they stand. Sun, Star and Deca are patches built out of them,
