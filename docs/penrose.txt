@@ -15,7 +15,6 @@
       [   ]
       
       
-svn commit doc/ modules/nameid/ sources/ -m 'ATT-110: Add option for NameID logo in content pack'
 
  * *|_________|_ * * * * _|_ * * * * _|_________|* * * *|_____
  * _|.|* * * *|.|_ * * _|o o|_ * * _|.|* * * *|.|_ * * _|.|* *

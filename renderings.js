@@ -881,10 +881,10 @@ function sunStarRender(canvas, w, h, slots, overlays, scale) {
         const scene = new PenroseScreen(slot.mode);
         sunStarDraw(scene, slot, overlays);
         if (scene.bounds.isEmpty) continue;
-        // The centre comes from the full-layer measure for the same reason the
-        // scale does: the Queen's is its bounding box centre, and a box drawn
-        // around some of the layers is not the box the centring rule means.
-        const c = slot.centre || p(0, 0);
+        // The center comes from the full-layer measure for the same reason the
+        // scale does: the Queen's is its bounding box center, and a box drawn
+        // around some of the layers is not the box the centering rule means.
+        const c = slot.center || p(0, 0);
         g.save();
         g.translate(w / 2 - c.x * scale, h / 2 - c.y * scale);
         new CanvasRenderer(g, scale).render(scene.bounds.renderList);
@@ -925,9 +925,9 @@ export function drawSunStar(id) {
     let halfH = 0;
     for (const slot of slots) {
         const b = sunStarMeasure(slot, overlays);
-        // Kept on the slot so the render uses the same centre it was fitted to.
+        // Kept on the slot so the render uses the same center it was fitted to.
         const c = sunStarCentre(slot, b);
-        slot.centre = c;
+        slot.center = c;
         if (b.isEmpty) continue;
         // Half extents about the figure's own centre, which is what the
         // viewport is centred on.

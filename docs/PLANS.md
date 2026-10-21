@@ -71,7 +71,7 @@ wants.
 
 `USE_FUNCTION_LIST` leaves a second route open. With it false the list holds
 `{command, ...}` objects and `render2` dispatches on them, which is the form to
-use if the render list ever needs to be serialised or sent somewhere.
+use if the render list ever needs to be serialized or sent somewhere.
 
 The measure pass is the other half of the gift. `setToMeasure()` already yields
 the bounds, and the bounds *are* the `viewBox` — which is the whole reason to
@@ -84,7 +84,7 @@ Three things in `CanvasRenderer` are canvas-specific.
 **The gradient.** `getGradient` builds a fresh `createLinearGradient` per
 rhombus. SVG needs `<linearGradient gradientUnits="userSpaceOnUse">` in
 `<defs>`, and done naively that is one def per rhombus — six figures of them at
-generation 5. But a gradient varies only by fill colour, `isHeads` and rotation:
+generation 5. But a gradient varies only by fill color, `isHeads` and rotation:
 6 × 2 × 10 = **120 distinct defs**, referenced by id. Bounded, and a one-time
 cost, but it is the bulk of the effort.
 
@@ -170,10 +170,10 @@ That yielded 851 outline commands, the three default fills, and bounds of
 ±93.96 by −89.88/+98.79, with nothing from the browser involved. So the render
 list is renderer-agnostic drawing commands, and the five-method interface is the
 whole API surface a target needs. Most tiling libraries hand over vertex arrays
-and leave the hard part — which tile, what parity, what colour — to the caller.
+and leave the hard part — which tile, what parity, what color — to the caller.
 This hands over the decisions.
 
-The cost is that the list can only be replayed, not inspected or serialised.
+The cost is that the list can only be replayed, not inspected or serialized.
 `USE_FUNCTION_LIST = false` already switches it to `{command, ...}` objects
 dispatched by `render2`, so both shapes exist. Documenting that flag answers the
 objection.
