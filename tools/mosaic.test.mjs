@@ -6,7 +6,7 @@
 // unit square, and count the cells claimed more than once.
 //
 // The answer as of 2026-10-21 is a split one, which is why it is worth a test
-// rather than a paragraph. The Queen packs cleanly at every generation measured.
+// rather than a paragraph. The Deca packs cleanly at every generation measured.
 // Sun and Star do not: tiles of different types claim the same square, in
 // one-cell-wide diagonal runs, in the interior rather than at the boundary.
 //
@@ -34,7 +34,7 @@ const MOSAIC = {
     ammannSelected: false,
 };
 
-const SEEDS = { Sun: penrose.Sun, Star: penrose.Star, Queen: penrose.Deca };
+const SEEDS = { Sun: penrose.Sun, Star: penrose.Star, Deca: penrose.Deca };
 
 /** One character per unit square, reporting what collides. */
 class CellGrid {
@@ -84,10 +84,10 @@ test("every mosaic cell lands on an exact integer", () => {
         }
 });
 
-test("the Queen is a clean packing at every generation measured", () => {
+test("the Deca is a clean packing at every generation measured", () => {
     for (const gen of [1, 2, 3, 4]) {
         const { overlaps } = audit(penrose.Deca, gen);
-        assert.equal(overlaps, 0, `Queen generation ${gen} has ${overlaps} overlapping cells`);
+        assert.equal(overlaps, 0, `Deca generation ${gen} has ${overlaps} overlapping cells`);
     }
 });
 
@@ -157,7 +157,7 @@ test("cell counts and grid extents, as measured", () => {
         //        gen  cells  width height
         Sun: [[1, 440, 27, 27], [2, 3024, 69, 69], [3, 20784, 179, 179]],
         Star: [[1, 372, 25, 25], [2, 2726, 67, 70], [3, 19378, 177, 184]],
-        Queen: [[1, 116, 13, 13], [2, 840, 35, 37], [3, 5936, 93, 101]],
+        Deca: [[1, 116, 13, 13], [2, 840, 35, 37], [3, 5936, 93, 101]],
     };
     for (const [name, rows] of Object.entries(want))
         for (const [gen, cells, width, height] of rows) {

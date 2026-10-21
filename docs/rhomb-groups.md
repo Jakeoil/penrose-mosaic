@@ -75,6 +75,36 @@ exactly this choice of center. `wieringa-roof` already uses that vocabulary
 
 The feature is therefore called the **Sun/Star overlay**, not the dual.
 
+### The names are not the papers' names
+
+**Jeff, 2026-10-21:** the code's assignment is backwards against the literature.
+The convention from here is **capitals for the paper's name**:
+
+| this code | the papers    |
+| --------- | ------------- |
+| `Sun`     | **STAR**      |
+| `Star`    | **SUN**       |
+| `Deca`    | **CARTWHEEL** |
+
+So the paragraph above is right that there are exactly two tilings with global
+five-fold symmetry and that the choice of center distinguishes them, and wrong
+about which is which. `penrose.Sun` -- the blue pentagon with five queens around
+it, centered on a `Pe5` -- is what the papers call the STAR.
+
+**The identifiers are not changing.** `Sun`, `Star` and `Deca` are wired into the
+type switch in `penta()`, the sidebar's type cycle in `controls/Figure.js`, and
+the stored settings of the Sun/Star page. Renaming them would break a reader's
+cookie and buy nothing. Capitals in prose are the fix: STAR when the paper's
+figure is meant, `Sun` in backticks when this code's seed is.
+
+Queen was a third name for `Deca`, used while the Sun/Star page was being built.
+It is retired -- `Deca` in code, CARTWHEEL in prose. The page's dropdown still
+reads Queen, which is a visible string and so is not changed here.
+
+None of this touches the tiles. `Pe5`, `Pe3`, `Pe1`, `St5`, `St3`, `St1` are the
+six tile names and they stand. Sun, Star and Deca are patches built out of them,
+which is a different kind of thing with a different vocabulary.
+
 Note that this settles the name of the *feature*. It does not settle what to call
 the dual rhomb *shapes* — `goThickDual`, `thinDualRhomb` and friends are a
 separate rhomb geometry derived from the p and s wheels rather than t, and may
