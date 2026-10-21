@@ -4,6 +4,10 @@ import { Bounds } from "./bounds.js";
 import { penrose } from "./penrose.js";
 import { globals, measureTaskGlobals } from "./controls.js";
 import { mosaic, quadrille, real } from "./shape-modes.js";
+// Re-exported: the color helpers moved to color.js, which has no imports, so
+// a renderer can take them without taking controls.js along. Kept here
+// because lerp has always been part of this module's surface.
+export { lerp } from "./color.js";
 
 const SQRT5 = Math.sqrt(5); // 2.236
 const PHI = (SQRT5 + 1) / 2; // 1.618
@@ -11,67 +15,6 @@ const PHI = (SQRT5 + 1) / 2; // 1.618
 // Used for tests
 export const USE_FUNCTION_LIST = true;
 
-/***
- * Thanks to:
- * https://css-tricks.com/converting-color-spaces-in-javascript/
- *
- * Converts #rgb and #rrggbb formats
- *
- * Move to utilities
- */
-function hexToRGB(h) {
-    let r = 0,
-        g = 0,
-        b = 0;
-
-    // 3 digits
-    if (h.length == 4) {
-        r = "0x" + h[1] + h[1];
-        g = "0x" + h[2] + h[2];
-        b = "0x" + h[3] + h[3];
-
-        // 6 digits
-    } else if (h.length == 7) {
-        r = "0x" + h[1] + h[2];
-        g = "0x" + h[3] + h[4];
-        b = "0x" + h[5] + h[6];
-    }
-
-    return [r, g, b];
-}
-
-/**
- * Linear interpolate two colors
- *
- * @param {*} start
- * @param {*} end
- * @param {*} alpha  Value from 0 to 1
- * @returns ccs command string
- *
- * todo!!! implement opacity. It is a fraction from 0 (transparent) to 1.
- */
-export function lerp(start, end, alpha, opacity) {
-    if (alpha < 0) alpha = 0;
-    if (alpha > 1) alpha = 1;
-    const rgbStart = hexToRGB(start);
-    const rgbEnd = hexToRGB(end);
-    const [r, g, b] = rgbStart.map(
-        (item, index) => item * (1 - alpha) + rgbEnd[index] * alpha,
-    );
-    const command = `rgb(${r},${g},${b})`;
-    return command;
-}
-
-function testLerp() {
-    lerp("#000", "#ff6600", 0);
-    lerp("#000", "#ff6600", 0.1);
-    lerp("#000", "#ff6600", 0.25);
-    lerp("#000", "#ff6600", 0.5);
-    lerp("#000", "#ff6600", 0.75);
-    lerp("#000", "#ff6600", 1.0);
-}
-
-//testLerp();
 
 /**
  * This routine returns the fill color of a penrose type

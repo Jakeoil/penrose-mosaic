@@ -7,7 +7,7 @@ import {
     pickStyle,
 } from "./styles.js";
 import { USE_FUNCTION_LIST } from "./penrose-screen.js";
-import { lerp } from "./penrose-screen.js";
+import { lerp } from "./color.js";
 
 export class CanvasRenderer {
     /**

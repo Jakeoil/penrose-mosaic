@@ -42,7 +42,12 @@ This is a big refactor. Think through the approach carefully before touching any
 
 ## Rendering with SVG
 
-Toyed with 2026-10-20, not started. The question was whether an SVG renderer is
+Started 2026-10-21: `svg-renderer.js`, with `tools/svg.test.mjs`. Not wired to
+any page; the first intended use is PDFs of the Sun/Star overlay. The sanity
+check settled both of the hard questions below, and settled them better than
+this section predicted -- see "What the sanity check found" at the end.
+
+Toyed with 2026-10-20. The question was whether an SVG renderer is
 practical for the penta/star figures. It is, for the generations those pages
 actually use, and the architecture already has the seam for it.
 
@@ -146,6 +151,49 @@ and the isogloss to think about.
 Against the ground rule at the top of `TODO.md` — do not change the look — this
 wants to be a toggle, with the SVG output pixel-compared against canvas, not a
 swap.
+
+
+### What the sanity check found
+
+Written 2026-10-21, after building it.
+
+**The gradient defs collapse further than estimated.** The guess here was about
+120 -- ten rotations by six colors by two parities. Measured, keying the axis in
+`objectBoundingBox` units:
+
+| Star rhombs | generation 1 | 2   | 3    | 4      |
+| ----------- | -----------: | --: | ---: | -----: |
+| rhombs      | 35           | 280 | 2075 | 14,845 |
+| gradient defs | 20         | 50  | 76   | 92     |
+
+It plateaus rather than tracking the rhomb count -- one def per 160 rhombs by
+generation 4 -- which is the whole reason this is viable.
+
+**The isogloss needs no clipPath at all.** Predicted here, and now checked: 3920
+endpoints across a generation 2 figure, every one of them exactly on the rhomb's
+boundary to 1e-9. Both ends are interpolated along the rhomb's own edges and a
+rhomb is convex, so the segment between them cannot leave it. Only half a stroke
+width can spill, at the corners. So the isogloss is seven line segments in one
+path, and the per-rhomb clipPath multiplication never happens.
+
+**The geometry agrees with the canvas exactly.** Both renderers take the same
+list, and the test compares every vertex of a generation 2 Star at the
+renderer's three-decimal rounding. They match. The one difference is deliberate:
+transparency is `fill-opacity`, the native spelling, rather than the canvas's
+8-digit hex.
+
+**Output sizes**, scale 12, with a background and padding:
+
+| file                                    | elements | size   |
+| --------------------------------------- | -------: | -----: |
+| Sun and Star at generation 2, outlines  | 257      | 38 KB  |
+| Sun rhombs, gradient and isogloss       | 730      | 157 KB |
+
+Both parse under a real XML parser, not just a tag-balance count.
+
+**What is left.** Nothing calls it yet, and the PDF step is not written. The
+`toString` takes an optional width, height and title, and tracks its own viewBox
+from what was drawn, so the document frames itself -- which is what a PDF wants.
 
 ---
 

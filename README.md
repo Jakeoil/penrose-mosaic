@@ -44,11 +44,13 @@ Then open `http://localhost:8000` in a browser.
 - `penrose.js` — Tile type definitions and color data
 - `penrose-screen.js` — Scene builder with recursive penta/star/deca expansion
 - `renderings.js` — Drawing orchestration for each page
-- `renderers.js` — Canvas 2D renderer
 - `shape-modes.js` — Real, Quadrille, and Mosaic shape definitions
 - `wheels.js` — Wheel math for computing tile positions across generations
 - `point.js` — Point and Angle classes
 - `bounds.js` — Bounding rectangle with render list
+- `renderers.js` — Canvas 2D renderer
+- `svg-renderer.js` — the same render list as SVG; no DOM, for files and PDFs
+- `color.js` — color helpers, with no imports
 - `styles.js` — default style sets for the renderers, with no imports
 - `controls.js` — Control initialization, globals, cookie persistence
 - `controls/` — UI control classes (Figure, ShapeColors, Overlays, etc.)
@@ -76,6 +78,8 @@ depends on it staying true.
 - **`tools/renderer.test.mjs`** -- the renderer driven with no DOM, no canvas and
   no globals, through a recording object. Styles come from the caller, then the
   app, then the defaults in `styles.js`.
+- **`tools/svg.test.mjs`** -- the SVG renderer: geometry identical to the
+  canvas, the gradient defs bounded, the isogloss ends on the boundary.
 - **`tools/spelling.test.mjs`** -- American spellings, identifiers included.
 
 A failure in the first three is not "the number moved", it is "the geometry
