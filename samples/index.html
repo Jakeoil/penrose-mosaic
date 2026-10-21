@@ -43,6 +43,32 @@
                 background: #f0f0f0;
                 padding: 0 0.2em;
             }
+            /* A transparent page only reads as transparent against something. */
+            figure.checker img {
+                background-image: linear-gradient(
+                        45deg,
+                        #d8d8d8 25%,
+                        transparent 25% 75%,
+                        #d8d8d8 75%
+                    ),
+                    linear-gradient(
+                        45deg,
+                        #d8d8d8 25%,
+                        transparent 25% 75%,
+                        #d8d8d8 75%
+                    );
+                background-size: 24px 24px;
+                background-position: 0 0, 12px 12px;
+            }
+            figure.pair img {
+                width: 50%;
+                float: left;
+            }
+            figure.pair::after {
+                content: "";
+                display: block;
+                clear: both;
+            }
         </style>
     </head>
     <body>
@@ -64,7 +90,49 @@
             <li><a href="deca.svg">deca.svg</a></li>
             <li><a href="rhombs.svg">rhombs.svg</a></li>
             <li><a href="layered.svg">layered.svg</a></li>
+            <li><a href="overlay-clear.svg">overlay-clear.svg</a></li>
+            <li><a href="overlay-outline.svg">overlay-outline.svg</a></li>
+            <li><a href="transparent.svg">transparent.svg</a></li>
         </ul>
+
+        <h2>Transparency</h2>
+        <p>
+            Three different things go by that name, so there is one of each. The
+            fills use <code>fill-opacity</code> rather than the canvas spelling
+            of an eight-digit hex color, since that is what SVG means natively.
+        </p>
+
+        <figure>
+            <figcaption>
+                <a href="overlay-clear.svg">overlay-clear.svg</a> — Sun and Star
+                both at half opacity. Drawn solid the second one hides the first;
+                at half opacity the two tilings interfere, and where they agree
+                reads darker. That is the thing the overlay page exists to look
+                at
+            </figcaption>
+            <img src="overlay-clear.svg" alt="Sun and Star at half opacity" />
+        </figure>
+
+        <figure>
+            <figcaption>
+                <a href="overlay-outline.svg">overlay-outline.svg</a> — no fill
+                at all, which is the cleanest way to see one tiling through the
+                other
+            </figcaption>
+            <img src="overlay-outline.svg" alt="Sun and Star as outlines" />
+        </figure>
+
+        <figure class="checker">
+            <figcaption>
+                <a href="transparent.svg">transparent.svg</a> — a transparent
+                page: no backing rectangle, so the figure composites onto
+                whatever is behind it. Shown here on a checker to make that
+                visible. This is the one a PDF wants
+            </figcaption>
+            <img src="transparent.svg" alt="Sun on a transparent page" />
+        </figure>
+
+        <h2>Solid</h2>
 
         <figure>
             <figcaption>
@@ -94,7 +162,7 @@
             <img src="layered.svg" alt="Pentagons under rhombs" />
         </figure>
 
-        <figure>
+        <figure class="pair">
             <figcaption>
                 <a href="sun.svg">sun.svg</a> and
                 <a href="star.svg">star.svg</a> — the two seeds alone, as the

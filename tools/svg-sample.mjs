@@ -72,6 +72,43 @@ const rhombs = new SvgRenderer({
 rhombs.render(list({ type: penrose.Sun, layer: "rhomb" }));
 write("rhombs.svg", rhombs, "Sun rhombs, gradient and isogloss");
 
+// ---- transparency ------------------------------------------------------
+//
+// Three different things go by that name here, so there is one of each.
+
+// 1. Transparent fills, both seeds at once. Solid, the second drawn hides the
+//    first; at half opacity the two tilings interfere and where they agree
+//    reads darker, which is the thing the overlay page exists to look at.
+const clear = new SvgRenderer({
+    scale: SCALE, background: "white", pad: 12,
+    styles: { pentaStyle: { ...DEFAULT_PENTA_STYLE, fill: "transparent" } },
+});
+clear.render(list({ type: penrose.Sun }));
+clear.render(list({ type: penrose.Star }));
+write("overlay-clear.svg", clear, "Sun and Star, half opacity");
+
+// 2. No fill at all -- the cleanest way to see one tiling through the other.
+const lines = new SvgRenderer({
+    scale: SCALE, background: "white", pad: 12,
+    styles: { pentaStyle: { ...DEFAULT_PENTA_STYLE, fill: "none" } },
+});
+lines.render(list({ type: penrose.Sun }));
+lines.render(list({ type: penrose.Star }));
+write("overlay-outline.svg", lines, "Sun and Star, outlines only");
+
+// 3. A transparent page: no backing rect, so the figure composites onto
+//    whatever is behind it. This is the one a PDF wants.
+const bare = new SvgRenderer({
+    scale: SCALE, pad: 12,
+    styles: {
+        pentaStyle: { ...DEFAULT_PENTA_STYLE, fill: "transparent" },
+        rhombStyle: { ...DEFAULT_RHOMB_STYLE, fill: "transparent" },
+    },
+});
+bare.render(list({ type: penrose.Sun }));
+bare.render(list({ type: penrose.Sun, layer: "rhomb" }));
+write("transparent.svg", bare, "Sun, transparent page");
+
 // Rhombs over the pentagons, which is the overlay the sidebar can ask for.
 const both = new SvgRenderer({
     scale: SCALE, background: "white", pad: 12,
