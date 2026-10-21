@@ -129,7 +129,7 @@ export function makeCanvas(canvasId) {
     // height moves the line box and everything after it; a changing width just
     // shifts the text along, which is what it did before and is fine.
     //
-    // The figure sits on the bottom of the box, not centred -- centring floats
+    // The figure sits on the bottom of the box, not centered -- centering floats
     // it away from the text baseline.
     const shown = measure(null);
     let loc = p(0, 0);
@@ -390,7 +390,7 @@ export function drawGridWork(id) {
         const spacing = 12;
 
         // This page draws its mosaic row from the mosaic shape data directly
-        // rather than through drawPentaPattern, so it has to honour the flag
+        // rather than through drawPentaPattern, so it has to honor the flag
         // itself. Turning mosaic off means no mosaic tiles anywhere, and there
         // is no mosaic of the real geometry at all.
         const showMosaic =
@@ -728,7 +728,7 @@ export function drawGeneric3(id) {
  * Sun/Star.
  *
  * Fixed viewports rather than canvases sized to their drawing. The two panels
- * are synchronous: one shared scale, each centred on its own seed, so the
+ * are synchronous: one shared scale, each centered on its own seed, so the
  * figures stay directly comparable and nothing moves when a layer is toggled.
  *
  * Scale starts at whatever fits the larger of the two figures and is then
@@ -736,7 +736,7 @@ export function drawGeneric3(id) {
  * because the fit is recomputed every draw and only the zoom persists.
  *
  * Side by side gives two half-width viewports; overlay gives one full-width
- * viewport with both figures drawn into it about the same centre.
+ * viewport with both figures drawn into it about the same center.
  *
  * IMPORTANT -- everything here is a named parameter. Nothing goes through
  * ...options; see the hazard note at the top of TODO.md.
@@ -838,25 +838,25 @@ function sunStarMeasure(slot, overlays) {
 }
 
 /**
- * Where a figure should be centred, which is not always where its seed sits.
+ * Where a figure should be centered, which is not always where its seed sits.
  *
- * Sun and Star are five-fold about their seed, so the seed is the centre and
+ * Sun and Star are five-fold about their seed, so the seed is the center and
  * `loc` -- the origin here -- is it.
  *
- * The Queen is not. Its centre is **the common point of its three pentagons**,
+ * The Queen is not. Its center is **the common point of its three pentagons**,
  * where the Pe3 and the two Pe1 meet. That vertex lies |s|/phi from the Pe3's
- * own centre, on opposite sides for up and down, so centring on the seed leaves
+ * own center, on opposite sides for up and down, so centering on the seed leaves
  * an up Queen and a down Queen 2|s|/phi apart.
  *
- * The bounding box centre is that same vertex -- checked to 1e-9 at generation
+ * The bounding box center is that same vertex -- checked to 1e-9 at generation
  * 1, and the box measures 1.051 : 1, which is 1/cos 18, the ratio a regular
  * decagon's box has. So the box is used: it needs no knowledge of which tiles
  * are showing, where hunting for the shared vertex would.
  *
- * Centred this way the two orientations coincide, reflected in the horizontal
+ * Centered this way the two orientations coincide, reflected in the horizontal
  * axis through that point.
  */
-function sunStarCentre(slot, bounds) {
+function sunStarCenter(slot, bounds) {
     if (slot.type !== penrose.Deca || bounds.isEmpty) return p(0, 0);
     return p(
         (bounds.minPoint.x + bounds.maxPoint.x) / 2,
@@ -866,8 +866,8 @@ function sunStarCentre(slot, bounds) {
 
 /**
  * Draws into a viewport of fixed pixel size. The scene is built about the
- * origin, and the origin is put at the centre of the canvas, so zooming holds
- * the centre still.
+ * origin, and the origin is put at the center of the canvas, so zooming holds
+ * the center still.
  */
 function sunStarRender(canvas, w, h, slots, overlays, scale) {
     canvas.width = w;
@@ -920,17 +920,17 @@ export function drawSunStar(id) {
     const viewH = SUNSTAR_VIEW_H;
 
     // Fit the larger figure. Half-extents about the origin, since that is where
-    // the seed sits and where the viewport is centred.
+    // the seed sits and where the viewport is centered.
     let halfW = 0;
     let halfH = 0;
     for (const slot of slots) {
         const b = sunStarMeasure(slot, overlays);
         // Kept on the slot so the render uses the same center it was fitted to.
-        const c = sunStarCentre(slot, b);
+        const c = sunStarCenter(slot, b);
         slot.center = c;
         if (b.isEmpty) continue;
-        // Half extents about the figure's own centre, which is what the
-        // viewport is centred on.
+        // Half extents about the figure's own center, which is what the
+        // viewport is centered on.
         halfW = Math.max(
             halfW,
             Math.abs(b.minPoint.x - c.x),

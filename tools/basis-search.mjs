@@ -14,7 +14,7 @@
 // integer lattice; anything else is not a pentagon at all.
 //
 // Score: how far the resulting pentagon is from regular. Write the five
-// vertices as complex numbers, centre them, and take the discrete Fourier
+// vertices as complex numbers, center them, and take the discrete Fourier
 // transform. A regular pentagon traversed in order is exactly the m=1 mode, so
 //
 //     error = sqrt(sum of |a_m|^2 for m != 1) / |a_1|

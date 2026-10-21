@@ -29,7 +29,7 @@ true regular pentagon satisfies it too, since `φ/2 − 1/(2φ) = 1/2`.
 
 ## Scoring
 
-Take the five vertices as complex numbers, centre them, and transform. A regular
+Take the five vertices as complex numbers, center them, and transform. A regular
 pentagon traversed in order is *exactly* the m=1 Fourier mode, so
 
 ```

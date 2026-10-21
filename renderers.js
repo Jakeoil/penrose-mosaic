@@ -67,7 +67,7 @@ export class CanvasRenderer {
                     [x + 1, y + 1, x, y + 1],
                     [x, y + 1, x, y],
                 ]) {
-                    // Undirected: normalise so the two squares sharing an edge
+                    // Undirected: normalize so the two squares sharing an edge
                     // produce the same key.
                     const key =
                         e[0] < e[2] || (e[0] === e[2] && e[1] < e[3])

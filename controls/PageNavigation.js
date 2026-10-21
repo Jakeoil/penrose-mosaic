@@ -88,7 +88,7 @@ export class PageNavigation {
 
         // Some pages drive themselves and ignore the sidebar. Ghost those
         // groups out rather than leaving them looking live -- a disabled
-        // fieldset greys its contents and blocks input, which is the reminder.
+        // fieldset grays its contents and blocks input, which is the reminder.
         this.ghostIgnoredGroups(activeNavButton.getAttribute("data-id"));
 
         // Only display the active page.

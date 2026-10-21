@@ -104,20 +104,20 @@ function pColor(type) {
 }
 
 /**
- * A patch is defined by a radius around a centre, not by where the recursion
- * stops -- "the pentagon centers within a given radius of the centre of a St5 of
+ * A patch is defined by a radius around a center, not by where the recursion
+ * stops -- "the pentagon centers within a given radius of the center of a St5 of
  * indefinite generation". So the expansion runs as usual and the tiles whose
- * centres fall outside the circle are simply not drawn, which rounds the figure
+ * centers fall outside the circle are simply not drawn, which rounds the figure
  * off.
  *
  * The test is on the tile's own loc, which for both penta and star is its
- * centre. A tile just inside the circle may still poke past it, so the boundary
+ * center. A tile just inside the circle may still poke past it, so the boundary
  * comes out ragged by one tile. That is what a real patch looks like.
  *
  * clip is carried in ...options, which already flows through every level of the
  * recursion, so nothing else needs to know about it.
  *
- * @param {Point} loc - the tile's centre
+ * @param {Point} loc - the tile's center
  * @param {{center: Point, radius: number}} clip
  */
 function withinClip(loc, clip) {
@@ -653,7 +653,7 @@ export class PenroseScreen {
     /**
      * The Sun patch -- a blue pentagon with five Queens around it.
      *
-     * penta(Pe5) already lays down the centre Pe5, the five Pe3 and the five
+     * penta(Pe5) already lays down the center Pe5, the five Pe3 and the five
      * St1. What it does not place are the two orange pentagons belonging to each
      * Queen, so the Sun is that expansion plus ten Pe1, hung off each Pe3 the
      * same way deca() hangs them off its own.
@@ -709,9 +709,9 @@ export class PenroseScreen {
     /**
      * The Star patch -- a five-star gap with a ring around it.
      *
-     * star(St5) lays down the centre St5, five Pe1 tips and five St3 boats, but
+     * star(St5) lays down the center St5, five Pe1 tips and five St3 boats, but
      * puts its boats where the Pe3 belong, so the Pe3 have to be placed
-     * explicitly. Measured ring, in tenth offsets from the centre's own angle:
+     * explicitly. Measured ring, in tenth offsets from the center's own angle:
      * Pe3 at t-wheel[2j], tenth 5 + 2j, flipped.
      *
      * Rhomb count 35 = 5x3 (Pe1) + 5x4 (Pe3); St5 and St3 emit none.
@@ -722,7 +722,7 @@ export class PenroseScreen {
             return bounds;
         }
 
-        // The star shaped gap at the centre. It fills in from generation 2.
+        // The star shaped gap at the center. It fills in from generation 2.
         this.star({ type: penrose.St5, angle, isHeads, loc, gen: gen - 1, layer, ...options });
 
         const wheels = penrose[this.mode].wheels;
@@ -807,12 +807,12 @@ export class PenroseScreen {
 
         const wheels = penrose[this.mode].wheels;
 
-        // loc is the centre, as it is for every other seed. This used to shift
+        // loc is the center, as it is for every other seed. This used to shift
         // the figure off loc by a d-wheel vector, and in opposite directions for
         // up and down -- so an up Queen and a down Queen drawn at the same loc
-        // came out 2 * |d| apart instead of sharing a centre. Everything below
+        // came out 2 * |d| apart instead of sharing a center. Everything below
         // is placed relative to base, so dropping the shift only translates the
-        // figure; the pages that draw a deca all normalise by measured bounds.
+        // figure; the pages that draw a deca all normalize by measured bounds.
         const base = loc;
 
         let offs; // Work variable
