@@ -8,6 +8,7 @@
   "scripts": {
     "test": "node --test tools/geometry.test.mjs tools/scene.test.mjs tools/mosaic.test.mjs tools/renderer.test.mjs tools/svg.test.mjs tools/spelling.test.mjs",
     "stamp": "node tools/stamp.mjs",
-    "serve": "python3 -m http.server 8010"
+    "serve": "python3 -m http.server 8010",
+    "samples": "node tools/svg-sample.mjs"
   }
 }

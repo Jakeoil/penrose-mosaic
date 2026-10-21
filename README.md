@@ -85,6 +85,21 @@ depends on it staying true.
 A failure in the first three is not "the number moved", it is "the geometry
 moved". Raise it rather than updating the number.
 
+## SVG samples
+
+```
+node tools/svg-sample.mjs
+```
+
+Writes `samples/`, and `samples/index.html` shows them all with notes. Served
+alongside everything else, so `http://localhost:8010/samples/` works with no
+build step. They are committed so the page works without running anything --
+regenerate after changing `svg-renderer.js`, the way `tools/stamp.mjs` is run
+after changing a script.
+
+Nothing on the site uses the SVG renderer yet. The first intended use is PDFs of
+the Sun/Star overlay.
+
 ## Documentation
 
 Start with `docs/wheels.md`. Most of the hard questions about this construction

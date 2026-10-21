@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="shortcut icon" href="../deca.png" />
+        <title>SVG samples — Penrose Mosaic</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 0 auto;
+                padding: 2rem 1rem;
+                max-width: 72rem;
+                color: #222;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            p {
+                max-width: 40rem;
+                line-height: 1.5;
+            }
+            ul.files {
+                columns: 2;
+                max-width: 40rem;
+            }
+            figure {
+                margin: 2rem 0;
+                border: 1px solid #ccc;
+            }
+            figcaption {
+                padding: 0.5rem 0.75rem;
+                border-bottom: 1px solid #ccc;
+                background: #f6f6f6;
+                font-size: 0.9rem;
+            }
+            figure img {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+            code {
+                background: #f0f0f0;
+                padding: 0 0.2em;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>SVG samples</h1>
+        <p>
+            Output from <code>svg-renderer.js</code>, which draws the same render
+            list the canvas does. Nothing on the site uses it yet; the first
+            intended use is PDFs of the Sun/Star overlay. Regenerate with
+            <code>node tools/svg-sample.mjs</code>.
+        </p>
+        <p>
+            These are real SVG, so they scale without redrawing — open one on its
+            own and zoom in as far as you like.
+        </p>
+        <ul class="files">
+            <li><a href="overlay.svg">overlay.svg</a></li>
+            <li><a href="sun.svg">sun.svg</a></li>
+            <li><a href="star.svg">star.svg</a></li>
+            <li><a href="deca.svg">deca.svg</a></li>
+            <li><a href="rhombs.svg">rhombs.svg</a></li>
+            <li><a href="layered.svg">layered.svg</a></li>
+        </ul>
+
+        <figure>
+            <figcaption>
+                <a href="overlay.svg">overlay.svg</a> — Sun and Star at
+                generation 2, both in one viewport on a shared scale, which is
+                what the Sun/Star page is about
+            </figcaption>
+            <img src="overlay.svg" alt="Sun and Star overlaid" />
+        </figure>
+
+        <figure>
+            <figcaption>
+                <a href="rhombs.svg">rhombs.svg</a> — the Sun's rhombs with the
+                gradient and the isogloss. 730 rhombs sharing 46 gradient
+                definitions, and no clip paths: the contour lines end on the
+                rhomb boundary, so they need none
+            </figcaption>
+            <img src="rhombs.svg" alt="Sun rhombs with gradient and isogloss" />
+        </figure>
+
+        <figure>
+            <figcaption>
+                <a href="layered.svg">layered.svg</a> — pentagons under rhombs,
+                the pentagons transparent and the rhombs stroked by dihedral
+                fold: thin for a ridge, thick for a valley
+            </figcaption>
+            <img src="layered.svg" alt="Pentagons under rhombs" />
+        </figure>
+
+        <figure>
+            <figcaption>
+                <a href="sun.svg">sun.svg</a> and
+                <a href="star.svg">star.svg</a> — the two seeds alone, as the
+                page shows them side by side. Note they are not reflections of
+                each other
+            </figcaption>
+            <img src="sun.svg" alt="Sun, generation 2" />
+            <img src="star.svg" alt="Star, generation 2" />
+        </figure>
+
+        <figure>
+            <figcaption>
+                <a href="deca.svg">deca.svg</a> — the deca patch, centered on the
+                common point of its three pentagons
+            </figcaption>
+            <img src="deca.svg" alt="Deca, generation 2" />
+        </figure>
+    </body>
+</html>
