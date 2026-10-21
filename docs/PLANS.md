@@ -251,6 +251,79 @@ a package.
 So the realistic pull is this project's own future work plus a small number of
 tiling people. The refactor is worth doing for the first reason alone.
 
+### The plan: `lib/penrose-mosaic.js`
+
+Settled 2026-10-21. Expose the construction code as browser-compatible ES
+modules under `lib/`, importable by sibling projects locally and from this
+repo's Pages URL, **without changing what the application does**.
+
+    // local, from a sibling project
+    import { star } from "../penrose-mosaic/lib/penrose-mosaic.js";
+
+    // published
+    import { star } from "https://jakeoil.github.io/penrose-mosaic/lib/penrose-mosaic.js";
+
+The hosting is already in place and needs nothing: Pages serves
+`penrose-screen.js` as `application/javascript` with
+`access-control-allow-origin: *`, checked 2026-10-21. There is no build step
+here, which for once is the easy case — the modules are already plain ESM and
+already import in node with no DOM.
+
+**Why a facade rather than importing the modules directly.** One file naming
+what is public pins the surface, so the internal layout stays free to move --
+which it will, since `shape-modes.js` is still four peer classes and the
+penta/star refactor is still ahead. Consumers never learn that `penta()` lives
+on a scene object.
+
+It also solves the first blocker for free. `scene.overlays` is a required input
+that throws when omitted; a convenience function supplies it, so nothing in
+`PenroseScreen` has to change for the library to be usable. Two layers:
+
+- **primitives, re-exported as they are** — `PenroseScreen`, `penrose`, `p`,
+  `ang`, `Bounds`. No new API, no wrapping.
+- **convenience builders** — `star()`, `penta()`, `queen()`, taking
+  `{ gen, mode, orient, layers }` and returning the render list and bounds, with
+  overlays defaulted. This is the shape the example above implies, and it is
+  where defaults live so the primitives stay honest.
+
+**Tests first, before any of it.** The point is to capture current behavior
+while it is still current, so the refactor has something to be checked against.
+Golden values over the core: the measured extents, the render-list counts, the
+overlap audit per figure and generation. Node, no DOM, no new dependency --
+`node --test`, as the pentagrid does with its own suites.
+
+**Then the three compatible fixes**, each an added fallback rather than a
+removed path, so the legacy pages are untouched by construction:
+
+| change                                              | effect on the pages |
+| --------------------------------------------------- | ------------------- |
+| default the `overlays` getter                       | none -- only the case that throws today |
+| guard `rhombus` as `figure` and `outline` already are | none -- same |
+| styles injected, falling back to `globals`          | none -- the sidebar keeps working |
+
+**Then point the pentagrid at it.** `tools/bootstrap.test.mjs` transcribes this
+project's values by hand and says so in its header; `discrete.test.mjs` asserts
+against the same snapshot. Those become imports, and the oracle stops being a
+copy that can go stale.
+
+**What does not change.** `index.html`, `measurements.html` and `cookies.html`
+stay exactly as they are -- that is the ground rule, and the whole reason the
+fixes above are additive. New test pages are additive too: root-level HTML
+files, the way the pentagrid keeps `grow.html`, `method.html` and the rest
+beside one `src/`. They need no branch, because a new file cannot disturb an old
+page, and the Sun/Star page already showed a page can ignore the sidebar and own
+its own overlays.
+
+One borrowed item: `tools/spelling.test.mjs` in the pentagrid is 73
+self-contained lines, written because the rule "lived only in a note and nothing
+checked it" and 204 British forms had drifted in across 28 files. This repo just
+repeated that, 37 forms across seven files. Copy it with the first test.
+
+**Known limitation.** A Pages URL tracks `main`, so a change here can change a
+consumer. The pentagrid's `MODULES.md` already says this about its own modules,
+and the answer is the same: copy the files for anything that must not move. The
+golden tests are what make the untracked case tolerable.
+
 ---
 
 ## New chapter: 3D Penrose Surfaces
