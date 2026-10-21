@@ -1,12 +1,52 @@
 import { globals, measureTaskGlobals } from "./controls.js";
 import { penrose } from "./penrose.js";
+import {
+    DEFAULT_PENTA_STYLE,
+    DEFAULT_RHOMB_STYLE,
+    DEFAULT_MOSAIC_STYLE,
+    pickStyle,
+} from "./styles.js";
 import { USE_FUNCTION_LIST } from "./penrose-screen.js";
 import { lerp } from "./penrose-screen.js";
 
 export class CanvasRenderer {
-    constructor(g, scale) {
+    /**
+     * @param {CanvasRenderingContext2D} g
+     * @param {number} scale
+     * @param {{pentaStyle?, rhombStyle?, mosaicStyle?}} [styles] - stated by the
+     *   caller. Anything left out falls back to the app's, then to the defaults
+     *   in styles.js, so a consumer outside the app may pass nothing.
+     */
+    constructor(g, scale, styles) {
         this.g = g;
         this.scale = scale;
+        this.injectedStyles = styles;
+        this.resolved = null;
+    }
+
+    /**
+     * Resolved once per render pass rather than per command -- the methods used
+     * to read globals individually, and at generation 5 that is forty thousand
+     * reads for three values that cannot change mid-pass.
+     *
+     * The precedence is not uniform, and that is deliberate: it is what the
+     * three methods did separately before. `rhombus` preferred the measurements
+     * iframe's style over the sidebar's; `outline` and `figure` never consulted
+     * the iframe at all, so inside it they draw on the defaults. That asymmetry
+     * is almost certainly an oversight, but correcting it changes how the
+     * measurements page looks, so it stands until that is asked for.
+     */
+    get styles() {
+        if (!this.resolved) {
+            const own = this.injectedStyles;
+            this.resolved = Object.freeze({
+                pentaStyle: pickStyle("pentaStyle", DEFAULT_PENTA_STYLE, own, globals),
+                mosaicStyle: pickStyle("mosaicStyle", DEFAULT_MOSAIC_STYLE, own, globals),
+                rhombStyle: pickStyle("rhombStyle", DEFAULT_RHOMB_STYLE, own,
+                                      measureTaskGlobals, globals),
+            });
+        }
+        return this.resolved;
     }
     /***
      * Used by Mosaic figure.
@@ -26,10 +66,10 @@ export class CanvasRenderer {
      * silhouette.
      */
     figure(fill, offset, shape) {
-        const { mosaicStyle } = globals;
+        const { mosaicStyle } = this.styles;
         const { g, scale } = this;
-        const fillMode = mosaicStyle ? mosaicStyle.fill : "solid";
-        const border = mosaicStyle ? mosaicStyle.border : "grid";
+        const fillMode = mosaicStyle.fill;
+        const border = mosaicStyle.border;
         g.save();
 
         if (fillMode !== "none") {
@@ -100,18 +140,18 @@ export class CanvasRenderer {
      *
      */
     outline(fill, offset, shape) {
-        const { pentaStyle } = globals;
+        const { pentaStyle } = this.styles;
         const { g, scale } = this;
         g.save();
 
-        if (!pentaStyle || pentaStyle.stroke == pentaStyle.SOLID) {
+        if (pentaStyle.stroke == pentaStyle.SOLID) {
             g.strokeStyle = "#000000";
             g.lineWidth = 1;
         }
 
-        if (!pentaStyle || pentaStyle.fill == pentaStyle.SOLID) {
+        if (pentaStyle.fill == pentaStyle.SOLID) {
             g.fillStyle = fill;
-        } else if (pentaStyle && pentaStyle.fill == pentaStyle.TRANSPARENT) {
+        } else if (pentaStyle.fill == pentaStyle.TRANSPARENT) {
             g.fillStyle = fill + "80";
         }
 
@@ -134,10 +174,10 @@ export class CanvasRenderer {
         g.closePath();
 
         // fill by default
-        if (!pentaStyle || pentaStyle.fill != pentaStyle.NONE) {
+        if (pentaStyle.fill != pentaStyle.NONE) {
             g.fill();
         }
-        if (!pentaStyle || pentaStyle.stroke != pentaStyle.NONE) {
+        if (pentaStyle.stroke != pentaStyle.NONE) {
             g.stroke();
         }
         g.restore();
@@ -281,7 +321,7 @@ export class CanvasRenderer {
 
     rhombus(fill, offset, shape, strokeStyle, isHeads) {
         const { g, scale } = this;
-        const { rhombStyle } = { ...globals, ...measureTaskGlobals };
+        const { rhombStyle } = this.styles;
         g.save();
         let gradient = rhombStyle.fill == rhombStyle.GRADIENT;
         g.strokeStyle = strokeStyle ? strokeStyle : "black";
@@ -375,6 +415,7 @@ export class CanvasRenderer {
     }
 
     render(renderList) {
+        this.resolved = null; // a pass picks up whatever the controls say now
         if (USE_FUNCTION_LIST) {
             for (const item of renderList) {
                 item(this);

@@ -49,6 +49,7 @@ Then open `http://localhost:8000` in a browser.
 - `wheels.js` — Wheel math for computing tile positions across generations
 - `point.js` — Point and Angle classes
 - `bounds.js` — Bounding rectangle with render list
+- `styles.js` — default style sets for the renderers, with no imports
 - `controls.js` — Control initialization, globals, cookie persistence
 - `controls/` — UI control classes (Figure, ShapeColors, Overlays, etc.)
 - `build-id.js` — generated build stamp, shown on the defaults button
@@ -72,6 +73,9 @@ depends on it staying true.
   the layer-independence of the fitted box.
 - **`tools/mosaic.test.mjs`** -- the polyomino audit: one cell per unit square,
   counting collisions. The Queen packs cleanly; Sun and Star do not.
+- **`tools/renderer.test.mjs`** -- the renderer driven with no DOM, no canvas and
+  no globals, through a recording object. Styles come from the caller, then the
+  app, then the defaults in `styles.js`.
 - **`tools/spelling.test.mjs`** -- American spellings, identifiers included.
 
 A failure in the first three is not "the number moved", it is "the geometry

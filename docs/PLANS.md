@@ -125,14 +125,23 @@ look-closely-at-the-geometry page, and it brings real file export for print —
 which for a program whose output is figures about geometry is probably the
 actual prize, ahead of anything on screen.
 
-### Do this first
+### Do this first — done 2026-10-21
 
-`CanvasRenderer` reads `globals.pentaStyle`, `globals.rhombStyle` and
-`globals.mosaicStyle` straight out of module state inside its methods. A second
-renderer would inherit that coupling, and it is already wrong for Sun/Star,
-which deliberately ignores the sidebar and states every flag itself. Passing the
-styles in rather than reading globals is a small change, and it is the same move
-the refactor section above asks for — separate the recursion from the rendering.
+`CanvasRenderer` read `globals.pentaStyle`, `globals.rhombStyle` and
+`globals.mosaicStyle` straight out of module state inside its methods, and a
+second renderer would have inherited that coupling.
+
+It no longer does. `styles.js` has no imports and holds the three default style
+sets; `CanvasRenderer(g, scale, styles)` takes a style set and resolves it once
+per pass, falling back to the app's and then to those defaults. So an
+`SvgRenderer` can be written against `styles.js` alone and never import
+`controls.js` — `tools/renderer.test.mjs` has a test saying exactly that, and
+drives the whole renderer through a recording object rather than a canvas, which
+is the same thing the SVG target will do.
+
+What that leaves for the SVG work is only the SVG: `outline`, `line`, `grid` and
+`figure` are each a few lines, and `rhombus` still has the gradient defs table
+and the isogloss to think about.
 
 Against the ground rule at the top of `TODO.md` — do not change the look — this
 wants to be a toggle, with the SVG output pixel-compared against canvas, not a
@@ -296,13 +305,27 @@ overlap audit per figure and generation. Node, no DOM, no new dependency --
 `node --test`, as the pentagrid does with its own suites.
 
 **Then the three compatible fixes**, each an added fallback rather than a
-removed path, so the legacy pages are untouched by construction:
+removed path, so the legacy pages are untouched by construction. All three
+landed 2026-10-21:
 
 | change                                              | effect on the pages |
 | --------------------------------------------------- | ------------------- |
-| default the `overlays` getter                       | none -- only the case that throws today |
-| guard `rhombus` as `figure` and `outline` already are | none -- same |
+| `PenroseScreen.DEFAULT_OVERLAYS`                    | none -- only the case that threw |
+| `rhombus` resolves its style like the others        | none -- same |
 | styles injected, falling back to `globals`          | none -- the sidebar keeps working |
+
+The last two turned out to be one change. `styles.js` holds the three default
+style sets, each carrying its own constants because `renderers.js` compares a
+value against a constant on the same object; `CanvasRenderer` takes an optional
+style set as a third argument and resolves it once per pass. With the defaults in
+place `rhombStyle` is never undefined, so the bare read that used to throw is
+simply safe -- no guard needed.
+
+The resolution keeps one wart on purpose. `rhombus` preferred the measurements
+iframe's style over the sidebar's while `outline` and `figure` never consulted
+the iframe at all, so inside it those two draw on the defaults. That is almost
+certainly an oversight, but correcting it changes how the measurements page
+looks, so it stands until asked for. It is written down in the `styles` getter.
 
 **Then point the pentagrid at it.** `tools/bootstrap.test.mjs` transcribes this
 project's values by hand and says so in its header; `discrete.test.mjs` asserts
