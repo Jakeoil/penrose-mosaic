@@ -35,6 +35,8 @@ every method that forwards options. `deca()`, `sun()` and `starPatch()` swallow
   a library, the isHeads propagation table
 - `docs/penrose.txt` — the typographic worksheet, worked by hand. Has errors;
   kept as the reference the glyph set came from
+- `npm test` — golden values for the core; see the README. A number moving
+  there means the geometry moved
 - `tools/stamp.mjs` — run after changing any script; the stamp shows on hover
   over `defaults`. Check it before debugging a change that "did nothing"
 - `tools/basis-search.mjs` — `node tools/basis-search.mjs 64`

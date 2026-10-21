@@ -57,7 +57,7 @@ class Wheel {
         return this.list;
     }
     get string() {
-        return stringify(this.w.map((it) => [it.x, it.y]));
+        return JSON.stringify(this.w.map((it) => [it.x, it.y]));
     }
     // get inv() {
     //     return new Wheel(this.list[5], this.list[6], this.list[7]);

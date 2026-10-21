@@ -286,8 +286,11 @@ that throws when omitted; a convenience function supplies it, so nothing in
   overlays defaulted. This is the shape the example above implies, and it is
   where defaults live so the primitives stay honest.
 
-**Tests first, before any of it.** The point is to capture current behavior
-while it is still current, so the refactor has something to be checked against.
+**Tests first, before any of it.** Landed 2026-10-21: 47 of them across
+`tools/geometry.test.mjs`, `tools/scene.test.mjs`, `tools/mosaic.test.mjs` and
+`tools/spelling.test.mjs`, run by `npm test`. The point is to capture current
+behavior while it is still current, so the refactor has something to be checked
+against.
 Golden values over the core: the measured extents, the render-list counts, the
 overlap audit per figure and generation. Node, no DOM, no new dependency --
 `node --test`, as the pentagrid does with its own suites.

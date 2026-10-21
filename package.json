@@ -1,0 +1,13 @@
+{
+  "name": "penrose-mosaic",
+  "version": "0.1.0",
+  "description": "A square tiling based on Penrose's first non-periodic tiling (P1)",
+  "author": "Jeff Coyle",
+  "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tools/geometry.test.mjs tools/scene.test.mjs tools/mosaic.test.mjs tools/spelling.test.mjs",
+    "stamp": "node tools/stamp.mjs",
+    "serve": "python3 -m http.server 8010"
+  }
+}

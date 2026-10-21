@@ -96,7 +96,7 @@ export class Angle {
     }
     // The counter-clockwise operation
     get ccw() {
-        return new Angle(fifths ? this.fifths - 1 : 4, this.isDown);
+        return new Angle(this.fifths ? this.fifths - 1 : 4, this.isDown);
     }
     // Add n fifths
     rot(n) {

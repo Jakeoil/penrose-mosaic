@@ -54,6 +54,29 @@ Then open `http://localhost:8000` in a browser.
 - `build-id.js` — generated build stamp, shown on the defaults button
 - `tools/stamp.mjs` — regenerates `build-id.js`
 
+## Tests
+
+```
+npm test
+```
+
+Golden values measured from the code as it stands, so the penta/star refactor and
+the `lib/` extraction have something to be checked against. Plain `node --test`,
+no DOM and no dependency -- the core imports outside a browser, and
+`tools/geometry.test.mjs` has a test that says so, because the `lib/` plan
+depends on it staying true.
+
+- **`tools/geometry.test.mjs`** -- points, angles, the four wheels, the
+  prototiles, bounds. The discrete wheels are pinned as exact integers.
+- **`tools/scene.test.mjs`** -- render-list counts, extents, colors, parity, and
+  the layer-independence of the fitted box.
+- **`tools/mosaic.test.mjs`** -- the polyomino audit: one cell per unit square,
+  counting collisions. The Queen packs cleanly; Sun and Star do not.
+- **`tools/spelling.test.mjs`** -- American spellings, identifiers included.
+
+A failure in the first three is not "the number moved", it is "the geometry
+moved". Raise it rather than updating the number.
+
 ## Documentation
 
 Start with `docs/wheels.md`. Most of the hard questions about this construction
