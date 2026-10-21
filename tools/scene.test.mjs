@@ -309,14 +309,27 @@ test("the composite seeds fix their own parity", () => {
     }
 });
 
-test("overlays is required, and says so by throwing", () => {
-    // The first thing an outside consumer hits. The lib/ facade supplies this,
-    // which is why the facade can exist before PenroseScreen changes at all.
+test("a scene with no overlays falls back to the defaults", () => {
+    // This used to throw from deep inside the recursion, and it was the first
+    // thing any outside caller hit. The default now covers it.
     const scene = new PenroseScreen("real");
-    assert.throws(
-        () => scene.penta({ type: penrose.Star, gen: 1, isHeads: true, angle: ang(0, false), loc: p(0, 0) }),
-        /pentaSelected/,
-    );
+    assert.equal(scene.overlays, null, "nothing set on the scene");
+    scene.penta({ type: penrose.Star, gen: 3, isHeads: true, angle: ang(0, false), loc: p(0, 0) });
+    assert.equal(scene.bounds.renderList.length, 851,
+                 "the default draws the penta layer, same as stating it");
+});
+
+test("the default is exactly ALL_ON with mosaic off, and is frozen", () => {
+    assert.deepEqual({ ...PenroseScreen.DEFAULT_OVERLAYS }, ALL_ON);
+    assert.ok(Object.isFrozen(PenroseScreen.DEFAULT_OVERLAYS),
+              "shared by every scene that falls back to it, so it must not be mutable");
+});
+
+test("an explicit overlays still wins over the default", () => {
+    const scene = new PenroseScreen("real");
+    scene.overlays = { ...ALL_ON, pentaSelected: false };
+    scene.penta({ type: penrose.Star, gen: 3, isHeads: true, angle: ang(0, false), loc: p(0, 0) });
+    assert.equal(scene.bounds.renderList.length, 0, "the default did not override it");
 });
 
 test("a clip radius rounds the figure off and shrinks the list", () => {

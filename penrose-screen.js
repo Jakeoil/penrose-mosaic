@@ -151,11 +151,39 @@ export class PenroseScreen {
     }
 
     /**
+     * What a scene draws by when nobody has said. Pentas on, so a caller that
+     * states nothing still gets a figure rather than a blank; mosaic off,
+     * because it is a presentation of the discrete geometry and the real one has
+     * none. Frozen, since it is shared by every scene that falls back to it.
+     */
+    static DEFAULT_OVERLAYS = Object.freeze({
+        pentaSelected: true,
+        rhombSelected: true,
+        smallRhomb: true,
+        mosaicSelected: false,
+        treeSelected: false,
+        ammannSelected: false,
+    });
+
+    /**
      * The overlay flags this scene draws by: its own if it has been given any,
-     * otherwise the sidebar's, otherwise the measurements iframe's.
+     * otherwise the sidebar's, otherwise the measurements iframe's, otherwise
+     * the defaults below.
+     *
+     * The fallback used to end at the iframe's, so a scene built outside the
+     * app -- a test, a sibling project, anything importing this module -- threw
+     * `Cannot read properties of undefined (reading 'pentaSelected')` from deep
+     * inside the recursion. It was the first thing any such caller hit. Inside
+     * the app nothing reaches the default, because controls.js constructs
+     * globals.overlays before any page draws.
      */
     get activeOverlays() {
-        return this.overlays || globals.overlays || measureTaskGlobals.overlays;
+        return (
+            this.overlays ||
+            globals.overlays ||
+            measureTaskGlobals.overlays ||
+            PenroseScreen.DEFAULT_OVERLAYS
+        );
     }
 
     /**
