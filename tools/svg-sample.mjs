@@ -20,6 +20,7 @@ const { SvgRenderer } = await import(ROOT + "svg-renderer.js");
 const { penrose } = await import(ROOT + "penrose.js");
 const { p, ang } = await import(ROOT + "point.js");
 const { DEFAULT_RHOMB_STYLE, DEFAULT_PENTA_STYLE } = await import(ROOT + "styles.js");
+const { globals } = await import(ROOT + "controls.js");
 
 const OUT = join(dirname(fileURLToPath(ROOT + "x")), "samples");
 mkdirSync(OUT, { recursive: true });
@@ -76,16 +77,38 @@ write("rhombs.svg", rhombs, "Sun rhombs, gradient and isogloss");
 //
 // Three different things go by that name here, so there is one of each.
 
-// 1. Transparent fills, both seeds at once. Solid, the second drawn hides the
-//    first; at half opacity the two tilings interfere and where they agree
-//    reads darker, which is the thing the overlay page exists to look at.
+// 1. Transparent fills, both seeds at once, one hue each.
+//
+//    Colors are baked into the render list when the scene is built, not chosen
+//    at draw time, so recoloring means setting globals.shapeColors first --
+//    which is how the sidebar's color pickers do it. Flattening all six types to
+//    one hue per seed is what makes the interference legible: two flat colors,
+//    and a third where they overlap.
+function inOneHue(hue, build) {
+    const was = globals.shapeColors;
+    globals.shapeColors = {
+        shapeColors: {
+            "pe5-color": hue, "pe3-color": hue, "pe1-color": hue,
+            "star-color": hue, "boat-color": hue, "diamond-color": hue,
+        },
+    };
+    try {
+        return build();
+    } finally {
+        globals.shapeColors = was;
+    }
+}
+
+const TEAL = "#1b9aaa";
+const MAGENTA = "#d81e5b";
+
 const clear = new SvgRenderer({
     scale: SCALE, background: "white", pad: 12,
     styles: { pentaStyle: { ...DEFAULT_PENTA_STYLE, fill: "transparent" } },
 });
-clear.render(list({ type: penrose.Sun }));
-clear.render(list({ type: penrose.Star }));
-write("overlay-clear.svg", clear, "Sun and Star, half opacity");
+clear.render(inOneHue(TEAL, () => list({ type: penrose.Sun })));
+clear.render(inOneHue(MAGENTA, () => list({ type: penrose.Star })));
+write("overlay-clear.svg", clear, "Sun in teal, Star in magenta, half opacity");
 
 // 2. No fill at all -- the cleanest way to see one tiling through the other.
 const lines = new SvgRenderer({
