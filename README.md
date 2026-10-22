@@ -49,7 +49,8 @@ Then open `http://localhost:8000` in a browser.
 - `point.js` — Point and Angle classes
 - `bounds.js` — Bounding rectangle with render list
 - `renderers.js` — Canvas 2D renderer
-- `svg-renderer.js` — the same render list as SVG; no DOM, for files and PDFs
+- `svg-renderer.js` — the same render list as SVG; no DOM
+- `pdf-renderer.js` — the same render list as PDF, written directly
 - `color.js` — color helpers, with no imports
 - `styles.js` — default style sets for the renderers, with no imports
 - `controls.js` — Control initialization, globals, cookie persistence
@@ -80,15 +81,17 @@ depends on it staying true.
   app, then the defaults in `styles.js`.
 - **`tools/svg.test.mjs`** -- the SVG renderer: geometry identical to the
   canvas, the gradient defs bounded, the isogloss ends on the boundary.
+- **`tools/pdf.test.mjs`** -- the PDF renderer: xref offsets, stream length,
+  and the tiles landing where the SVG renderer puts them.
 - **`tools/spelling.test.mjs`** -- American spellings, identifiers included.
 
 A failure in the first three is not "the number moved", it is "the geometry
 moved". Raise it rather than updating the number.
 
-## SVG samples
+## SVG and PDF samples
 
 ```
-node tools/svg-sample.mjs
+npm run samples
 ```
 
 Writes `samples/`, and `samples/index.html` shows them all with notes. Served
@@ -97,8 +100,9 @@ build step. They are committed so the page works without running anything --
 regenerate after changing `svg-renderer.js`, the way `tools/stamp.mjs` is run
 after changing a script.
 
-Nothing on the site uses the SVG renderer yet. The first intended use is PDFs of
-the Sun/Star overlay.
+Nothing on the site uses either renderer yet. The PDFs are written directly by
+`pdf-renderer.js`, not converted -- see the head of that file for why.
+`samples/overlay-clear.pdf` is the one worth printing.
 
 ## Documentation
 
