@@ -431,8 +431,6 @@ existing module and no sample changed.
 
 **Not done.**
 
-- **No `LICENSE` file.** `package.json` says ISC, but without the file nobody
-  may legally use the code. Jeff's decision.
 - **Whole generations only.** `gen` is an integer, one generation being φ² --
   two Penrose deflations -- because that is all the stored wheels in
   `shape-modes.js` hold. See the next section.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A square tiling based on Penrose's first non-periodic tiling (P1)",
   "author": "Jeff Coyle",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "exports": "./lib/penrose-mosaic.js",
   "scripts": {
