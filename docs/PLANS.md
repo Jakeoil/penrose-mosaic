@@ -191,16 +191,18 @@ transparency is `fill-opacity`, the native spelling, rather than the canvas's
 
 Both parse under a real XML parser, not just a tag-balance count.
 
-**What is left.** Nothing calls it yet, and the PDF step is not written. The
-`toString` takes an optional width, height and title, and tracks its own viewBox
-from what was drawn, so the document frames itself -- which is what a PDF wants.
+**What is left.** Nothing on the site calls it yet. The PDF step landed
+2026-10-21 as `pdf-renderer.js`, and `lib/penrose-mosaic.js` exposes both as
+`toSVG` and `toPDF`. The `toString` takes an optional width, height and
+title, and tracks its own viewBox from what was drawn, so the document
+frames itself -- which is what a PDF wants.
 
 ---
 
 ## The core as a library
 
-Assessed 2026-10-20, not started. The question was whether other projects could
-import this from GitHub. They could, and less work stands in the way than the
+Assessed 2026-10-20; built 2026-11-17, see the plan at the end. The question
+was whether other projects could import this from GitHub. They could, and less work stands in the way than the
 closure design suggests — the coupling that matters is the module globals, not
 the closures.
 
@@ -310,7 +312,10 @@ tiling people. The refactor is worth doing for the first reason alone.
 
 ### The plan: `lib/penrose-mosaic.js`
 
-Settled 2026-10-21. Expose the construction code as browser-compatible ES
+Settled 2026-10-21. Built 2026-11-17 -- the facade, `build()` with `sun()`,
+`star()` and `deca()` over it (not `queen()`, a name since retired), plus
+`toSVG()` and `toPDF()`, checked by `tools/lib.test.mjs`. What remains is
+pointing the pentagrid at it, below. Expose the construction code as browser-compatible ES
 modules under `lib/`, importable by sibling projects locally and from this
 repo's Pages URL, **without changing what the application does**.
 
@@ -397,6 +402,91 @@ repeated that, 37 forms across seven files. Copy it with the first test.
 consumer. The pentagrid's `MODULES.md` already says this about its own modules,
 and the answer is the same: copy the files for anything that must not move. The
 golden tests are what make the untracked case tolerable.
+
+### Progress — built 2026-11-17
+
+**What exists.** `lib/penrose-mosaic.js`, the only file a consumer imports.
+`package.json` names it in `exports`. The surface:
+
+| export | what it is |
+| ------ | ---------- |
+| `PenroseScreen`, `penrose`, `p`, `ang`, `Angle`, `Bounds` | the core, re-exported unchanged |
+| `CanvasRenderer`, `SvgRenderer`, `PdfRenderer`, `DEFAULT_*_STYLE` | the three renderers and their default styles |
+| `build({ type, gen, mode, orient, fifths, isHeads, layers, overlays, loc })` | one figure: `{ renderList, bounds, scene }` |
+| `sun()`, `star()`, `deca()` | `build` with the type fixed -- the code's names, not the papers' |
+| `toSVG(figures, opts)`, `toPDF(figures, opts)` | one figure or several in one viewport, as a document |
+| `MODES`, `TYPES`, `LAYERS` | the accepted values |
+
+`build` merges `overlays` over `PenroseScreen.DEFAULT_OVERLAYS` and sets them on
+the scene, never through the call, because of the `...options` hazard in
+`TODO.md`. Bad input -- an unknown type, mode, layer or orientation, a negative
+generation -- throws a `RangeError` at the door. `queen()` from the plan above
+became `deca()`, since that name was retired.
+
+**How it is checked.** `tools/lib.test.mjs`, nine tests, in `npm test`. The
+builders are held to the same golden counts as `scene.test.mjs`, and `toSVG`
+reproduces the committed `samples/overlay.svg` byte for byte, so the facade
+cannot quietly build something other than what the pages build. No page, no
+existing module and no sample changed.
+
+**Not done.**
+
+- **No `LICENSE` file.** `package.json` says ISC, but without the file nobody
+  may legally use the code. Jeff's decision.
+- **Whole generations only.** `gen` is an integer, one generation being φ² --
+  two Penrose deflations -- because that is all the stored wheels in
+  `shape-modes.js` hold. See the next section.
+- **Pointing the pentagrid at it** is no longer simply the next step. See the
+  next section.
+
+### The pentagrid has gone further: half generations
+
+Jeff, 2026-11-17: the pentagrid's sub-project `discrete-directions` added to the
+discrete construction and *generalized* it -- most importantly the **half
+generations**, and the wheel with half generations. Recorded in
+`pentagrid/discrete-directions/NOTES.md` (from "The ladder in half steps" and "The
+wheels step by φ², and the missing half is a subtraction") and implemented in
+`pentagrid/src/discrete/wheels.ts` (`halfStep`, `wheelAt(name, halves)`). In
+short, as it bears on this library:
+
+- **The stored wheels skip every other step.** Their x components are alternate
+  Fibonacci numbers, 3, 8, 21, 55. The missing terms are a two-term sum,
+  `s_k = w[k−1] + w[k+1]` (× φ), beside inflation's three-term
+  `w[k−1] + w[k] + w[k+1]` (× φ²). Interleaved, the x components are the
+  Fibonacci numbers in order.
+- **The four wheels are one ladder.** The half rung above D is P exactly, so D,
+  P/S and T are three consecutive half rungs at φ⁰, φ¹ and φ². Naming them
+  separately is what hid it.
+- **Half steps do not compose.** Two half steps are not one generation in the
+  discrete geometry. They miss in y by an alternating (0, ±1), which is My's
+  λ = −1 eigenvalue -- the "±2 correction" this project recorded as an oddity.
+  So every rung is anchored on the seed: whole rungs by inflation, half rungs by
+  one half step from the whole rung below. That parity is also why the wheels
+  here store φ²: it is where x and y agree.
+- **The ladder runs negative.** Generation ½ is the last rung that reads as a
+  figure. Below that the pentagon collapses and then turns inside out.
+- Also there: the tile outlines constructed from five points rather than stored,
+  and the Sun's diamonds moved onto the S wheel.
+
+**What that means here.**
+
+1. **The direction is mostly the other way.** The pentagrid already uses this
+   project as an oracle -- its `tools/bootstrap.test.mjs` carries the quadrille
+   arrays from `shape-modes.js` as a fixture. Those values could now come from
+   `lib/penrose-mosaic.js` instead of being copied, which is all the "point the
+   pentagrid at it" step ever meant. But the half-generation wheel is newer and
+   more general than anything here, and it lives there.
+2. **The facades stay peers.** Pentagrid's `LIBRARY.md` §5 settles that each
+   project grows its own `lib/`, and that a `lib/` re-exports only its own repo's
+   code. So this library will not re-export the half-generation wheel. A
+   consumer that wants half generations imports the pentagrid's facade, once
+   that exposes its wheels -- today its `lib/` has `gamma`, `grow` and
+   `reticulum`, not `discrete/wheels`.
+3. **An open question for Jeff:** should *this* program learn half generations
+   -- a `gen` of 2.5, drawn -- or is that the pentagrid's job? Drawing a half
+   rung needs more than the wheel: it needs to know which tiles a half step
+   produces, and `penta()` only knows whole substitutions. Until that is
+   decided, `build` takes integers and says so.
 
 ---
 

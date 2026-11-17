@@ -53,6 +53,7 @@ Then open `http://localhost:8000` in a browser.
 - `pdf-renderer.js` — the same render list as PDF, written directly
 - `color.js` — color helpers, with no imports
 - `styles.js` — default style sets for the renderers, with no imports
+- `lib/penrose-mosaic.js` — the library entry point; see below
 - `controls.js` — Control initialization, globals, cookie persistence
 - `controls/` — UI control classes (Figure, ShapeColors, Overlays, etc.)
 - `build-id.js` — generated build stamp, shown on the defaults button
@@ -83,6 +84,8 @@ depends on it staying true.
   canvas, the gradient defs bounded, the isogloss ends on the boundary.
 - **`tools/pdf.test.mjs`** -- the PDF renderer: xref offsets, stream length,
   and the tiles landing where the SVG renderer puts them.
+- **`tools/lib.test.mjs`** -- the library facade, against the same golden
+  values as the core and the committed overlay sample.
 - **`tools/spelling.test.mjs`** -- American spellings, identifiers included.
 
 A failure in the first three is not "the number moved", it is "the geometry
@@ -103,6 +106,25 @@ after changing a script.
 Nothing on the site uses either renderer yet. The PDFs are written directly by
 `pdf-renderer.js`, not converted -- see the head of that file for why.
 `samples/overlay-clear.pdf` is the one worth printing.
+
+## Library
+
+`lib/penrose-mosaic.js` exposes the construction code to other projects, as
+plain ES modules with no build step and no DOM:
+
+```js
+import { star, sun, toSVG } from "https://jakeoil.github.io/penrose-mosaic/lib/penrose-mosaic.js";
+
+const { renderList, bounds } = star({ gen: 3, mode: "discrete", layers: ["penta", "rhomb"] });
+const svg = toSVG([sun({ gen: 2 }), star({ gen: 2 })], { background: "white", pad: 12 });
+```
+
+`build()` takes `type`, `gen`, `mode`, `orient`, `fifths`, `layers` and
+`overlays`; `sun()`, `star()` and `deca()` fix the type. A render list is
+closures, replayable by any object with `outline`, `figure`, `grid`, `line` and
+`rhombus` methods. The core classes are re-exported unchanged. Import from this
+file, not the modules behind it, which are free to move. A Pages URL tracks
+`main`, so copy the files for anything that must not change under you.
 
 ## Documentation
 
