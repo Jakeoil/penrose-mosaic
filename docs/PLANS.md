@@ -486,6 +486,27 @@ short, as it bears on this library:
    produces, and `penta()` only knows whole substitutions. Until that is
    decided, `build` takes integers and says so.
 
+### Answered 2026-11-18: no. This program is the oracle, and stays as it is
+
+Jake: *"discrete directions does everything penrose mosaic does -- and more."*
+So there is no v2 here. No half generations, no functional wheels, no arbitrary
+cyclic pentagons. `build` keeps taking integers.
+
+What this program *is* is the **oracle for the symmetric case**. `penta()` and
+`star()` do exactly what discrete directions does -- `deca()` composes the two,
+and both deflate by φ² -- and that correspondence is what makes it worth checking
+against. It answers only for symmetric pentagons, because its wheels are stored
+tables found by hand.
+
+**This is not a freeze.** The program is self-contained and may still be
+supported and developed on its own terms. What it is not is the place the
+asymmetric and half-generation work goes; that has its own project.
+
+`pentagrid/tools/bootstrap.test.mjs` already uses it that way, carrying the
+quadrille arrays from `shape-modes.js` as a fixture; that fixture caught the
+rhomb spelling and the Sun's diamonds. It stays. The charter for the other side
+is `pentagrid/discrete-directions/PLAN.md`.
+
 ---
 
 ## New chapter: 3D Penrose Surfaces
